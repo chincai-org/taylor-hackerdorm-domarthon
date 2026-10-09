@@ -1,0 +1,18 @@
+[project]
+name = "customer-support-harness-optimizer"
+version = "0.1.0"
+description = "Hackerdorm Dormathon project template using uv + OpenAI Python SDK."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "openai>=1.51.0",
+]
+
+[dependency-groups]
+dev = [
+  "ruff>=0.6.9",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

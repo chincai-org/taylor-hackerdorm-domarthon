@@ -63,11 +63,12 @@ The improved configuration consistently outperforms baseline, with the largest g
 ```bash
 # from repository root
 uv sync
+uv run ruff format .
 uv run python main.py
 ```
 
 Set your key before running model calls:
 
 ```bash
-export OPENAI_API_KEY="your_api_key_here"
+export OPENROUTER_API_KEY="your_openrouter_api_key_here"
 ```

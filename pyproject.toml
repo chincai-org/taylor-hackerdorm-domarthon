@@ -3,10 +3,13 @@ name = "customer-support-harness-optimizer"
 version = "0.1.0"
 description = "Hackerdorm Dormathon project template using uv + OpenAI Python SDK."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = [
   "openai>=1.51.0",
 ]
+
+[tool.uv]
+package = false
 
 [dependency-groups]
 dev = [

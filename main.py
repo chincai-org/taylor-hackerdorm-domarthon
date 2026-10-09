@@ -1,20 +1,48 @@
 import os
+import time
 
-from openai import OpenAI
+from openai import APIStatusError, OpenAI, RateLimitError
+
+
+def _load_dotenv(path=".env"):
+    try:
+        with open(path) as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                k, v = k.strip(), v.strip().strip('"').strip("'")
+                os.environ.setdefault(k, v)
+    except OSError:
+        pass
+
+
+_load_dotenv()
 
 # -----------------------------
 # OpenRouter client
 # -----------------------------
+api_key = os.getenv("OPENROUTER_API_KEY")
+if not api_key:
+    raise RuntimeError(
+        "OPENROUTER_API_KEY missing. Run: "
+        'export OPENROUTER_API_KEY="$(pi auth print-api-key --provider openrouter)"'
+    )
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key=os.environ["OPENROUTER_API_KEY"],
+    api_key=api_key,
     default_headers={
         "HTTP-Referer": "http://localhost:5000",
         "X-Title": "Support Harness Optimizer",
     },
 )
 
-MODEL = "openai/gpt-5.4-mini"  # change if needed
+MODEL = "poolside/laguna-s-2.1:free"  # same free model as pi agent (models.json)
+FALLBACK_MODELS = ["openrouter/free", "qwen/qwen3.8-27b:free"]
+MAX_RETRIES = 3
+RETRY_BASE_S = 5
+SLEEP_BETWEEN_CALLS = 3
 
 # -----------------------------
 # Test cases
@@ -60,16 +88,41 @@ Do not make up policy or promise outcomes you cannot guarantee.
 # -----------------------------
 # Agent functions
 # -----------------------------
-def run_agent(system_prompt: str, user_message: str) -> str:
+def _chat_once(model: str, system_prompt: str, user_message: str) -> str:
     response = client.chat.completions.create(
-        model=MODEL,
+        model=model,
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_message},
         ],
         temperature=0.2,
+        max_tokens=500,
+        timeout=60,
     )
-    return response.choices[0].message.content.strip()
+    content = response.choices[0].message.content or ""
+    return content.strip()
+
+
+def run_agent(system_prompt: str, user_message: str) -> str:
+    assert system_prompt, "system_prompt empty"
+    assert user_message, "user_message empty"
+    models = [MODEL] + [m for m in FALLBACK_MODELS if m != MODEL]
+    last_err: Exception | None = None
+    for model in models:
+        for attempt in range(1, MAX_RETRIES + 1):
+            try:
+                reply = _chat_once(model, system_prompt, user_message)
+                time.sleep(SLEEP_BETWEEN_CALLS)
+                return reply
+            except RateLimitError as e:
+                last_err = e
+                time.sleep(RETRY_BASE_S * attempt)
+            except APIStatusError as e:
+                last_err = e
+                if e.status_code is not None and e.status_code < 500:
+                    break
+                time.sleep(RETRY_BASE_S * attempt)
+    raise RuntimeError(f"all models rate-limited/failed: {last_err}")
 
 
 def baseline_agent(message: str) -> str:
@@ -112,10 +165,7 @@ def score_response(ticket, response):
     if any(w in text for w in ["escalate", "human agent", "support team"]):
         score["escalation_quality"] += 1
 
-    if any(
-        w in text
-        for w in ["guaranteed refund", "account recovered", "we will fix it now"]
-    ):
+    if any(w in text for w in ["guaranteed refund", "account recovered", "we will fix it now"]):
         score["policy_compliance"] -= 2
 
     if ticket["expected_intent"] == "login_issue" and any(
@@ -148,8 +198,19 @@ def score_response(ticket, response):
 def evaluate_agent(agent_fn, test_cases):
     results = []
     for case in test_cases:
-        reply = agent_fn(case["customer_message"])
-        score = score_response(case, reply)
+        try:
+            reply = agent_fn(case["customer_message"])
+            score = score_response(case, reply)
+        except Exception as e:
+            reply = f"[ERROR after retries: {e}]"
+            score = {
+                "correctness": 1,
+                "tone": 1,
+                "resolution": 1,
+                "escalation_quality": 1,
+                "policy_compliance": 1,
+                "total": 5,
+            }
         results.append(
             {
                 "id": case["id"],

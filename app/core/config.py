@@ -30,6 +30,13 @@ class Settings(BaseSettings):
     # LLM judge settings (used to score new nodes right after creation).
     # Scoring contract: temperature 0, rubric v3 in app/services/evaluator.py.
     JUDGE_MODEL: str | None = None
+    JUDGE_MODELS: list[str] = [
+        "qwen/qwen3.8-flash",
+        "z-ai/glm-5.3",
+        "deepseek/deepseek-v4-pro",
+        "tencent/hy3",
+        "grafilab/gemma-4-31b-it",
+    ]
     JUDGE_TIMEOUT_S: float = 30.0
     JUDGE_TEMPERATURE: float = 0.0
     JUDGE_MAX_SCENARIOS: int = 20

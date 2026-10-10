@@ -434,6 +434,169 @@ def test_create_child_below_parent_score_marks_regression_failed(monkeypatch) ->
         assert child.error["code"] == "regression"
 
 
+def test_council_median_ignores_outlier() -> None:
+    from app.services.evaluator import _aggregate_council_ballots
+
+    out = _aggregate_council_ballots(
+        [(True, 95.0, "thorough refund"), (True, 94.0, "cited policy"), (False, 5.0, "bad read")]
+    )
+    assert out["score"] == 94.0
+    assert out["passed"] is True
+    assert out["reason"] == "cited policy"
+    assert out["dissent"] == "bad read"
+    assert out["contested"] is True
+
+
+def test_council_cluster_keeps_all_ballots() -> None:
+    from app.services.evaluator import _aggregate_council_ballots
+
+    out = _aggregate_council_ballots(
+        [(False, 80.0, "tone off"), (False, 82.0, "a bit curt"), (False, 85.0, "ok-ish")]
+    )
+    assert out["score"] == 82.0
+    assert out["passed"] is False
+    assert out["dissent"] is None
+    assert out["contested"] is False
+
+
+def test_council_tied_distances_keep_all_but_flag_contested() -> None:
+    from app.services.evaluator import _aggregate_council_ballots
+
+    out = _aggregate_council_ballots(
+        [(False, 50.0, "weak"), (False, 70.0, "middling"), (False, 90.0, "strong")]
+    )
+    assert out["score"] == 70.0
+    assert out["dissent"] is None
+    assert out["contested"] is True
+
+
+def test_council_verdict_follows_median_threshold() -> None:
+    from app.services.evaluator import _aggregate_council_ballots
+
+    assert (
+        _aggregate_council_ballots([(True, 91.0, "a"), (True, 92.0, "b"), (True, 93.0, "c")])[
+            "passed"
+        ]
+        is True
+    )
+    assert (
+        _aggregate_council_ballots([(False, 90.0, "a"), (False, 91.0, "b"), (False, 99.0, "c")])[
+            "passed"
+        ]
+        is False
+    )
+
+
+def test_council_empty_ballots_fail_closed() -> None:
+    from app.services.evaluator import _aggregate_council_ballots
+
+    out = _aggregate_council_ballots([])
+    assert out["passed"] is False
+    assert out["score"] == 0.0
+    assert "judge_error" in out["reason"]
+    assert out["contested"] is True
+
+
+def test_council_fans_out_three_independent_judge_calls(monkeypatch) -> None:
+    import json as _json
+
+    import app.services.evaluator as evaluator
+    from app.core import config
+
+    monkeypatch.setattr(config.settings, "GRAFFILAB_API_KEY", "grafilab-key")
+
+    async def fake_run_batch_candidate(patch_yml: str, scenarios: list) -> dict:
+        return {"prompt": "p", "reply": "r", "tool_calls": [], "model": "m"}
+
+    monkeypatch.setattr(evaluator, "_run_batch_candidate", fake_run_batch_candidate)
+
+    calls: list[str] = []
+
+    class FakeClient:
+        def __init__(self, **kwargs: object) -> None:
+            pass
+
+        async def run_prompt_single(self, prompt: str, **kwargs: object) -> dict:
+            calls.append(prompt)
+            return {
+                "reply": _json.dumps(
+                    {
+                        "scenarios": [
+                            {"scenario_id": "s", "passed": True, "score": 95, "reason": "fine"}
+                        ]
+                    }
+                )
+            }
+
+    monkeypatch.setattr(evaluator, "DeepSeekClient", FakeClient)
+
+    score, result = evaluator.evaluate_harness_sync(VALID_PATCH_YML, [{"id": "s"}])
+    assert len(calls) == 5
+    assert calls[0] == calls[1] == calls[2]
+    assert score == 95.0
+    assert result["scenarios"][0]["dissent"] is None
+    assert result["scenarios"][0]["contested"] is False
+    assert result["council"]["judges"] == 5
+
+
+def test_council_survives_single_failing_judge_call(monkeypatch) -> None:
+    import json as _json
+
+    import app.services.evaluator as evaluator
+    from app.core import config
+
+    monkeypatch.setattr(config.settings, "GRAFFILAB_API_KEY", "grafilab-key")
+
+    async def fake_run_batch_candidate(patch_yml: str, scenarios: list) -> dict:
+        return {"prompt": "p", "reply": "r", "tool_calls": [], "model": "m"}
+
+    monkeypatch.setattr(evaluator, "_run_batch_candidate", fake_run_batch_candidate)
+
+    state = {"n": 0}
+
+    class FlakyClient:
+        def __init__(self, **kwargs: object) -> None:
+            pass
+
+        async def run_prompt_single(self, prompt: str, **kwargs: object) -> dict:
+            state["n"] += 1
+            if state["n"] == 1:
+                raise RuntimeError("transport blew up")
+            return {
+                "reply": _json.dumps(
+                    {
+                        "scenarios": [
+                            {"scenario_id": "s", "passed": False, "score": 80, "reason": "meh"}
+                        ]
+                    }
+                )
+            }
+
+    monkeypatch.setattr(evaluator, "DeepSeekClient", FlakyClient)
+
+    score, result = evaluator.evaluate_harness_sync(VALID_PATCH_YML, [{"id": "s"}])
+    assert score == 80.0
+    assert result["scenarios"][0]["passed"] is False
+
+
+def test_council_five_ballots_single_outlier() -> None:
+    from app.services.evaluator import _aggregate_council_ballots
+
+    out = _aggregate_council_ballots(
+        [
+            (True, 95.0, "a"),
+            (True, 94.0, "b"),
+            (True, 93.0, "c"),
+            (False, 6.0, "d"),
+            (False, 5.0, "bad"),
+        ]
+    )
+    assert out["score"] == 93.0
+    assert out["passed"] is True
+    assert out["dissent"] == "bad"
+    assert out["contested"] is True
+
+
 def test_judge_reply_parsing() -> None:
     from app.services.evaluator import _parse_judge_reply
 

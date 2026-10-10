@@ -56,6 +56,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import statistics
 import urllib.request
 from datetime import datetime, timezone
 from typing import Any
@@ -72,6 +73,11 @@ logger = logging.getLogger(__name__)
 # result as rubric_version / pass_threshold.
 RUBRIC_VERSION = "3"
 PASS_THRESHOLD = 92.0
+COUNCIL_JUDGES = 5
+# 0-100 scale. A ballot this far from the median, alone there, is treated as
+# a bad read and quarantined to dissent. Normal inter-judge strictness sits
+# well below this; calibrate from measured spreads, pin per benchmark version.
+COUNCIL_DISCARD_GAP = 25.0
 FLAWLESS_MIN = 99.0  # 99-100 flawless, essentially perfect only.
 SATISFIES_MIN = 92.0  # 92-98 satisfies, trivial gaps only (= pass).
 PARTIAL_MIN = 50.0  # 50-91 partial, 0-49 fail.
@@ -169,6 +175,11 @@ def _get_client() -> DeepSeekClient:
         model=_judge_model(),
         default_timeout=settings.JUDGE_TIMEOUT_S,
     )
+
+
+def _judge_models() -> list[str]:
+    models = [m.strip() for m in (settings.JUDGE_MODELS or []) if m.strip()]
+    return models or [_judge_model()]
 
 
 def _judge_model() -> str:
@@ -559,18 +570,66 @@ def _parse_batch_judge_reply(
     return verdicts
 
 
+def _aggregate_council_ballots(
+    ballots: list[tuple[bool, float, str]],
+) -> dict[str, Any]:
+    """Collapse independent judge ballots into one verdict.
+
+    Median score (outlier-proof: 95/94/5 → 94, never the dragged mean);
+    verdict follows the median against ``PASS_THRESHOLD``. The minority is
+    whoever lands strictly farthest from the median *and* at least
+    ``COUNCIL_DISCARD_GAP`` away — anything less is strictness noise, kept.
+    Tied farthest distances keep everybody (genuine disagreement, flagged).
+    Merged reason = the ballot nearest the median (deterministic on ties);
+    the minority reason goes to ``dissent`` — stored, never shown to the
+    actor. ``contested`` marks wide spreads for Workbuddy either way.
+    """
+    if not ballots:
+        return {
+            "passed": False,
+            "score": 0.0,
+            "reason": "judge_error: no council ballots",
+            "dissent": None,
+            "contested": True,
+        }
+    scores = sorted(ballot[1] for ballot in ballots)
+    median = round(statistics.median(scores), 2)
+    contested = (max(scores) - min(scores)) >= COUNCIL_DISCARD_GAP
+    ranked = sorted(
+        ((abs(ballot[1] - median), index) for index, ballot in enumerate(ballots)),
+        reverse=True,
+    )
+    dissent: str | None = None
+    kept = list(range(len(ballots)))
+    if len(ranked) > 1 and ranked[0][0] >= COUNCIL_DISCARD_GAP and ranked[0][0] > ranked[1][0]:
+        outcast = ranked[0][1]
+        dissent = ballots[outcast][2]
+        kept = [index for index in kept if index != outcast]
+    nearest = min(kept, key=lambda index: abs(ballots[index][1] - median))
+    return {
+        "passed": median >= PASS_THRESHOLD,
+        "score": median,
+        "reason": ballots[nearest][2],
+        "dissent": dissent,
+        "contested": contested,
+    }
+
+
 async def _evaluate_batched(
     client: DeepSeekClient,
     patch_yml: str,
     scenarios: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], dict[str, Any] | None, str | None]:
-    """One rollout + one judge call for every scenario; never raises.
+    """One rollout + a 3-judge council for every scenario; never raises.
 
     Returns ``(judged, candidate, failure_reason)`` where ``failure_reason``
     is ``None`` on success, else ``candidate_error: …`` / ``judge_error: …``
     / a ``judge_parse_error`` marker carried per scenario. Transport-level
     failures fail every scenario at 0 (judge not called after a rollout
-    error, saving quota).
+    error, saving quota). Each scenario fans out to ``COUNCIL_JUDGES``
+    independent judge calls (same prompt, no shared context) collapsed by
+    ``_aggregate_council_ballots``: median score, minority quarantined to
+    dissent, wide spreads flagged contested.
     """
     try:
         candidate = await _run_batch_candidate(patch_yml, scenarios)
@@ -592,14 +651,26 @@ async def _evaluate_batched(
             reason,
         )
     try:
-        result = await client.run_prompt_single(
-            _batch_judge_prompt(patch_yml, scenarios, candidate),
-            timeout=settings.JUDGE_TIMEOUT_S,
-            system_text=BATCH_JUDGE_SYSTEM,
-            temperature=settings.JUDGE_TEMPERATURE,
-        )
+        prompt = _batch_judge_prompt(patch_yml, scenarios, candidate)
+
+        async def _one_judge() -> list[tuple[bool, float, str]] | BaseException:
+            try:
+                result = await client.run_prompt_single(
+                    prompt,
+                    timeout=settings.JUDGE_TIMEOUT_S,
+                    system_text=BATCH_JUDGE_SYSTEM,
+                    temperature=settings.JUDGE_TEMPERATURE,
+                )
+            except Exception as exc:  # noqa: BLE001 - one bad call must not kill the council
+                logger.warning("Batched judge call failed: %s", exc)
+                return exc
+            return _parse_batch_judge_reply(str(result.get("reply", "") or ""), scenarios)
+
+        # Same prompt, independent calls: a shared context would correlate
+        # failures and defeat the council.
+        ballots_per_call = await asyncio.gather(*(_one_judge() for _ in range(COUNCIL_JUDGES)))
     except Exception as exc:  # noqa: BLE001 - judge failure fails every scenario
-        logger.warning("Batched judge call failed: %s", exc)
+        logger.warning("Batched judge calls failed: %s", exc)
         reason = f"judge_error: {exc}"[:REASON_MAX_CHARS]
         return (
             [
@@ -615,7 +686,6 @@ async def _evaluate_batched(
             candidate,
             reason,
         )
-    verdicts = _parse_batch_judge_reply(str(result.get("reply", "") or ""), scenarios)
     judged: list[dict[str, Any]] = []
     raw_reply = str(candidate.get("reply", ""))
     tool_calls = candidate.get("tool_calls", [])
@@ -626,8 +696,25 @@ async def _evaluate_batched(
         or tool_json_len > BATCH_CANDIDATE_TOOLCALL_CHARS
         or len(calls_list) > MAX_TOOLCALL_ITEMS
     )
+    council: list[list[tuple[bool, float, str]]] = []
+    for ballots in ballots_per_call:
+        if isinstance(ballots, BaseException):
+            continue
+        council.append(ballots)
+    first_error = next((item for item in ballots_per_call if isinstance(item, BaseException)), None)
     for index, scenario in enumerate(scenarios):
-        passed, score, reason = verdicts[index]
+        per_scenario = [ballots[index] for ballots in council if index < len(ballots)]
+        if not per_scenario:
+            agg = {
+                "passed": False,
+                "score": 0.0,
+                "reason": f"judge_error: {first_error}"[:REASON_MAX_CHARS],
+                "dissent": None,
+                "contested": True,
+            }
+        else:
+            agg = _aggregate_council_ballots(per_scenario)
+        passed, score, reason = agg["passed"], agg["score"], agg["reason"]
         sid = _scenario_id(scenario, index)
         judged.append(
             {
@@ -636,6 +723,8 @@ async def _evaluate_batched(
                 "passed": passed,
                 "score": score,
                 "reason": reason,
+                "dissent": agg["dissent"],
+                "contested": agg["contested"],
                 "candidate_prompt": _candidate_prompt(scenario),
                 "candidate_reply": _truncate(raw_reply, BATCH_CANDIDATE_REPLY_CHARS),
                 "candidate_tool_calls": calls_list[:MAX_TOOLCALL_ITEMS],
@@ -755,14 +844,16 @@ async def evaluate_harness(
     patch_yml: str,
     scenarios: list[dict[str, Any]],
 ) -> tuple[float, dict[str, Any]]:
-    """Roll out the harness once for ALL scenarios, then judge once via Grafilab.
+    """Roll out the harness once for ALL scenarios, then judge by council.
 
     One-shot batch: the scenario customer messages are combined into ONE
     prompt (``_batch_candidate_prompt``), POSTed once to the candidate API,
-    then a single Grafilab call at temperature 0 carries the stored harness
-    text, ALL scenario expectations, AND the full combined rollout output,
-    reading back per-scenario verdicts. The node score is the mean, rounded
-    to 2dp. Scenarios are optional: an empty list falls back to one generic
+    then ``COUNCIL_JUDGES`` independent Grafilab calls at temperature 0 carry
+    the stored harness text, ALL scenario expectations, AND the full combined
+    rollout output, reading back per-scenario verdicts. Per scenario the
+    ballots collapse to median score (outlier-proof), minority dissent
+    quarantined, wide spreads flagged contested. The node score is the mean,
+    rounded to 2dp. Scenarios are optional: an empty list falls back to one generic
     rollout + review so the node still gets a proper score. Returns
     ``(score, benchmark_result)`` where ``benchmark_result`` matches the
     shape ``tree_digest`` already summarizes (``scenarios`` with ``passed``
@@ -805,6 +896,14 @@ async def evaluate_harness(
         "evaluation_mode": "rollout+judge",
         "rubric_version": RUBRIC_VERSION,
         "pass_threshold": PASS_THRESHOLD,
+        "council": {
+            "judges": COUNCIL_JUDGES,
+            "discard_gap": COUNCIL_DISCARD_GAP,
+            "discarded": sum(1 for item in judged if item.get("dissent") is not None),
+            "contested": [
+                item.get("scenario_id") for item in judged if item.get("contested") is True
+            ],
+        },
         "generic": generic,
         "judge_model": _judge_model(),
         "judge_temperature": settings.JUDGE_TEMPERATURE,

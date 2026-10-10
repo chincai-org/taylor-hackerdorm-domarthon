@@ -108,15 +108,16 @@ Each scenario:
 - **Expected final action** (refund demand → `issue_refund`; policy violation → `deny_with_explanation`).
 - Optional **forbidden actions** (e.g. refund outside policy).
 
-Scoring (implemented in `app/services/evaluator.py`, one-shot rollout-then-judge, rubric v3 low-skew):
+Scoring (implemented in `app/services/evaluator.py`, one-shot rollout-then-council, rubric v3 low-skew):
 - One-shot batch per node: the tree's dataset is loaded from the database
   (`benchmarks.scenarios` via `load_benchmark_scenarios` /
   `evaluate_tree_harness_sync`), all scenario questions are combined into ONE
   prompt (`_batch_candidate_prompt`) and POSTed once with the harness text via
   `POST {CANDIDATE_BASE_URL}/api/v1/deepseek/chat`
   (`{prompt, harness_yml, max_steps, model}` pinned to the judge model), then a
-  single GraffiLab judge call (temperature 0) carries the harness + ALL
-  expectations + the full combined output, returning per-scenario verdicts
+  council of 5 independent GraffiLab judge calls (temperature 0, same prompt, no
+  shared context) carries the harness + ALL expectations + the full combined
+  output, returning per-scenario verdicts
   `{"scenarios": [{"scenario_id", "passed", "score", "reason"}...]}`.
 - Fixed rubric (single source of truth: `_rubric_text()`; system prompt and every
   judge prompt embed the same text): bands 99-100 flawless (essentially perfect
@@ -130,6 +131,12 @@ Scoring (implemented in `app/services/evaluator.py`, one-shot rollout-then-judge
 - Judge model = `JUDGE_MODEL` override, else the provider model; judge temperature =
   `JUDGE_TEMPERATURE` (0). Rollout uses the candidate API's default sampling (no
   temperature pin available) — scores are comparable, not bit-identical.
+- Council aggregation per scenario (`_aggregate_council_ballots`): median score
+  (outlier-proof), verdict follows median vs 92; minority = strictly farthest
+  from median and ≥ `COUNCIL_DISCARD_GAP` (25.0 on 0-100, calibrate from data)
+  → quarantined to `dissent`, never shown to actor; merged reason = ballot
+  nearest median; wide spreads flagged `contested`. Result carries `council`
+  (`judges`, `discard_gap`, `discarded`, `contested` ids).
 - Score = mean of the per-scenario 0-100 scores (float, rounded to 2dp).
 - Rollout error fails every scenario (`candidate_error`, judge not called, saves
   quota); judge transport error (`judge_error`), unparseable verdict

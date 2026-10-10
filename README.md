@@ -23,12 +23,14 @@ Workbuddy ("Improve this node") --MCP--> FastAPI server --runs--> DeepSeek / PI
                     tree detail                      detail, scores
 ```
 
-1. Seed a tree with a benchmark and an evaluated root node.
-2. Workbuddy calls `get_node` / `get_children` / `get_benchmark` to study a
-   node and its past attempts (including failures).
-3. Workbuddy calls `create_child_node` with a new harness + rationale.
-4. The evaluator scores it against every benchmark scenario and stores the
-   result. The tree page shows the new node immediately.
+1. Seed a tree with a benchmark and a root node.
+2. Workbuddy calls `get_node` to read the exact parent harness and receives a
+   derived `parent_revision` hash.
+3. Workbuddy passes that revision to `create_child_node` with bounded,
+   parent-relative `suggested_changes` + rationale, never a full harness file.
+4. The server materializes the child by preserving every unmentioned parent
+   field. Suggestions are capped at 120 lines; evaluation remains pending/skipped
+   until the benchmark runner is connected.
 
 ## Quickstart
 
@@ -57,9 +59,10 @@ return 503.
 1. Open `/` and pick a tree.
 2. Click nodes in the lineage to inspect harness, score, and per-scenario
    benchmark results (passed / failed / unscored, never raw JSON dumps).
-3. As Workbuddy, with a `tree_id` + `node_id`: `get_node` → `get_children`
-   (read why past attempts failed) → `get_benchmark` → `create_child_node`
-   → poll `get_node_status` → reload the tree page to see the new node.
+3. As Workbuddy, with a `tree_id` + `node_id`: `get_node` (read the exact
+   parent harness and capture `parent_revision`) → inspect the tree digest and
+   benchmark context → submit the revision plus parent-relative
+   `suggested_changes` with `create_child_node` → reload the tree page.
 
 One-off harness comparison without the server:
 

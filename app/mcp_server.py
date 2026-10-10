@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import hmac
 import os
 from typing import Any
 from urllib.parse import urlparse
@@ -10,9 +12,16 @@ from mcp.server.transport_security import TransportSecuritySettings
 from app.core.config import settings
 from app.db import repository
 from app.db.engine import session_scope
-from app.harness.dsh import to_cordis_patch_yml
+from app.harness.dsh import harness_diff, to_cordis_patch_yml
 from app.harness.importer import coerce_harness
+from app.harness.suggested_changes import apply_suggested_changes
 from app.services.tree_digest import digest_tree
+
+
+def _parent_revision(harness: str) -> str:
+    """Derive a stable revision from the exact stored parent harness text."""
+    digest = hashlib.sha256(harness.encode("utf-8")).hexdigest()
+    return f"sha256:{digest}"
 
 
 def _vercel_host() -> str | None:
@@ -42,22 +51,20 @@ MCP_WORKFLOW_INSTRUCTIONS = """DeepSeek harness tree optimizer.
 Canonical workflow (follow this order):
 1. Call list_trees() before choosing a session.
 2. Choose a tree_id from list_trees().trees.
-3. Call checkout_tree(tree_id).
-4. Choose parent_id from checkout_tree().nodes[].id. Use the actual UUID; do
-   not send the display position (for example n000) or the word root.
-5. Call create_child_node(tree_id, parent_id, harness, rationale).
+3. Call checkout_tree(tree_id), then get_node(tree_id, node_id) for the exact
+   parent content you intend to improve.
+4. Choose parent_id from get_node().node_id or checkout_tree().nodes[].id. Use
+   the actual UUID; never send a display position such as n000 or the word root.
+5. Pass get_node().parent_revision back to create_child_node unchanged.
+6. Call create_child_node(tree_id, parent_id, parent_revision, suggested_changes,
+   rationale).
 
-create_child_node has one canonical harness input: `harness` must be raw
-cordis.patch.yml text. Do not send a JSON object and do not use a
-`harness_yml` argument. The server validates the text, normalizes supported
-DeepSeek plugins, stores the generated patch text, and creates a pending node.
-Evaluation is currently skipped, so no score is produced for a new node.
-
-Minimal valid harness example:
-- id: persona
-  name: '@deepseek-ai/dsh-persona'
-  config:
-    prefix: You are a careful customer-support agent.
+create_child_node is parent-relative. Do not send a full harness, raw YAML, or
+fields such as version, kind, profile, or dsh_plugins. Send only a JSON object
+with the changes to apply: existing plugin config updates go in `plugins`, new
+rows in `add_plugins`, removals in `remove_plugins`, and top-level prompt/model
+updates in `system_prompt` / `model`. The server preserves every unmentioned
+parent field and rejects suggestions longer than 120 lines.
 """
 
 mcp_server = MCPServer(
@@ -126,16 +133,23 @@ def _load_tree_digest(tree_id: str) -> dict[str, Any]:
         )
         digest["workflow"] = {
             "parent_id_rule": (
-                "Pass the actual node id from nodes[].id to create_child_node; "
-                "do not pass nodes[].position or 'root'."
+                "Pass the actual node id from nodes[].id to get_node and "
+                "create_child_node; do not pass nodes[].position or 'root'."
             ),
             "create_child_node": {
                 "tree_id": tree_id,
-                "parent_id": "<nodes[].id>",
-                "harness": "<raw cordis.patch.yml text>",
-                "rationale": "<why this harness is different>",
+                "parent_id": "<get_node().node_id>",
+                "parent_revision": "<get_node().parent_revision>",
+                "suggested_changes": {
+                    "plugins": [
+                        {"id": "persona", "config": {"prefix": "<new prefix>"}}
+                    ]
+                },
+                "rationale": "<why these parent-relative changes are better>",
             },
-            "evaluation": "skipped; new nodes remain pending",
+            "change_line_limit": 120,
+            "harness_input": "parent-relative changes only; never a full harness",
+            "parent_revision": "required from get_node(); no database field is needed",
         }
         return digest
 
@@ -152,42 +166,68 @@ def checkout_tree(tree_id: str) -> dict[str, Any]:
 
 
 @mcp_server.tool()
+def get_node(tree_id: str, node_id: str) -> dict[str, Any]:
+    """Return the exact content of one node before proposing a child.
+
+    This is the required parent-read step. The returned ``harness`` is the
+    complete stored parent patch, while ``node_id`` is the actual node ID to
+    pass back to ``create_child_node``. The optimizer must not treat the display
+    position in ``checkout_tree`` as an ID.
+    """
+    with session_scope() as session:
+        if repository.get_tree(session, tree_id) is None:
+            raise ValueError(f"Tree '{tree_id}' was not found. Call list_trees() first.")
+        node = repository.get_node(session, tree_id=tree_id, node_id=node_id)
+        if node is None:
+            raise ValueError(
+                f"Node '{node_id}' was not found in tree '{tree_id}'. "
+                "Use checkout_tree() and select a node from that tree."
+            )
+        children = repository.get_children(session, tree_id=tree_id, parent_id=node_id)
+        return {
+            "node_id": node.id,
+            "tree_id": node.tree_id,
+            "parent_id": node.parent_id,
+            "status": node.status,
+            "score": node.score,
+            "harness": node.harness,
+            "parent_revision": _parent_revision(node.harness),
+            "rationale": node.rationale,
+            "benchmark_result": node.benchmark_result,
+            "error": node.error,
+            "children": [child.id for child in children],
+            "next_step": (
+                "Pass this node_id as parent_id and this parent_revision unchanged; "
+                "then call create_child_node with only parent-relative suggested_changes."
+            ),
+        }
+
+
+@mcp_server.tool()
 def create_child_node(
     tree_id: str,
     parent_id: str,
-    harness: str,
+    parent_revision: str,
+    suggested_changes: dict[str, Any],
     rationale: str | None = None,
 ) -> dict[str, Any]:
-    """Create a pending child from raw DeepSeek ``cordis.patch.yml`` text.
+    """Create a pending child from bounded, parent-relative changes.
 
-    Call this only after ``checkout_tree``. ``parent_id`` must be the actual
-    node ID from ``nodes[].id``; the root node's ID is valid and may be used to
-    expand directly from the root. ``harness`` is required raw YAML text, not a
-    JSON object. Use this shape:
-
-    - id: persona
-      name: '@deepseek-ai/dsh-persona'
-      config:
-        prefix: You are a careful customer-support agent.
-
-    Do not send ``harness_yml``: this tool intentionally has one canonical
-    harness argument so clients cannot choose the wrong field. The server
-    validates and normalizes the YAML, stores the generated patch text, and
-    skips evaluation; the returned node remains ``pending``.
+    Call ``get_node`` first and pass its ``parent_revision`` unchanged.
+    ``suggested_changes`` is not a full harness and cannot contain ``version``,
+    ``kind``, ``profile``, or ``dsh_plugins``.
+    Existing plugin rows are partially updated through ``plugins``; use
+    ``add_plugins`` and ``remove_plugins`` for row additions/removals. All
+    unmentioned parent data is retained and the suggestion payload must stay
+    within 120 lines.
     """
-    if not harness.strip():
+    if not isinstance(parent_revision, str) or not parent_revision.strip():
         raise ValueError(
-            "Missing harness. Pass raw cordis.patch.yml text in the 'harness' argument."
+            "Missing parent_revision. Call get_node(tree_id, parent_id) first and "
+            "pass its parent_revision unchanged."
         )
-    try:
-        normalized_harness, meta = coerce_harness(harness)
-    except Exception as exc:
-        raise ValueError(f"Invalid DeepSeek harness. Details: {exc}") from exc
-    assert normalized_harness is not None  # coerce returns None only when both inputs are None
-    try:
-        patch_yml = to_cordis_patch_yml(normalized_harness)
-    except ValueError as exc:
-        raise ValueError(f"Invalid DeepSeek harness. Details: {exc}") from exc
+    if not isinstance(suggested_changes, dict):
+        raise ValueError("suggested_changes must be a JSON object of parent-relative changes")
 
     with session_scope() as session:
         if repository.get_tree(session, tree_id) is None:
@@ -196,8 +236,27 @@ def create_child_node(
         if parent is None:
             raise ValueError(
                 f"Parent node '{parent_id}' was not found in tree '{tree_id}'. "
-                "Use checkout_tree() and select a node from that tree."
+                "Use get_node() or checkout_tree() and select a node from that tree."
             )
+
+        current_revision = _parent_revision(parent.harness)
+        if not hmac.compare_digest(parent_revision, current_revision):
+            raise ValueError(
+                "Stale parent_revision. Call get_node again for the current parent "
+                "and pass its parent_revision unchanged."
+            )
+
+        try:
+            parent_harness, parent_meta = coerce_harness(parent.harness)
+            if parent_harness is None:
+                raise ValueError("parent harness is empty")
+            child_harness, change_lines = apply_suggested_changes(
+                parent_harness,
+                suggested_changes,
+            )
+            patch_yml = to_cordis_patch_yml(child_harness)
+        except Exception as exc:
+            raise ValueError(f"Invalid suggested_changes. Details: {exc}") from exc
 
         node = repository.create_child_node(
             session,
@@ -210,12 +269,17 @@ def create_child_node(
             "node_id": node.id,
             "tree_id": node.tree_id,
             "parent_id": node.parent_id,
+            "parent_revision": current_revision,
             "status": node.status,
             "harness": patch_yml,
             "patch_yml": patch_yml,
-            "harness_source": meta.get("source", "none"),
-            "warnings": meta.get("warnings", []),
-            "dropped": meta.get("dropped", []),
+            "suggested_changes": suggested_changes,
+            "change_lines": change_lines,
+            "parent_harness": parent.harness,
+            "diff": harness_diff(parent_harness, child_harness),
+            "harness_source": parent_meta.get("source", "none"),
+            "warnings": parent_meta.get("warnings", []),
+            "dropped": parent_meta.get("dropped", []),
             "rationale": node.rationale,
             "evaluation": {
                 "status": "skipped",
@@ -223,8 +287,8 @@ def create_child_node(
                 "reason": "The benchmark runner is not implemented yet.",
             },
             "next_step": (
-                "Call checkout_tree(tree_id) to inspect the new pending node. "
-                "Use this node's id for any further child."
+                "Call checkout_tree(tree_id) or get_node(tree_id, node_id) to inspect "
+                "the new child."
             ),
         }
 

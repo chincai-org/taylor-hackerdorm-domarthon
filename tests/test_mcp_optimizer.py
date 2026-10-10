@@ -114,31 +114,66 @@ def test_list_and_checkout_return_database_tree(monkeypatch) -> None:
     assert "nodes[].id" in digest["workflow"]["parent_id_rule"]
 
 
-def test_mcp_contract_has_one_canonical_harness_argument() -> None:
+def test_mcp_contract_requires_parent_relative_suggestions() -> None:
     signature = inspect.signature(mcp_server.create_child_node)
-    assert list(signature.parameters) == ["tree_id", "parent_id", "harness", "rationale"]
+    assert list(signature.parameters) == [
+        "tree_id",
+        "parent_id",
+        "parent_revision",
+        "suggested_changes",
+        "rationale",
+    ]
 
     tools = asyncio.run(mcp_server.mcp_server.list_tools())
     create_tool = next(tool for tool in tools if tool.name == "create_child_node")
+    get_tool = next(tool for tool in tools if tool.name == "get_node")
     properties = create_tool.input_schema["properties"]
-    assert set(properties) == {"tree_id", "parent_id", "harness", "rationale"}
+    assert set(properties) == {
+        "tree_id",
+        "parent_id",
+        "parent_revision",
+        "suggested_changes",
+        "rationale",
+    }
+    assert "harness" not in properties
     assert "harness_yml" not in properties
-    assert "actual" in (create_tool.description or "")
-    assert "node ID" in (create_tool.description or "")
-    assert "raw" in (create_tool.description or "")
+    assert "parent-relative" in (create_tool.description or "")
+    assert "node ID" in (get_tool.description or "")
 
 
-def test_create_child_persists_raw_patch_without_evaluation(monkeypatch) -> None:
+def test_get_node_returns_exact_parent_content(monkeypatch) -> None:
     factory, _ = _session_factory()
     with factory() as session:
         _seed(session)
     _patch_mcp_scope(monkeypatch, factory)
 
+    result = mcp_server.get_node("tree-1", "root-1")
+
+    assert result["node_id"] == "root-1"
+    assert result["harness"] == VALID_PATCH_YML
+    assert result["parent_revision"].startswith("sha256:")
+    assert len(result["parent_revision"]) == len("sha256:") + 64
+    assert result["children"] == []
+    assert "suggested_changes" in result["next_step"]
+
+
+def test_create_child_applies_only_suggested_changes(monkeypatch) -> None:
+    factory, _ = _session_factory()
+    with factory() as session:
+        _seed(session)
+    _patch_mcp_scope(monkeypatch, factory)
+
+    parent = mcp_server.get_node("tree-1", "root-1")
     result = mcp_server.create_child_node(
         tree_id="tree-1",
         parent_id="root-1",
-        harness=VALID_PATCH_YML,
-        rationale="Adds a persona prefix.",
+        parent_revision=parent["parent_revision"],
+        suggested_changes={
+            "plugins": [
+                {"id": "persona", "config": {"prefix": "You are an empathetic support agent."}}
+            ]
+        },
+        rationale="Adds an empathetic persona prefix.",
     )
 
     assert result["status"] == "pending"
@@ -147,8 +182,12 @@ def test_create_child_persists_raw_patch_without_evaluation(monkeypatch) -> None
         "scheduled": False,
         "reason": "The benchmark runner is not implemented yet.",
     }
+    assert 1 <= result["change_lines"] <= 120
     assert result["harness_source"] == "yml"
-    assert "persona" in result["patch_yml"]
+    assert "empathetic support agent" in result["patch_yml"]
+    assert result["diff"]["changed"]["persona"]["prefix"]["from"] == (
+        "You are a careful customer support agent."
+    )
     with factory() as session:
         child = session.get(Node, result["node_id"])
         assert child is not None
@@ -158,36 +197,78 @@ def test_create_child_persists_raw_patch_without_evaluation(monkeypatch) -> None
         assert child.benchmark_result is None
 
 
-def test_create_child_rejects_non_deepseek_harness(monkeypatch) -> None:
+def test_create_child_rejects_full_harness_payload(monkeypatch) -> None:
     factory, _ = _session_factory()
     with factory() as session:
         _seed(session)
     _patch_mcp_scope(monkeypatch, factory)
 
-    invalid = """- id: persona
-  name: '@deepseek-ai/dsh-persona'
-  config: {}
-"""
+    parent = mcp_server.get_node("tree-1", "root-1")
     try:
-        mcp_server.create_child_node("tree-1", "root-1", invalid)
+        mcp_server.create_child_node(
+            "tree-1",
+            "root-1",
+            parent["parent_revision"],
+            suggested_changes={"version": 1, "dsh_plugins": []},
+        )
     except ValueError as exc:
-        assert "Invalid DeepSeek harness" in str(exc)
+        assert "not a full harness" in str(exc)
     else:
-        raise AssertionError("invalid harness was accepted")
+        raise AssertionError("full harness payload was accepted")
 
 
-def test_create_child_rejects_garbage_yml(monkeypatch) -> None:
+def test_create_child_requires_parent_revision(monkeypatch) -> None:
     factory, _ = _session_factory()
     with factory() as session:
         _seed(session)
     _patch_mcp_scope(monkeypatch, factory)
 
     try:
-        mcp_server.create_child_node("tree-1", "root-1", harness=": : : not yaml {{{")
+        mcp_server.create_child_node(
+            "tree-1",
+            "root-1",
+            "",
+            suggested_changes={"plugins": []},
+        )
     except ValueError as exc:
-        assert "Invalid DeepSeek harness" in str(exc)
+        assert "Call get_node" in str(exc)
     else:
-        raise AssertionError("garbage yml was accepted")
+        raise AssertionError("missing parent revision was accepted")
+
+
+def test_create_child_rejects_stale_parent_revision(monkeypatch) -> None:
+    factory, _ = _session_factory()
+    with factory() as session:
+        _seed(session)
+    _patch_mcp_scope(monkeypatch, factory)
+
+    try:
+        mcp_server.create_child_node(
+            "tree-1",
+            "root-1",
+            "sha256:" + "0" * 64,
+            suggested_changes={"plugins": []},
+        )
+    except ValueError as exc:
+        assert "Stale parent_revision" in str(exc)
+    else:
+        raise AssertionError("stale parent revision was accepted")
+
+
+def test_create_child_rejects_more_than_120_suggestion_lines(monkeypatch) -> None:
+    factory, _ = _session_factory()
+    with factory() as session:
+        _seed(session)
+    _patch_mcp_scope(monkeypatch, factory)
+
+    too_many = {"plugins": [{"id": "persona", "config": {f"key-{i}": i for i in range(121)}}]}
+    parent = mcp_server.get_node("tree-1", "root-1")
+    try:
+        mcp_server.create_child_node("tree-1", "root-1", parent["parent_revision"], too_many)
+    except ValueError as exc:
+        assert "lines; the maximum is 120" in str(exc)
+    else:
+        raise AssertionError("oversized suggestion was accepted")
 
 
 def test_digest_text_keeps_string_failures_and_harness_name(monkeypatch) -> None:

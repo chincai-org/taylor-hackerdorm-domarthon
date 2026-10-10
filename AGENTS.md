@@ -126,13 +126,16 @@ Workbuddy flow: user gives `tree_id` + `node_id`, prompts **"Improve this node"*
 | `get_node(tree_id, node_id)`                                | Harness, benchmark results (incl. per-scenario failures), rationale.      |
 | `get_children(tree_id, node_id)`                            | Prior attempts: harness diffs/results/rationale.                          |
 | `get_benchmark(tree_id)`                                    | Benchmark description → what gets measured.                               |
-| `create_child_node(tree_id, parent_id, harness, rationale)` | Create child, trigger eval, return `node_id` + status (+ result if fast). |
+| `create_child_node(tree_id, parent_id, suggested_changes, rationale)` | Create child from bounded parent-relative changes; preserve unmentioned parent harness fields. |
 | `get_node_status(tree_id, node_id)`                         | Poll eval status/result.                                                  |
 
 Rules:
 - **Concise structured JSON**. Truncate big payloads; offer drill-down.
 - `get_node` / `get_children` must carry enough context → **avoid repeating failed approaches**.
-- `create_child_node` validates parent exists, belongs to tree, is `complete`.
+- `get_node` is the required parent-read step before creating a child; pass its `parent_revision` unchanged to `create_child_node`.
+- `create_child_node` verifies the derived parent revision against the current database harness; no schema field is required.
+- `suggested_changes` is parent-relative, not a full harness file; unmentioned fields are preserved and the server caps the payload at 120 lines.
+- `create_child_node` validates parent exists and belongs to the tree.
 - Eval slow → async + poll, or block with sane timeout. No stuck `running`; mark `failed` on error/timeout.
 - Errors clear + actionable (what wrong, what next).
 

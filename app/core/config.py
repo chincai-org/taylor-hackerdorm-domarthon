@@ -13,10 +13,11 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     DATABASE_URL: str
 
-    # Pi headless RPC (`pi --mode rpc`) settings.
-    PI_BINARY: str = "pi"
-    PI_MODEL: str | None = None
-    PI_TIMEOUT_S: float = 120.0
+    # DeepSeek (OpenAI-compatible) chat settings.
+    DEEPSEEK_API_KEY: str | None = None
+    DEEPSEEK_BASE_URL: str = "https://api.deepseek.com/v1"
+    DEEPSEEK_MODEL: str = "deepseek-chat"
+    DEEPSEEK_TIMEOUT_S: float = 120.0
 
 
 settings = Settings()

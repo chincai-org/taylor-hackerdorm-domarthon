@@ -252,6 +252,118 @@
     return `<button class="live-copy" type="button" data-copy-node="${escape(nodeId)}" aria-label="Copy ${label}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M5 8h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Z"/></svg><span>Copy</span></button><span class="live-copy-status" role="status" aria-live="polite"></span>`;
   }
 
+  function harnessText(harness) {
+    if (typeof harness === "string") return harness;
+    if (harness === null || harness === undefined) return "";
+    return JSON.stringify(harness, null, 2);
+  }
+
+  /** Build a line-oriented diff without requiring a client-side dependency. */
+  function diffLines(beforeText, afterText) {
+    const before = beforeText
+      ? beforeText.replace(/\r\n?/g, "\n").split("\n")
+      : [];
+    const after = afterText
+      ? afterText.replace(/\r\n?/g, "\n").split("\n")
+      : [];
+    const cells = before.length * after.length;
+    if (beforeText === afterText) {
+      return {
+        ops: before.map((text) => ({ type: "context", text })),
+        added: 0,
+        deleted: 0,
+        limited: false,
+      };
+    }
+
+    // Avoid blocking the detail page on an unexpectedly huge prompt. The
+    // fallback still makes every changed line explicit, just without context.
+    if (cells > 2_000_000) {
+      return {
+        ops: [
+          ...before.map((text) => ({ type: "delete", text })),
+          ...after.map((text) => ({ type: "add", text })),
+        ],
+        added: after.length,
+        deleted: before.length,
+        limited: true,
+      };
+    }
+
+    const lcs = Array.from(
+      { length: before.length + 1 },
+      () => new Uint32Array(after.length + 1),
+    );
+    for (let row = before.length - 1; row >= 0; row -= 1) {
+      for (let column = after.length - 1; column >= 0; column -= 1) {
+        lcs[row][column] =
+          before[row] === after[column]
+            ? lcs[row + 1][column + 1] + 1
+            : Math.max(lcs[row + 1][column], lcs[row][column + 1]);
+      }
+    }
+
+    const ops = [];
+    let row = 0;
+    let column = 0;
+    let added = 0;
+    let deleted = 0;
+    while (row < before.length || column < after.length) {
+      if (row < before.length && column < after.length && before[row] === after[column]) {
+        ops.push({ type: "context", text: before[row] });
+        row += 1;
+        column += 1;
+      } else if (
+        row < before.length &&
+        (column === after.length || lcs[row + 1][column] >= lcs[row][column + 1])
+      ) {
+        ops.push({ type: "delete", text: before[row] });
+        deleted += 1;
+        row += 1;
+      } else {
+        ops.push({ type: "add", text: after[column] });
+        added += 1;
+        column += 1;
+      }
+    }
+    return { ops, added, deleted, limited: false };
+  }
+
+  function harnessDiff(node) {
+    if (!node.parent_id) {
+      return `<section class="harness-diff" aria-labelledby="harness-diff-heading"><header class="diff-header"><div><p class="eyebrow">Line comparison</p><h4 id="harness-diff-heading">Root harness</h4></div><span class="diff-summary">No parent</span></header><p class="muted">This is the root node, so it has no parent configuration to compare.</p></section>`;
+    }
+    const parent = selectedTree?.nodeMap.get(node.parent_id);
+    if (!parent) {
+      return `<section class="harness-diff" aria-labelledby="harness-diff-heading"><header class="diff-header"><div><p class="eyebrow">Line comparison</p><h4 id="harness-diff-heading">Changes from parent</h4></div></header><p class="muted">The parent node is not included in this tree response, so the comparison is unavailable.</p></section>`;
+    }
+
+    const result = diffLines(harnessText(parent.harness), harnessText(node.harness));
+    const summary = result.added || result.deleted
+      ? `<span class="diff-count-add">+${result.added} added</span><span class="diff-count-delete">-${result.deleted} deleted</span>`
+      : "No line changes";
+    let oldNumber = 0;
+    let newNumber = 0;
+    const lines = result.added || result.deleted
+      ? result.ops
+          .map((operation) => {
+            const oldLabel = operation.type === "add" ? "" : String(++oldNumber);
+            const newLabel = operation.type === "delete" ? "" : String(++newNumber);
+            const lineLabel = operation.type === "delete" ? oldLabel : newLabel;
+            const marker = operation.type === "add" ? "+" : operation.type === "delete" ? "-" : " ";
+            return `<div class="diff-line diff-${operation.type}"><span class="diff-marker" aria-hidden="true">${marker}</span><span class="diff-number">${lineLabel}</span><code>${escape(operation.text)}</code></div>`;
+          })
+          .join("")
+      : "";
+    const body = result.added || result.deleted
+      ? `<div class="diff-view" role="region" aria-label="Line changes from parent">${lines}</div>`
+      : '<p class="muted">The child harness is identical to its parent.</p>';
+    const note = result.limited
+      ? '<p class="diff-note">This harness is large, so the comparison lists all parent lines as deleted and child lines as added.</p>'
+      : "";
+    return `<section class="harness-diff" aria-labelledby="harness-diff-heading"><header class="diff-header"><div><p class="eyebrow">Line comparison</p><h4 id="harness-diff-heading">Changes from parent</h4></div><span class="diff-summary">${summary}</span></header>${body}${note}</section>`;
+  }
+
   function benchmarkResult(node) {
     const result = node.benchmark_result;
     if (!result || typeof result !== "object") return "";
@@ -312,10 +424,10 @@
 
   function nodePanel(node) {
     if (!node) return '<p class="muted">This tree has no nodes yet.</p>';
-    const harness = node.harness ?? "";
+    const harness = harnessText(node.harness);
     const hasResult =
       node.benchmark_result !== null && node.benchmark_result !== undefined;
-    return `<div class="node-panel-head"><div><p class="eyebrow">Selected node</p><h3 id="live-node-heading" tabindex="-1">${escape(labelOf(node))}</h3></div><span class="tag status-${node.status}">${escape(node.status)}</span></div><dl class="node-facts"><div><dt>Node ID</dt><dd><code>${escape(node.id)}</code></dd></div><div><dt>Score</dt><dd>${score(node.score)}</dd></div><div><dt>Parent</dt><dd><code>${escape(node.parent_id || "Root")}</code></dd></div></dl>${node.error !== null && node.error !== undefined ? `<p class="error-copy">${escape(typeof node.error === "string" ? node.error : (node.error.message ?? "Evaluation failed"))}</p>` : ""}<details class="config-details"><summary>Harness configuration</summary><div class="copyable-panel"><pre><code>${escape(harness)}</code></pre>${copyControl(node.id, "harness configuration")}</div></details>${hasResult ? benchmarkResult(node) : ""}`;
+    return `<div class="node-panel-head"><div><p class="eyebrow">Selected node</p><h3 id="live-node-heading" tabindex="-1">${escape(labelOf(node))}</h3></div><span class="tag status-${node.status}">${escape(node.status)}</span></div><dl class="node-facts"><div><dt>Node ID</dt><dd><code>${escape(node.id)}</code></dd></div><div><dt>Score</dt><dd>${score(node.score)}</dd></div><div><dt>Parent</dt><dd><code>${escape(node.parent_id || "Root")}</code></dd></div></dl>${node.error !== null && node.error !== undefined ? `<p class="error-copy">${escape(typeof node.error === "string" ? node.error : (node.error.message ?? "Evaluation failed"))}</p>` : ""}${harnessDiff(node)}<details class="config-details"><summary>Harness configuration</summary><div class="copyable-panel"><pre><code>${escape(harness)}</code></pre>${copyControl(node.id, "harness configuration")}</div></details>${hasResult ? benchmarkResult(node) : ""}`;
   }
   function selectNode(node) {
     const panel = detail.querySelector(".node-panel");

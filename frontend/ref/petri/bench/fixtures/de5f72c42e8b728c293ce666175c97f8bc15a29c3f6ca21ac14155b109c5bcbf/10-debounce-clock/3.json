@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "10-debounce-clock",
+  "attemptIndex": 3,
+  "source": "export function createDebouncer(fn, waitMs, options) {\n  if (typeof fn !== 'function') throw new TypeError('fn must be a function');\n  if (typeof waitMs !== 'number') throw new TypeError('waitMs must be a number');\n  if (!Number.isInteger(waitMs) || waitMs < 0) {\n    throw new RangeError('waitMs must be an integer of at least 0');\n  }\n  if (options !== undefined && (options === null || typeof options !== 'object')) {\n    throw new TypeError('options must be an object');\n  }\n\n  const settings = options ?? {};\n  const leading = settings.leading === true;\n  const trailing = settings.trailing !== false;\n\n  let running = false;\n  let left = 0;\n  let waiting = null;\n\n  const fire = () => {\n    const args = waiting;\n    waiting = null;\n    fn(...args);\n  };\n\n  return {\n    call(...args) {\n      if (!running && leading) fn(...args);\n      else if (trailing) waiting = args;\n      running = true;\n      left = waitMs;\n    },\n    tick(ms) {\n      if (typeof ms !== 'number') throw new TypeError('ms must be a number');\n      if (!Number.isInteger(ms) || ms < 0) {\n        throw new RangeError('ms must be an integer of at least 0');\n      }\n      if (!running) return undefined;\n      left -= ms;\n      if (left <= 0) {\n        running = false;\n        left = 0;\n        if (waiting !== null) fire();\n      }\n      return undefined;\n    },\n    cancel() {\n      running = false;\n      left = 0;\n      waiting = null;\n      return undefined;\n    },\n    flush() {\n      running = false;\n      left = 0;\n      if (waiting === null) return false;\n      fire();\n      return true;\n    },\n    pending() {\n      return waiting !== null;\n    },\n  };\n}\n",
+  "tokens": 1611,
+  "harnessMs": 1914,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "f0eee5527bb21e5e7f6bdce3aed32cf2",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "c4b20b4536f93c61c433ec678cbb419b3dc66d7581615535539bbb4536c9e197",
+  "inputTokens": 1197,
+  "outputTokens": 414
+}

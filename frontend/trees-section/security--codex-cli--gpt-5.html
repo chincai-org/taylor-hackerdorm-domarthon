@@ -1,17 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-<meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Codex CLI × GPT-5 · Petri</title>
-    <meta name="description" content="Find more of 40 planted vulnerabilities. Every version is re-checked by other keys, and failures are kept." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css" />
+    <meta name="description" content="Find more of 40 planted vulnerabilities. Every version is re-checked by other keys, and failures are kept.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
     <!-- This tree's own selection rules. Only the page knows its node ids, so
          build.mjs generates them; nothing here is hand-written. -->
-    <link rel="stylesheet" href="security--codex-cli--gpt-5.css" />
+    <link rel="stylesheet" href="security--codex-cli--gpt-5.css">
     <!-- Deferred so it never blocks the first paint. Every page is complete
          without it; the script only adds polish. -->
     <script src="main.js" defer></script>
@@ -48,8 +48,8 @@
 
       <div class="view view-tree">
         <figure class="stage">
-          <div class="plate tree-plate" tabindex="0" role="region" aria-label="Lineage figure of 11 versions. Scroll sideways to see the whole tree.">
-            <div class="legend legend-overlay" aria-label="Legend">
+          <section class="plate tree-plate" tabindex="0" aria-label="Lineage figure of 11 versions. Scroll sideways to see the whole tree.">
+            <div class="legend legend-overlay" role="group" aria-label="Legend">
               <span><svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>Accepted — two other keys re-ran it and agreed</span>
               <span><svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="7" cy="7" r="5"/><path class="g-x" d="M4.3 4.3L9.7 9.7M9.7 4.3L4.3 9.7"/></g></svg>Rejected — kept, with the reason</span>
               <span><svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>Pending — waiting for keys</span>
@@ -272,7 +272,7 @@
           </li></ul>
           </li>
         </ul>
-          </div>
+          </section>
           <div class="selected-strip s-accepted" data-for="cx-00">
             <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
             <span class="sel-word">ACCEPTED · cx-00</span>
@@ -353,7 +353,7 @@
         </figure>
 
         <section class="record" id="record">
-          <article class="rec" id="s-cx-00" data-for="cx-00"><aside class="node-panel" aria-live="polite">
+          <article class="rec" id="s-cx-00" data-for="cx-00"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
               <p class="eyebrow">ACCEPTED · cx-00</p>
@@ -530,8 +530,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-cx-01" data-for="cx-01"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-cx-01" data-for="cx-01"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
               <p class="eyebrow">ACCEPTED · cx-01</p>
@@ -724,8 +724,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-cx-02" data-for="cx-02"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-cx-02" data-for="cx-02"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
               <p class="eyebrow">ACCEPTED · cx-02</p>
@@ -918,8 +918,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-cx-03" data-for="cx-03"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-cx-03" data-for="cx-03"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
               <p class="eyebrow">PENDING · cx-03</p>
@@ -998,7 +998,7 @@
           </div>
             <div class="np-block checkit">
             <h3>Check it yourself</h3>
-            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <p class="muted">Clone the repo, then run these from the repository root. Reading and checking the record needs no API key; running or scoring this version live needs ANTHROPIC_API_KEY.</p>
             <ol class="checkit-steps"><li>
               <p class="checkit-what">How it works</p>
               <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
@@ -1100,8 +1100,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-cx-04" data-for="cx-04"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-cx-04" data-for="cx-04"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
               <p class="eyebrow">ACCEPTED · cx-04</p>
@@ -1294,8 +1294,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-cx-05" data-for="cx-05"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-cx-05" data-for="cx-05"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="7" cy="7" r="5"/><path class="g-x" d="M4.3 4.3L9.7 9.7M9.7 4.3L4.3 9.7"/></g></svg>
               <p class="eyebrow">REJECTED · cx-05</p>
@@ -1488,8 +1488,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-cx-06" data-for="cx-06"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-cx-06" data-for="cx-06"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
               <p class="eyebrow">PENDING · cx-06</p>
@@ -1568,7 +1568,7 @@
           </div>
             <div class="np-block checkit">
             <h3>Check it yourself</h3>
-            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <p class="muted">Clone the repo, then run these from the repository root. Reading and checking the record needs no API key; running or scoring this version live needs ANTHROPIC_API_KEY.</p>
             <ol class="checkit-steps"><li>
               <p class="checkit-what">How it works</p>
               <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
@@ -1670,8 +1670,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-cx-10" data-for="cx-10"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-cx-10" data-for="cx-10"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
               <p class="eyebrow">ACCEPTED · cx-10</p>
@@ -1864,8 +1864,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-cx-07" data-for="cx-07" data-default><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-cx-07" data-for="cx-07" data-default><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
               <p class="eyebrow">ACCEPTED · cx-07</p>
@@ -2058,8 +2058,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-cx-08" data-for="cx-08"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-cx-08" data-for="cx-08"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="7" cy="7" r="5"/><path class="g-x" d="M4.3 4.3L9.7 9.7M9.7 4.3L4.3 9.7"/></g></svg>
               <p class="eyebrow">REJECTED · cx-08</p>
@@ -2252,8 +2252,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-cx-09" data-for="cx-09"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-cx-09" data-for="cx-09"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
               <p class="eyebrow">PENDING · cx-09</p>
@@ -2438,7 +2438,7 @@
             </li></ol>
           </div>
             
-          </aside></article>
+          </div></article>
 
           <div class="record-info"><div class="panels"><div class="chips" role="radiogroup" aria-label="Tree information">
             <input type="radio" name="panel" id="chip-goal" class="chip-input" checked>
@@ -2541,28 +2541,30 @@
             <div><dt>Recorded</dt><dd>11 versions<small>6 accepted · 2 rejected and kept · 3 pending</small></dd></div>
           </dl>
 
-          <figure class="chart-figure">
-            <div class="plate chart-plate">
-              <svg viewBox="0 0 900 340" role="img" aria-labelledby="chart-cap">
-                <line class="c-axis" x1="70" x2="860" y1="280" y2="280"/>
+          <div class="chart-figure">
+            <figure class="chart-content">
+              <div class="plate chart-plate">
+                <svg viewBox="0 0 900 340" role="img" aria-labelledby="chart-cap">
+                  <line class="c-axis" x1="70" x2="860" y1="280" y2="280"/>
             <text class="c-tick" x="58" y="284" text-anchor="end">0/40</text><line class="c-grid" x1="70" x2="860" y1="221.5" y2="221.5"/>
             <text class="c-tick" x="58" y="225.5" text-anchor="end">10/40</text><line class="c-grid" x1="70" x2="860" y1="163" y2="163"/>
             <text class="c-tick" x="58" y="167" text-anchor="end">20/40</text><line class="c-grid" x1="70" x2="860" y1="104.5" y2="104.5"/>
             <text class="c-tick" x="58" y="108.5" text-anchor="end">30/40</text><line class="c-grid" x1="70" x2="860" y1="46" y2="46"/>
             <text class="c-tick" x="58" y="50" text-anchor="end">40/40</text><text class="c-tick" x="70" y="304" text-anchor="middle">start</text><text class="c-tick" x="267.5" y="304" text-anchor="middle">round 1</text><text class="c-tick" x="465" y="304" text-anchor="middle">round 2</text><text class="c-tick" x="662.5" y="304" text-anchor="middle">round 3</text><text class="c-tick" x="860" y="304" text-anchor="middle">round 4</text><line class="c-bar" x1="70" x2="860" y1="92.8" y2="92.8"/>
             <text class="c-note c-goal" x="860" y="83.8" text-anchor="end">goal · 32/40 tasks</text><circle class="c-pass c-offspine" cx="287.5" cy="174.7" r="6.5"><title>ACCEPTED cx-02: 18/40 tasks</title></circle><circle class="c-fail" cx="485" cy="192.3" r="6.5"><title>REJECTED cx-05: 15/40 tasks</title></circle><circle class="c-pass c-offspine" cx="503" cy="151.3" r="6.5"><title>ACCEPTED cx-10: 22/40 tasks</title></circle><circle class="c-fail" cx="682.5" cy="151.3" r="6.5"><title>REJECTED cx-08: 22/40 tasks</title></circle><circle class="c-wait" cx="880" cy="98.7" r="6.5"><title>PENDING cx-09: 31/40 tasks</title></circle><line class="c-line c-climb" x1="70" y1="198.1" x2="287.5" y2="174.7"/><line class="c-line c-climb" x1="287.5" y1="174.7" x2="503" y2="151.3"/><path class="c-line" d="M70 198.1 L267.5 168.9 L465 139.6 L662.5 116.2"/><circle class="c-pass" cx="70" cy="198.1" r="7"><title>ACCEPTED cx-00: 14/40 tasks</title></circle><circle class="c-pass" cx="267.5" cy="168.9" r="7"><title>ACCEPTED cx-01: 19/40 tasks</title></circle><circle class="c-pass" cx="465" cy="139.6" r="7"><title>ACCEPTED cx-04: 24/40 tasks</title></circle><circle class="c-pass" cx="662.5" cy="116.2" r="7"><title>ACCEPTED cx-07: 28/40 tasks</title></circle><text class="c-val" x="662.5" y="101.2" text-anchor="middle">28/40</text>
-              </svg>
-            </div>
-            <div class="legend">
-              <span><svg width="34" height="14" aria-hidden="true"><line class="c-line" x1="2" x2="32" y1="7" y2="7"/><circle class="c-pass" cx="17" cy="7" r="5"/></svg>Accepted, and became the new parent</span>
-              <span><svg width="16" height="16" aria-hidden="true"><circle class="c-fail" cx="8" cy="8" r="5.5"/></svg>Rejected, and kept in the tree</span>
-              <span><svg width="16" height="16" aria-hidden="true"><circle class="c-wait" cx="8" cy="8" r="5.5"/></svg>Pending</span>
-            </div>
-            <figcaption id="chart-cap">
-              Each round is one generation deeper in the tree. Scores are medians re-run by other keys, from the real tree.
-              A version passes only if it beats its parent by +1000bp.
-               2 versions were stopped before scoring and are not plotted. See the table.
-            </figcaption>
+                </svg>
+              </div>
+              <div class="legend">
+                <span><svg width="34" height="14" aria-hidden="true"><line class="c-line" x1="2" x2="32" y1="7" y2="7"/><circle class="c-pass" cx="17" cy="7" r="5"/></svg>Accepted, and became the new parent</span>
+                <span><svg width="16" height="16" aria-hidden="true"><circle class="c-fail" cx="8" cy="8" r="5.5"/></svg>Rejected, and kept in the tree</span>
+                <span><svg width="16" height="16" aria-hidden="true"><circle class="c-wait" cx="8" cy="8" r="5.5"/></svg>Pending</span>
+              </div>
+              <figcaption id="chart-cap">
+                Each round is one generation deeper in the tree. Scores illustrate median results re-run by other keys, from a hand-authored showcase tree.
+                A version passes only if it beats its parent by +1000bp.
+                 2 versions were stopped before scoring and are not plotted. See the table.
+              </figcaption>
+            </figure>
             <details class="table-view">
               <summary>Show as a table</summary>
               <table>
@@ -2570,7 +2572,7 @@
                 <tbody><tr><td><code>cx-00</code></td><td>start</td><td>ACCEPTED</td><td>14/40 tasks</td></tr><tr><td><code>cx-01</code></td><td>1</td><td>ACCEPTED</td><td>19/40 tasks</td></tr><tr><td><code>cx-02</code></td><td>1</td><td>ACCEPTED</td><td>18/40 tasks</td></tr><tr><td><code>cx-03</code></td><td>1</td><td>PENDING</td><td>not scored</td></tr><tr><td><code>cx-04</code></td><td>2</td><td>ACCEPTED</td><td>24/40 tasks</td></tr><tr><td><code>cx-05</code></td><td>2</td><td>REJECTED</td><td>15/40 tasks</td></tr><tr><td><code>cx-06</code></td><td>2</td><td>PENDING</td><td>not scored</td></tr><tr><td><code>cx-10</code></td><td>2</td><td>ACCEPTED</td><td>22/40 tasks</td></tr><tr><td><code>cx-07</code></td><td>3</td><td>ACCEPTED</td><td>28/40 tasks</td></tr><tr><td><code>cx-08</code></td><td>3</td><td>REJECTED</td><td>22/40 tasks</td></tr><tr><td><code>cx-09</code></td><td>4</td><td>PENDING</td><td>31/40 tasks</td></tr></tbody>
               </table>
             </details>
-          </figure>
+          </div>
         </section>
       </div>
     </main>

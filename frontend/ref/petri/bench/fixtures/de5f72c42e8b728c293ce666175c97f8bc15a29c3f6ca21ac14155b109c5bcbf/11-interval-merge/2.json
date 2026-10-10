@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "11-interval-merge",
+  "attemptIndex": 2,
+  "source": "export function mergeIntervals(intervals) {\n  if (!Array.isArray(intervals)) throw new TypeError('intervals must be an array');\n\n  const pairs = [];\n  for (const pair of intervals) {\n    if (!Array.isArray(pair) || pair.length !== 2) {\n      throw new TypeError('every interval must be an array of exactly two numbers');\n    }\n    const [start, end] = pair;\n    if (typeof start !== 'number' || !Number.isFinite(start)) {\n      throw new TypeError('every bound must be a finite number');\n    }\n    if (typeof end !== 'number' || !Number.isFinite(end)) {\n      throw new TypeError('every bound must be a finite number');\n    }\n    if (start > end) throw new RangeError('start must not be greater than end');\n    pairs.push([start, end]);\n  }\n\n  pairs.sort((x, y) => (x[0] - y[0]) || (x[1] - y[1]));\n\n  const out = [];\n  for (const [start, end] of pairs) {\n    const last = out[out.length - 1];\n    if (last !== undefined && start <= last[1]) {\n      if (end > last[1]) last[1] = end;\n      continue;\n    }\n    out.push([start, end]);\n  }\n  return out;\n}\n",
+  "tokens": 1016,
+  "harnessMs": 5816,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "55849d9b04f2db4c3c69dac7dc399fee",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "97f308192dfde664e153807e698b6ca6a31c6c7c47d83cae2986bf275abcf095",
+  "inputTokens": 750,
+  "outputTokens": 266
+}

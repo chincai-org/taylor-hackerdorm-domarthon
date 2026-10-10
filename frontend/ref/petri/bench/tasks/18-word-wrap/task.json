@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "18-word-wrap",
+  "title": "Wrap text to a maximum line width",
+  "difficulty": "medium",
+  "entry": "solution.mjs",
+  "exports": ["wrapText"],
+  "signatures": ["export function wrapText(text: string, width: number): string"],
+  "timeoutMs": 5000,
+  "testCount": 11,
+  "tags": ["strings", "formatting", "validation", "edge-cases"]
+}

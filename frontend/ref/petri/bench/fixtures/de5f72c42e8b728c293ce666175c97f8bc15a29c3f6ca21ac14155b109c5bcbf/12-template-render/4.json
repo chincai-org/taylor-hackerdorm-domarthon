@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "12-template-render",
+  "attemptIndex": 4,
+  "source": "const SEGMENT = /^[A-Za-z0-9_]+$/;\n\nfunction lookup(data, path) {\n  if (path === '') throw new SyntaxError('a placeholder path is empty');\n  const segments = path.split('.');\n  for (const segment of segments) {\n    if (!SEGMENT.test(segment)) throw new SyntaxError(`the path ${path} has a bad segment`);\n  }\n\n  let current = data;\n  for (const segment of segments) {\n    if (current === null || typeof current !== 'object') {\n      throw new ReferenceError(`the path ${path} runs into a value that is not a container`);\n    }\n    if (!Object.prototype.hasOwnProperty.call(current, segment)) {\n      throw new ReferenceError(`the path ${path} is missing`);\n    }\n    current = current[segment];\n  }\n\n  const kind = typeof current;\n  if (kind !== 'string' && kind !== 'number' && kind !== 'boolean') {\n    throw new TypeError(`the path ${path} is not a string, a number or a boolean`);\n  }\n  return String(current);\n}\n\nexport function render(template, data) {\n  if (typeof template !== 'string') throw new TypeError('template must be a string');\n  if (data === null || typeof data !== 'object') throw new TypeError('data must be an object');\n\n  let out = '';\n  let i = 0;\n  while (i < template.length) {\n    if (template[i] === '\\\\' && template[i + 1] === '{' && template[i + 2] === '{') {\n      out += '{{';\n      i += 3;\n      continue;\n    }\n    if (template[i] === '{' && template[i + 1] === '{') {\n      const end = template.indexOf('}}', i + 2);\n      if (end === -1) throw new SyntaxError('a placeholder was never closed');\n      out += lookup(data, template.slice(i + 2, end).trim());\n      i = end + 2;\n      continue;\n    }\n    out += template[i];\n    i += 1;\n  }\n  return out;\n}\n",
+  "tokens": 1111,
+  "harnessMs": 4878,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "34e09b2546630fae5e1e0eed4dc8fd55",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "1bac920172bcff57301da43c72116e0564488f3396e2df42fab18d368369431d",
+  "inputTokens": 686,
+  "outputTokens": 425
+}

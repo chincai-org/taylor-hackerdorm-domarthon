@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "13-line-diff",
+  "title": "Build a minimal line edit script",
+  "difficulty": "hard",
+  "entry": "solution.mjs",
+  "exports": ["diffLines"],
+  "signatures": ["export function diffLines(a: string[], b: string[]): { op: 'keep' | 'add' | 'remove', line: string }[]"],
+  "timeoutMs": 15000,
+  "testCount": 12,
+  "tags": ["algorithms", "dynamic-programming", "determinism", "edge-cases"]
+}

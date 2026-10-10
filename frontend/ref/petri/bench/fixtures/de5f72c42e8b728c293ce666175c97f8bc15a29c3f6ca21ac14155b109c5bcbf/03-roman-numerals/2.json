@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "03-roman-numerals",
+  "attemptIndex": 2,
+  "source": "const PAIRS = [\n  [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],\n  [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'],\n  [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I'],\n];\n\nexport function toRoman(value) {\n  if (typeof value !== 'number') throw new TypeError('value must be a number');\n  if (!Number.isInteger(value) || value < 1 || value > 3999) {\n    throw new RangeError('value must be an integer from 1 to 3999');\n  }\n  let left = value;\n  let out = '';\n  for (const [amount, letters] of PAIRS) {\n    while (left >= amount) {\n      out += letters;\n      left -= amount;\n    }\n  }\n  return out;\n}\n\nexport function fromRoman(text) {\n  if (typeof text !== 'string') throw new TypeError('text must be a string');\n  let at = 0;\n  let total = 0;\n  for (const [amount, letters] of PAIRS) {\n    while (text.startsWith(letters, at)) {\n      at += letters.length;\n      total += amount;\n    }\n  }\n  if (at !== text.length || total < 1 || total > 3999 || toRoman(total) !== text) {\n    throw new SyntaxError(`${text} is not a standard Roman numeral`);\n  }\n  return total;\n}\n",
+  "tokens": 994,
+  "harnessMs": 3162,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "55849d9b04f2db4c3c69dac7dc399fee",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "00612321bd6777f18e2c72c4c3887cfa1feb9defff1405e250ce9d92ccff494f",
+  "inputTokens": 723,
+  "outputTokens": 271
+}

@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "16-json-pointer",
+  "attemptIndex": 2,
+  "source": "const INDEX = /^(0|[1-9][0-9]*)$/;\n\nexport function resolvePointer(doc, pointer) {\n  if (typeof pointer !== 'string') throw new TypeError('pointer must be a string');\n  if (pointer === '') return doc;\n  if (pointer[0] !== '/') throw new SyntaxError('a pointer must be empty or start with /');\n\n  let current = doc;\n  for (const raw of pointer.slice(1).split('/')) {\n    for (let i = 0; i < raw.length; i += 1) {\n      if (raw[i] !== '~') continue;\n      if (raw[i + 1] !== '0' && raw[i + 1] !== '1') {\n        throw new SyntaxError('a ~ must be followed by 0 or 1');\n      }\n    }\n    const token = raw.replace(/~1/g, '/').replace(/~0/g, '~');\n\n    if (Array.isArray(current)) {\n      if (!INDEX.test(token)) throw new SyntaxError(`${token} is not an array index`);\n      const index = Number(token);\n      if (index >= current.length) throw new ReferenceError(`${token} is past the end`);\n      current = current[index];\n      continue;\n    }\n    if (current === null || typeof current !== 'object') {\n      throw new ReferenceError('a token cannot be applied to a value that is not a container');\n    }\n    if (!Object.prototype.hasOwnProperty.call(current, token)) {\n      throw new ReferenceError(`the key ${token} is missing`);\n    }\n    current = current[token];\n  }\n  return current;\n}\n",
+  "tokens": 1043,
+  "harnessMs": 2538,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "55849d9b04f2db4c3c69dac7dc399fee",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "df5ba93a69111dd504c3ddd41b3d6d3206d2fa600e4dc8708b2d5051284a36bf",
+  "inputTokens": 717,
+  "outputTokens": 326
+}

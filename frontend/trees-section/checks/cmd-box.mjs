@@ -6,18 +6,20 @@
 // rewritten wholesale by `main.js` (`out.textContent = ...`), so if the copy
 // button ever ends up *inside* that element it is silently deleted from the DOM
 // the first time the picker changes. The button has to be a sibling.
-import { createRequire } from "node:module";
-const require = createRequire("C:/Users/liewjayyong/.workbuddy-ai/binaries/node/workspace/");
-const { chromium } = require("playwright-core");
-
-const BASE = "file:///C:/Users/liewjayyong/WorkBuddy%20AI/2026-10-10-12-59-12/trees-section";
-const PAGE = `${BASE}/research--hermes-agent--claude-sonnet-5.html`;
+import { assert, open, withBrowser } from "./browser.mjs";
 
 /** Geometry of the box and its button, relative to each other. */
 const PROBE = () => {
   const rect = (el) => {
     const r = el.getBoundingClientRect();
-    return { left: +r.left.toFixed(1), right: +r.right.toFixed(1), top: +r.top.toFixed(1), bottom: +r.bottom.toFixed(1), w: +r.width.toFixed(1), h: +r.height.toFixed(1) };
+    return {
+      left: +r.left.toFixed(1),
+      right: +r.right.toFixed(1),
+      top: +r.top.toFixed(1),
+      bottom: +r.bottom.toFixed(1),
+      w: +r.width.toFixed(1),
+      h: +r.height.toFixed(1),
+    };
   };
 
   const inspect = (box) => {
@@ -27,7 +29,11 @@ const PROBE = () => {
     const b = rect(box);
     const t = rect(button);
     // Half a pixel of slack: sub-pixel layout rounds.
-    const inside = t.left >= b.left - 0.5 && t.right <= b.right + 0.5 && t.top >= b.top - 0.5 && t.bottom <= b.bottom + 0.5;
+    const inside =
+      t.left >= b.left - 0.5 &&
+      t.right <= b.right + 0.5 &&
+      t.top >= b.top - 0.5 &&
+      t.bottom <= b.bottom + 0.5;
     return {
       found: true,
       button: true,
@@ -42,8 +48,9 @@ const PROBE = () => {
       gapLeft: +(t.left - b.left).toFixed(1),
       gapTop: +(t.top - b.top).toFixed(1),
       gapBottom: +(b.bottom - t.bottom).toFixed(1),
-      // The command element must be a *sibling* of the button, never its parent.
-      btnParentIsCmdElement: button.parentElement.matches("pre, code"),
+      // The command text and button must share the wrapper, never contain each other.
+      buttonIsTextSibling: button.parentElement === box.querySelector("pre, code")?.parentElement,
+      outputOnPre: box.querySelector("[data-fork-out]")?.matches("pre") ?? null,
     };
   };
 
@@ -114,67 +121,117 @@ const PROBE = () => {
   };
 };
 
-const b = await chromium.launch({ channel: "msedge" });
-const ctx = await b.newContext({ colorScheme: "dark" });
-const p = await ctx.newPage();
+await withBrowser(async (p) => {
+  const fails = [];
+  const check = (ok, what) => {
+    if (!ok) fails.push(what);
+    console.log(`  ${ok ? "ok  " : "FAIL"} ${what}`);
+  };
 
-const fails = [];
-const check = (ok, what) => {
-  if (!ok) fails.push(what);
-  console.log(`  ${ok ? "ok  " : "FAIL"} ${what}`);
-};
+  for (const width of [1440, 1240, 1020, 700, 390, 360]) {
+    await p.setViewportSize({ width, height: 900 });
+    await open(p);
+    const r = await p.evaluate(PROBE);
 
-for (const width of [1440, 1240, 1020, 700, 390, 360]) {
-  await p.setViewportSize({ width, height: 900 });
-  await p.goto(PAGE, { waitUntil: "domcontentloaded" });
-  const r = await p.evaluate(PROBE);
+    console.log(`\n--- ${width}px ---`);
+    console.log(
+      `  fork    box ${r.fork.box?.w}x${r.fork.box?.h}  btn ${r.fork.btn?.w}x${r.fork.btn?.h}  gaps L${r.fork.gapLeft} R${r.fork.gapRight} T${r.fork.gapTop} B${r.fork.gapBottom}`,
+    );
+    console.log(
+      `  checkit box ${r.checkit.box?.w}x${r.checkit.box?.h}  btn ${r.checkit.btn?.w}x${r.checkit.btn?.h}  gaps L${r.checkit.gapLeft} R${r.checkit.gapRight} T${r.checkit.gapTop} B${r.checkit.gapBottom}`,
+    );
 
-  console.log(`\n--- ${width}px ---`);
-  console.log(`  fork    box ${r.fork.box?.w}x${r.fork.box?.h}  btn ${r.fork.btn?.w}x${r.fork.btn?.h}  gaps L${r.fork.gapLeft} R${r.fork.gapRight} T${r.fork.gapTop} B${r.fork.gapBottom}`);
-  console.log(`  checkit box ${r.checkit.box?.w}x${r.checkit.box?.h}  btn ${r.checkit.btn?.w}x${r.checkit.btn?.h}  gaps L${r.checkit.gapLeft} R${r.checkit.gapRight} T${r.checkit.gapTop} B${r.checkit.gapBottom}`);
+    check(r.fork.found && r.fork.button, `fork: a copy button exists in the command box`);
+    check(
+      r.fork.visible,
+      `fork: the box is actually on screen (${r.fork.box?.w}x${r.fork.box?.h})`,
+    );
+    check(r.fork.inside, `fork: the button is inside the box`);
+    check(
+      r.fork.gapRight < r.fork.gapLeft,
+      `fork: the button is pinned right (R${r.fork.gapRight} < L${r.fork.gapLeft})`,
+    );
+    check(
+      Math.abs(r.fork.gapTop - r.fork.gapBottom) <= 1,
+      `fork: the button is vertically centred (T${r.fork.gapTop} vs B${r.fork.gapBottom})`,
+    );
+    check(r.fork.buttonIsTextSibling, `fork: the button is a sibling of the <pre>, not inside it`);
+    check(r.fork.outputOnPre, "fork: data-fork-out stays on the pre element");
+    check(r.checkit.buttonIsTextSibling, "check-it: button is a sibling of the code element");
 
-  check(r.fork.found && r.fork.button, `fork: a copy button exists in the command box`);
-  check(r.fork.visible, `fork: the box is actually on screen (${r.fork.box?.w}x${r.fork.box?.h})`);
-  check(r.fork.inside, `fork: the button is inside the box`);
-  check(r.fork.gapRight < r.fork.gapLeft, `fork: the button is pinned right (R${r.fork.gapRight} < L${r.fork.gapLeft})`);
-  check(Math.abs(r.fork.gapTop - r.fork.gapBottom) <= 1, `fork: the button is vertically centred (T${r.fork.gapTop} vs B${r.fork.gapBottom})`);
-  check(!r.fork.btnParentIsCmdElement, `fork: the button is a sibling of the <pre>, not inside it`);
+    check(r.checkit.found && r.checkit.button, `check-it: a copy button exists in the command box`);
+    check(
+      r.checkit.visible,
+      `check-it: the box is actually on screen (${r.checkit.box?.w}x${r.checkit.box?.h})`,
+    );
+    check(r.checkit.inside, `check-it: the button is inside the box`);
+    check(
+      r.checkit.gapRight < r.checkit.gapLeft,
+      `check-it: the button is pinned right (R${r.checkit.gapRight} < L${r.checkit.gapLeft})`,
+    );
+    check(
+      Math.abs(r.checkit.gapTop - r.checkit.gapBottom) <= 1,
+      `check-it: the button is vertically centred (T${r.checkit.gapTop} vs B${r.checkit.gapBottom})`,
+    );
+    check(r.checkit.box.w <= width, `check-it: the box does not overflow the viewport`);
 
-  check(r.checkit.found && r.checkit.button, `check-it: a copy button exists in the command box`);
-  check(r.checkit.visible, `check-it: the box is actually on screen (${r.checkit.box?.w}x${r.checkit.box?.h})`);
-  check(r.checkit.inside, `check-it: the button is inside the box`);
-  check(r.checkit.gapRight < r.checkit.gapLeft, `check-it: the button is pinned right (R${r.checkit.gapRight} < L${r.checkit.gapLeft})`);
-  check(Math.abs(r.checkit.gapTop - r.checkit.gapBottom) <= 1, `check-it: the button is vertically centred (T${r.checkit.gapTop} vs B${r.checkit.gapBottom})`);
-  check(r.checkit.box.w <= width, `check-it: the box does not overflow the viewport`);
+    // Wrapping must never split a *word*: `improves` becoming `improv` / `es`
+    // produces a command that reads as garbage. A break at a hyphen is allowed by
+    // CSS and is reported but not failed on.
+    const midFork = r.forkLines?.midTokenBreaks ?? ["no fork text"];
+    check(
+      midFork.length === 0,
+      `fork: no word split across lines${midFork.length ? ` — ${JSON.stringify(midFork)}` : ""}`,
+    );
+    const midAll = r.checkitLines.flatMap((l) => l?.midTokenBreaks ?? []);
+    check(
+      midAll.length === 0,
+      `check-it: no word split across lines${midAll.length ? ` — ${JSON.stringify(midAll)}` : ""}`,
+    );
+    // The wrapping is presentational; the text itself must survive it intact.
+    check(
+      /pnpm petri propose --parent he-08 --area memory --motif \S+/.test(r.forkText ?? ""),
+      `fork: the command text is intact after wrapping`,
+    );
+    check(
+      r.checkitLines.every((l) => /^pnpm |^PETRI_HOME=|^ANTHROPIC_API_KEY=/.test(l?.text ?? "")),
+      `check-it: every command text is intact after wrapping`,
+    );
+    if (r.forkLines?.hyphenBreaks.length)
+      console.log(
+        `  note  fork: hyphen break (allowed): ${JSON.stringify(r.forkLines.hyphenBreaks)}`,
+      );
+  }
 
-  // Wrapping must never split a *word*: `improves` becoming `improv` / `es`
-  // produces a command that reads as garbage. A break at a hyphen is allowed by
-  // CSS and is reported but not failed on.
-  const midFork = r.forkLines?.midTokenBreaks ?? ["no fork text"];
-  check(midFork.length === 0, `fork: no word split across lines${midFork.length ? ` — ${JSON.stringify(midFork)}` : ""}`);
-  const midAll = r.checkitLines.flatMap((l) => l?.midTokenBreaks ?? []);
-  check(midAll.length === 0, `check-it: no word split across lines${midAll.length ? ` — ${JSON.stringify(midAll)}` : ""}`);
-  // The wrapping is presentational; the text itself must survive it intact.
-  check(/pnpm petri propose --parent he-08 --area memory --motif \S+/.test(r.forkText ?? ""), `fork: the command text is intact after wrapping`);
-  check(r.checkitLines.every((l) => /^pnpm |^PETRI_HOME=|^ANTHROPIC_API_KEY=/.test(l?.text ?? "")), `check-it: every command text is intact after wrapping`);
-  if (r.forkLines?.hyphenBreaks.length) console.log(`  note  fork: hyphen break (allowed): ${JSON.stringify(r.forkLines.hyphenBreaks)}`);
-}
+  // The picker rewrites the <pre>'s textContent. The button must survive that.
+  console.log(`\n--- changing the direction picker ---`);
+  await p.setViewportSize({ width: 1440, height: 900 });
+  await open(p);
+  const before = await p.evaluate(PROBE);
+  await p.selectOption('.rec[data-for="he-08"] select[data-fork]', "token savings");
+  const after = await p.evaluate(PROBE);
+  console.log(`  fork text before: ${before.forkText?.replace(/\s+/g, " ").slice(0, 72)}`);
+  console.log(`  fork text after:  ${after.forkText?.replace(/\s+/g, " ").slice(0, 72)}`);
+  console.log(`  buttons in the box after the change: ${after.forkButtons}`);
+  check(after.forkText !== before.forkText, `the fork command was rewritten by the picker`);
+  check(
+    after.forkText?.includes("--motif token-savings"),
+    `the rewritten command carries the new motif`,
+  );
+  check(after.forkButtons === 1, `the copy button survived the rewrite (still exactly 1)`);
+  check(after.fork.inside, `the button is still inside the box after the rewrite`);
 
-// The picker rewrites the <pre>'s textContent. The button must survive that.
-console.log(`\n--- changing the direction picker ---`);
-await p.setViewportSize({ width: 1440, height: 900 });
-await p.goto(PAGE, { waitUntil: "domcontentloaded" });
-const before = await p.evaluate(PROBE);
-await p.selectOption('.rec[data-for="he-08"] select[data-fork]', "token savings");
-const after = await p.evaluate(PROBE);
-console.log(`  fork text before: ${before.forkText?.replace(/\s+/g, " ").slice(0, 72)}`);
-console.log(`  fork text after:  ${after.forkText?.replace(/\s+/g, " ").slice(0, 72)}`);
-console.log(`  buttons in the box after the change: ${after.forkButtons}`);
-check(after.forkText !== before.forkText, `the fork command was rewritten by the picker`);
-check(after.forkText?.includes("--motif token-savings"), `the rewritten command carries the new motif`);
-check(after.forkButtons === 1, `the copy button survived the rewrite (still exactly 1)`);
-check(after.fork.inside, `the button is still inside the box after the rewrite`);
-
-console.log(`\n${fails.length} failure(s)`);
-await b.close();
-process.exit(fails.length ? 1 : 0);
+  // Real command widths do not distinguish normal wrapping from break-word.
+  // An overlong unhyphenated token makes the mid-word-break regression observable.
+  await p.setViewportSize({ width: 360, height: 900 });
+  await p.locator('.rec[data-for="he-08"] .cmd pre').evaluate((element) => {
+    element.textContent = "x".repeat(200);
+  });
+  const synthetic = await p.evaluate(PROBE);
+  check(
+    synthetic.forkLines?.midTokenBreaks.length === 0,
+    "synthetic overlong token is not split mid-word",
+  );
+  console.log(`\n${fails.length} failure(s)`);
+  assert.deepEqual(fails, [], "Command box geometry and text integrity");
+});

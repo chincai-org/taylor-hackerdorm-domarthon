@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "07-csv-parse",
+  "attemptIndex": 0,
+  "source": "export function parseCsv(text) {\n  if (typeof text !== 'string') throw new TypeError('text must be a string');\n  if (text === '') return [];\n\n  const records = [];\n  let record = [];\n  let field = '';\n  let i = 0;\n\n  const atTerminator = () => text[i] === '\\n' || (text[i] === '\\r' && text[i + 1] === '\\n');\n\n  for (;;) {\n    if (text[i] === '\"') {\n      i += 1;\n      for (;;) {\n        if (i >= text.length) throw new SyntaxError('a quoted field never closed');\n        if (text[i] === '\"') {\n          if (text[i + 1] === '\"') {\n            field += '\"';\n            i += 2;\n            continue;\n          }\n          i += 1;\n          break;\n        }\n        field += text[i];\n        i += 1;\n      }\n      if (i < text.length && text[i] !== ',' && !atTerminator()) {\n        throw new SyntaxError('a closing quote must be followed by a comma or a terminator');\n      }\n    } else {\n      while (i < text.length && text[i] !== ',' && !atTerminator()) {\n        field += text[i];\n        i += 1;\n      }\n    }\n\n    if (i >= text.length) {\n      record.push(field);\n      records.push(record);\n      break;\n    }\n    if (text[i] === ',') {\n      record.push(field);\n      field = '';\n      i += 1;\n      continue;\n    }\n    record.push(field);\n    field = '';\n    records.push(record);\n    record = [];\n    i += text[i] === '\\r' ? 2 : 1;\n    if (i >= text.length) break;\n  }\n\n  return records;\n}\n",
+  "tokens": 1059,
+  "harnessMs": 7594,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "2433d6d8ffe158c4da37c097f9ef9aa5",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "bf4c8f1c1a3d152215ff8f6bbd347fcc94ede92785847c688bb5fb92ef403729",
+  "inputTokens": 706,
+  "outputTokens": 353
+}

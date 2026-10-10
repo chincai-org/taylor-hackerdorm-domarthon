@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "6666aa69455499737042e676fd082a9978c92fb50ef7d845c1c63ef5e7018da3",
+  "taskId": "14-decimal-add",
+  "attemptIndex": 2,
+  "source": "export function addDecimal(a, b) {\n  if (typeof a !== 'string' || typeof b !== 'string') {\n    throw new TypeError('both arguments must be strings');\n  }\n  const left = Number(a);\n  const right = Number(b);\n  if (Number.isNaN(left) || Number.isNaN(right)) {\n    throw new SyntaxError('not a decimal number');\n  }\n  const scale = (text) => {\n    const dot = text.indexOf('.');\n    return dot === -1 ? 0 : text.length - dot - 1;\n  };\n  const digits = Math.max(scale(a), scale(b));\n  const sum = left + right;\n  return digits === 0 ? String(sum) : String(Number(sum.toFixed(digits)));\n}\n",
+  "tokens": 708,
+  "harnessMs": 7039,
+  "recordedAt": "2026-09-12T10:04:11.000Z",
+  "recordedFrom": {
+    "runId": "592ff913eb1935adac6573e515ee2ee0",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "39df878648348db7eb64eb644e8acb828976371010e4315c554406d4a5c3844a",
+  "inputTokens": 559,
+  "outputTokens": 149
+}

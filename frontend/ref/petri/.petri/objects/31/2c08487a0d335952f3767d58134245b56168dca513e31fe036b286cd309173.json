@@ -1,0 +1,42 @@
+{
+  "areaMismatch": false,
+  "claimedMedianBp": 0,
+  "claimedRuns": [],
+  "derivedAreas": [
+    "recovery"
+  ],
+  "mechanical": {
+    "cls": "typecheck-failed",
+    "command": "/Users/jingyuan/Code/ethonline2026/petri/node_modules/.bin/tsc -p tsconfig.json",
+    "evidence": "harness/recovery.ts(18,69): error TS2322: Type 'number' is not assignable to type 'string'.",
+    "exitCode": 2
+  },
+  "mode": "replay",
+  "node": "468581533d0a183a8cdc55d6f7ac5c88c27d65b94f1723d79a292bff7a001d8f",
+  "parentHarness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "proposal": {
+    "contradicts": [],
+    "falsifiedIf": "The score does not rise by at least 1000bp.",
+    "files": [
+      {
+        "contents": "import type { TaskView, HarnessContext, Solution } from './contract.js';\n\nexport interface Failure {\n  readonly kind: 'no-code-block' | 'empty-file' | 'model-error' | 'budget-exceeded';\n  readonly detail: string;\n}\n\n/** One repair call, only when the draft came back empty. */\nexport async function attemptRepair(\n  task: TaskView, ctx: HarnessContext, failure: Failure, _previousReply: string,\n): Promise<Solution | null> {\n  if (failure.kind !== 'empty-file') return null;\n  const reply = await ctx.model.complete({\n    label: 'repair#1',\n    messages: [{ role: 'user', content: `Your last reply had no code. Write ${task.entryFile} now.` }],\n    maxTokens: 2048,\n  });\n  return { files: [{ path: task.entryFile, contents: reply.text }], notes: reply.outputTokens };\n}\n",
+        "path": "harness/recovery.ts"
+      }
+    ],
+    "hypothesis": "One repair call after an empty reply raises the pass rate, because some drafts come back with no code block.",
+    "metric": "score",
+    "motif": "repair-turn",
+    "predictedDelta": 1000,
+    "primaryArea": "recovery",
+    "reasoning": "",
+    "whyNotUntested": null
+  },
+  "protocol": "petri/detail/1",
+  "provenance": {
+    "digestHash": "",
+    "model": "none",
+    "promptHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "seed": 7,
+    "source": "human"
+  }
+}

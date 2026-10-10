@@ -1,0 +1,107 @@
+{
+  "id": "petri-bench-v1",
+  "protocol": "petri/bench/1",
+  "tasks": [
+    {
+      "id": "01-chunk-array",
+      "testCount": 10,
+      "testsId": "9b2fdb0823a86cf2c6316f6f169eb843ece6225b7bcaf14d3295a3e7a5185425"
+    },
+    {
+      "id": "02-run-length-encode",
+      "testCount": 8,
+      "testsId": "22b273d4b4f73822e16507e83553a6488ed40b192a1fbeb624c62c187efdfc71"
+    },
+    {
+      "id": "03-roman-numerals",
+      "testCount": 10,
+      "testsId": "edea9d4ecaa703a050fdb0cbd31348dc9641f755a2ebf19dda32365a685e939e"
+    },
+    {
+      "id": "04-balanced-brackets",
+      "testCount": 8,
+      "testsId": "8745f2a42ad7d119fc5ee558cfb20e81a1608e25e2b7b11de7f609c17425b3f9"
+    },
+    {
+      "id": "05-deep-equal",
+      "testCount": 10,
+      "testsId": "98ee88dfb156b50dd76ed9a113a00420bc6dfdc1bd18a594754ea1a8003b050c"
+    },
+    {
+      "id": "06-topological-sort",
+      "testCount": 8,
+      "testsId": "20c23d1e34b2a9e68f2da34ecdad54c4b15debae6f03db537a7414b585fd26d5"
+    },
+    {
+      "id": "07-csv-parse",
+      "testCount": 10,
+      "testsId": "1bf0b1fb105e9014791db9e0f3ca05f6cca9298220157d3e714368943b083356"
+    },
+    {
+      "id": "08-semver-compare",
+      "testCount": 10,
+      "testsId": "250587c61549ad4b5598d9eb7735a584b243daaaa79610822c3423126e40a245"
+    },
+    {
+      "id": "09-lru-cache",
+      "testCount": 10,
+      "testsId": "600b8287492229350df20b0af7766fcac9acef60ee7f681eee61def794031021"
+    },
+    {
+      "id": "10-debounce-clock",
+      "testCount": 10,
+      "testsId": "aa41b03c6fe4c2c2840cb05804e2ef6ab9ea9438552aee43ca3ac8fedc85fd66"
+    },
+    {
+      "id": "11-interval-merge",
+      "testCount": 11,
+      "testsId": "93c386af9bb16451fbbcec9f655597e529475578e68ea254ce5e34a3c5e0a1bf"
+    },
+    {
+      "id": "12-template-render",
+      "testCount": 12,
+      "testsId": "ad326fad8b93f3c324c8b0e32a0c27d6659fc3946e8d8174a5b218b485c2d87b"
+    },
+    {
+      "id": "13-line-diff",
+      "testCount": 12,
+      "testsId": "7453e12d13812d6e822f34e7161454211dd0a127d4c2da9c212bbfc7488ee32d"
+    },
+    {
+      "id": "14-decimal-add",
+      "testCount": 11,
+      "testsId": "15b33eaa494fe6442142a79e1fb869bbcc539c77fe736535fbeaa1e0a4225978"
+    },
+    {
+      "id": "15-glob-match",
+      "testCount": 12,
+      "testsId": "9b8a8e1b52fbc60bf131c1a2681cd3a6d99618da2b349572f4ef0b8848738f43"
+    },
+    {
+      "id": "16-json-pointer",
+      "testCount": 11,
+      "testsId": "1442596d90e07da4d16a84ca9eb79597e5ec18808ffbdf2987bd39cebd2d8558"
+    },
+    {
+      "id": "17-state-machine",
+      "testCount": 11,
+      "testsId": "2bd8292814a259fc4c444a7b4264d4390c1f3870070d548d819038d32d500ad4"
+    },
+    {
+      "id": "18-word-wrap",
+      "testCount": 11,
+      "testsId": "d2fa356735c023617371efe4736e5ffc7f05edc554fc399eb2b52bcc5be85d73"
+    },
+    {
+      "id": "19-expression-eval",
+      "testCount": 12,
+      "testsId": "0a3adac5f6c91763fa997447a3f640bd303eb6167ac6071225d1e349ce02a4e2"
+    },
+    {
+      "id": "20-immutable-set-in",
+      "testCount": 12,
+      "testsId": "9ec01185939819dfda43de703262f88ef8863093c003092b3bde2d37e45405f6"
+    }
+  ],
+  "total": 20
+}

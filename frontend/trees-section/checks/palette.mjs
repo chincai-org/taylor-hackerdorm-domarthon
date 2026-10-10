@@ -1,88 +1,110 @@
-// Dumps the resolved colour of every semantic element, so the palette can be
-// checked as values instead of by eye. Also flags any hue that is not in the
-// blue family — accepted/selected chrome should be blue, only failure red.
-//
-// Each probe names the CSS channel to read. This matters: for an HTML element
-// Chromium reports `fill` as a meaningless `rgb(0, 0, 0)`, not `none`, so a
-// probe that "falls back to color when fill is none" silently reports black.
-import { createRequire } from "node:module";
-const require = createRequire("C:/Users/liewjayyong/.workbuddy-ai/binaries/node/workspace/");
-const { chromium } = require("playwright-core");
+import { assert, open, PETRI, withBrowser } from "./browser.mjs";
 
-const BASE = "file:///C:/Users/liewjayyong/WorkBuddy%20AI/2026-10-10-12-59-12/trees-section";
-const TREE = "research--hermes-agent--claude-sonnet-5.html";
-
+// Name the channel explicitly: Chromium's HTML `fill` is meaningless black.
 const PROBES = [
-  ["accepted node word", ".s-accepted .h-word", "fill", false],
-  ["rejected node word", ".s-rejected .h-word", "fill", true],
-  ["accepted glyph", ".g-pass", "fill", false],
+  ["accepted node word", ".h-node.s-accepted .h-word", "fill"],
+  ["rejected node word", ".h-node.s-rejected .h-word", "fill", true],
+  ["accepted glyph", ".g-pass", "fill"],
   ["rejected glyph stroke", ".g-fail", "stroke", true],
-  ["pending glyph stroke", ".g-wait", "stroke", false],
-  // The default-chosen node, not merely the first one: the hit fill comes from
-  // the generated per-page rules, which only the chosen node matches.
-  ["selected node hit", '.h-node[href="#s-he-08"] .hit', "fill", false],
-  ["selected node backdrop", '.h-node[href="#s-he-08"] .backdrop', "fill", false],
-  ["nav link", ".topnav a", "color", false],
-  ["breadcrumb link", ".crumbs a", "color", false],
-  ["record eyebrow", ".eyebrow", "color", false],
-  ["body text", ".np-hyp", "color", false],
-  ["chip checked bg", ".chip-input:checked + .chip", "backgroundColor", false],
-  ["seg checked bg", ".seg-input:checked + label", "backgroundColor", false],
-  ["verdict accepted bg", ".verdict.v-accepted", "backgroundColor", false],
+  ["pending glyph stroke", ".g-wait", "stroke"],
+  ["selected node hit", '.h-node[href="#s-he-08"] .hit', "fill"],
+  ["selected node backdrop", '.h-node[href="#s-he-08"] .backdrop', "fill"],
+  ["nav link", ".topnav a", "color"],
+  ["breadcrumb link", ".crumbs a", "color"],
+  ["record eyebrow", ".eyebrow", "color"],
+  ["body text", ".np-hyp", "color"],
+  ["chip checked bg", ".chip-input:checked + .chip", "backgroundColor"],
+  ["seg checked bg", ".seg-input:checked + label", "backgroundColor"],
+  ["verdict accepted bg", ".verdict.v-accepted", "backgroundColor"],
   ["verdict rejected bg", ".verdict.v-rejected", "backgroundColor", true],
-  ["page surface", "body", "backgroundColor", false],
-  ["plate surface", ".tree-plate", "backgroundColor", false],
+  ["page surface", "body", "backgroundColor"],
+  ["plate surface", ".tree-plate", "backgroundColor"],
 ];
 
-const b = await chromium.launch({ channel: "msedge" });
-const p = await b.newPage({ viewport: { width: 1440, height: 900 }, colorScheme: "dark" });
-await p.goto(`${BASE}/${TREE}`, { waitUntil: "load" });
-await p.waitForTimeout(1200);
-
-const values = await p.evaluate((probes) => probes.map(([label, sel, channel, isFailure]) => {
-  const el = document.querySelector(sel);
-  return { label, isFailure, value: el ? getComputedStyle(el)[channel] : "MISSING" };
-}), PROBES);
-
-/** Hue in degrees, plus saturation, from an `rgb()` string. */
-const hsv = (css) => {
-  const m = css.match(/(\d+)[, ]+(\d+)[, ]+(\d+)/);
-  if (!m) return null;
-  const [r, g, bl] = [+m[1] / 255, +m[2] / 255, +m[3] / 255];
-  const max = Math.max(r, g, bl), min = Math.min(r, g, bl), d = max - min;
-  if (d === 0 || max === 0) return { hue: null, sat: 0 };
-  let h;
-  if (max === r) h = ((g - bl) / d) % 6;
-  else if (max === g) h = (bl - r) / d + 2;
-  else h = (r - g) / d + 4;
-  return { hue: Math.round(((h * 60) + 360) % 360), sat: d / max };
-};
-
-console.log("\n=== resolved palette ===");
-const flagged = [];
-for (const { label, value, isFailure } of values) {
-  const c = hsv(value);
-  let verdict;
-  if (c === null) {
-    verdict = "unreadable";
-    flagged.push(label);
-  } else if (isFailure) {
-    // Failure chrome is meant to be red; that is the one non-blue family.
-    verdict = "failure red (expected)";
-  } else if (c.sat < 0.12) {
-    verdict = "neutral";
-  } else if (c.hue >= 190 && c.hue <= 275) {
-    verdict = `blue ✓ (hue ${c.hue})`;
-  } else {
-    verdict = `NOT BLUE (hue ${c.hue}) ✗`;
-    flagged.push(label);
-  }
-  console.log(`${label.padEnd(24)} ${String(value).padEnd(24)} ${verdict}`);
+function hsv(css) {
+  const match = css.match(/([\d.]+)[, ]+([\d.]+)[, ]+([\d.]+)/);
+  if (!match) return null;
+  const [red, green, blue] = match.slice(1).map((value) => Number(value) / 255);
+  const maximum = Math.max(red, green, blue);
+  const delta = maximum - Math.min(red, green, blue);
+  if (delta === 0 || maximum === 0) return { hue: null, saturation: 0 };
+  let hue;
+  if (maximum === red) hue = ((green - blue) / delta) % 6;
+  else if (maximum === green) hue = (blue - red) / delta + 2;
+  else hue = (red - green) / delta + 4;
+  return {
+    hue: Math.round((hue * 60 + 360) % 360),
+    saturation: delta / maximum,
+  };
 }
 
-console.log(
-  flagged.length === 0
-    ? "\nAll non-failure chrome sits in the blue family."
-    : `\nFLAGGED: ${flagged.join(", ")}`,
-);
-await b.close();
+await withBrowser(async (page) => {
+  await open(page);
+  const values = await page.evaluate(
+    (probes) =>
+      probes.map(([label, selector, channel, isFailure]) => {
+        const element = document.querySelector(selector);
+        return {
+          label,
+          isFailure,
+          value: element ? getComputedStyle(element)[channel] : "MISSING",
+        };
+      }),
+    PROBES,
+  );
+  const failures = [];
+  for (const { label, value, isFailure } of values) {
+    const color = hsv(value);
+    let verdict = "unreadable";
+    if (color) {
+      if (isFailure) {
+        verdict =
+          color.saturation >= 0.12 && (color.hue <= 30 || color.hue >= 340)
+            ? "failure red (expected)"
+            : "NOT RED";
+      } else if (color.saturation < 0.12) {
+        verdict = "neutral";
+      } else {
+        verdict = color.hue >= 190 && color.hue <= 275 ? `blue (hue ${color.hue})` : "NOT BLUE";
+      }
+    }
+    if (["unreadable", "NOT RED", "NOT BLUE"].includes(verdict))
+      failures.push(`${label}: ${value}`);
+    console.log(`${label.padEnd(24)} ${value.padEnd(24)} ${verdict}`);
+  }
+
+  // The real narrow tree contains accepted and pending descendants of rejected nodes.
+  // SVG nodes are flat; test the nested HTML list where ancestor leakage occurred.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open(page, PETRI);
+  const nested = await page.evaluate(() => {
+    const styles = getComputedStyle(document.documentElement);
+    return [...document.querySelectorAll(".t-node")].map((node) => {
+      const word = node.querySelector(":scope > .t-row .t-word");
+      const role = node.classList.contains("s-accepted")
+        ? "primary"
+        : node.classList.contains("s-rejected")
+          ? "error"
+          : "on-surface-dim";
+      return {
+        text: word.textContent,
+        actual: getComputedStyle(word).color,
+        expected: styles.getPropertyValue(`--md-sys-color-${role}`).trim(),
+      };
+    });
+  });
+  assert.ok(nested.length > 0, "Real nested list was measured");
+  for (const node of nested) {
+    const expected = await page.evaluate((color) => {
+      const probe = document.createElement("span");
+      probe.style.color = color;
+      document.body.append(probe);
+      const value = getComputedStyle(probe).color;
+      probe.remove();
+      return value;
+    }, node.expected);
+    assert.equal(node.actual, expected, `${node.text} uses its own status colour`);
+  }
+  assert.deepEqual(failures, [], "Palette hue checks");
+  console.log("All non-failure chrome sits in the blue family; nested status colours match.");
+});

@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "11-interval-merge",
+  "title": "Merge overlapping closed intervals",
+  "difficulty": "easy",
+  "entry": "solution.mjs",
+  "exports": ["mergeIntervals"],
+  "signatures": ["export function mergeIntervals(intervals: [number, number][]): [number, number][]"],
+  "timeoutMs": 5000,
+  "testCount": 11,
+  "tags": ["arrays", "sorting", "validation", "edge-cases"]
+}

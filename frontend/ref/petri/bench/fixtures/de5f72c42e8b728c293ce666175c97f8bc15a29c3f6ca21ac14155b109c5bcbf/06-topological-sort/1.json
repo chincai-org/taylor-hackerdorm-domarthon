@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "06-topological-sort",
+  "attemptIndex": 1,
+  "source": "export function toposort(nodes, edges) {\n  if (!Array.isArray(nodes)) throw new TypeError('nodes must be an array');\n  if (!Array.isArray(edges)) throw new TypeError('edges must be an array');\n\n  const known = new Set();\n  for (const name of nodes) {\n    if (typeof name !== 'string') throw new TypeError('every node name must be a string');\n    if (known.has(name)) throw new TypeError(`the node name ${name} appears twice`);\n    known.add(name);\n  }\n\n  const indegree = new Map();\n  const after = new Map();\n  for (const name of nodes) {\n    indegree.set(name, 0);\n    after.set(name, []);\n  }\n\n  for (const edge of edges) {\n    if (!Array.isArray(edge) || edge.length !== 2) {\n      throw new TypeError('every edge must be an array of exactly two strings');\n    }\n    const [from, to] = edge;\n    if (typeof from !== 'string' || typeof to !== 'string') {\n      throw new TypeError('every edge must be an array of exactly two strings');\n    }\n    if (!known.has(from) || !known.has(to)) {\n      throw new RangeError(`the edge ${from} -> ${to} names a node that is not in nodes`);\n    }\n    after.get(from).push(to);\n    indegree.set(to, indegree.get(to) + 1);\n  }\n\n  const placed = new Set();\n  const out = [];\n  while (out.length < nodes.length) {\n    let pick = null;\n    for (const name of nodes) {\n      if (!placed.has(name) && indegree.get(name) === 0) {\n        pick = name;\n        break;\n      }\n    }\n    if (pick === null) throw new Error('the edges make a cycle');\n    placed.add(pick);\n    out.push(pick);\n    for (const next of after.get(pick)) indegree.set(next, indegree.get(next) - 1);\n  }\n  return out;\n}\n",
+  "tokens": 1055,
+  "harnessMs": 3960,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "58d3ef6655fae359befbe08dc1c215a5",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "a6334cd2b980f7e0cd66ccf8d4c393b7604b623a26425bfe98736aa6539de5ff",
+  "inputTokens": 646,
+  "outputTokens": 409
+}

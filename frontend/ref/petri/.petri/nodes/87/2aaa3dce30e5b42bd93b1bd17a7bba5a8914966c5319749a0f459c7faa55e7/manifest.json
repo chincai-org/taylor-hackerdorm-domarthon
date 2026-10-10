@@ -1,0 +1,11 @@
+{
+  "author": "0b3c69814f295bb73e4affb25fd2d88a5765e598b047809149edb8954041e584",
+  "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+  "detail": "d595907f889a34477ee19fa72bd9776c32850bd8a18c3c26b156b552ab5c2c47",
+  "harness": "6666aa69455499737042e676fd082a9978c92fb50ef7d845c1c63ef5e7018da3",
+  "hypothesis": "The worked example and the full signatures are redundant, because the model already infers the reply shape from the symbol names alone. Removing them keeps the score and saves input tokens.",
+  "nonce": "",
+  "parent": "ecc7cdb0e5d18a743e12e4dd3c00ab99541f25f254512e77005d616ff3293784",
+  "protocol": "petri/node/1",
+  "tree": "petri-main"
+}

@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "07-csv-parse",
+  "title": "Parse CSV text into rows of fields",
+  "difficulty": "medium",
+  "entry": "solution.mjs",
+  "exports": ["parseCsv"],
+  "signatures": ["export function parseCsv(text: string): string[][]"],
+  "timeoutMs": 5000,
+  "testCount": 10,
+  "tags": ["parsing", "strings", "edge-cases"]
+}

@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "06-topological-sort",
+  "title": "Order nodes so every edge points forward",
+  "difficulty": "medium",
+  "entry": "solution.mjs",
+  "exports": ["toposort"],
+  "signatures": ["export function toposort(nodes: string[], edges: [string, string][]): string[]"],
+  "timeoutMs": 5000,
+  "testCount": 8,
+  "tags": ["graphs", "determinism", "validation"]
+}

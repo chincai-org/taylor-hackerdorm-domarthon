@@ -1,0 +1,15 @@
+{
+  "specVersion": 1,
+  "id": "02-run-length-encode",
+  "title": "Run-length encode and decode a string",
+  "difficulty": "easy",
+  "entry": "solution.mjs",
+  "exports": ["encode", "decode"],
+  "signatures": [
+    "export function encode(input: string): string",
+    "export function decode(input: string): string"
+  ],
+  "timeoutMs": 5000,
+  "testCount": 8,
+  "tags": ["strings", "round-trip", "parsing"]
+}

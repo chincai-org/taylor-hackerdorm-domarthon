@@ -1,17 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-<meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Hermes Agent × Claude Sonnet 5 · Petri</title>
-    <meta name="description" content="Solve more of 40 research tasks. Every version is re-checked by other keys, and failures are kept." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css" />
+    <meta name="description" content="Solve more of 40 research tasks. Every version is re-checked by other keys, and failures are kept.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
     <!-- This tree's own selection rules. Only the page knows its node ids, so
          build.mjs generates them; nothing here is hand-written. -->
-    <link rel="stylesheet" href="research--hermes-agent--claude-sonnet-5.css" />
+    <link rel="stylesheet" href="research--hermes-agent--claude-sonnet-5.css">
     <!-- Deferred so it never blocks the first paint. Every page is complete
          without it; the script only adds polish. -->
     <script src="main.js" defer></script>
@@ -48,8 +48,8 @@
 
       <div class="view view-tree">
         <figure class="stage">
-          <div class="plate tree-plate" tabindex="0" role="region" aria-label="Lineage figure of 13 versions. Scroll sideways to see the whole tree.">
-            <div class="legend legend-overlay" aria-label="Legend">
+          <section class="plate tree-plate" tabindex="0" aria-label="Lineage figure of 13 versions. Scroll sideways to see the whole tree.">
+            <div class="legend legend-overlay" role="group" aria-label="Legend">
               <span><svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>Accepted — two other keys re-ran it and agreed</span>
               <span><svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="7" cy="7" r="5"/><path class="g-x" d="M4.3 4.3L9.7 9.7M9.7 4.3L4.3 9.7"/></g></svg>Rejected — kept, with the reason</span>
               <span><svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>Pending — waiting for keys</span>
@@ -310,7 +310,7 @@
           </li></ul>
           </li>
         </ul>
-          </div>
+          </section>
           <div class="selected-strip s-accepted" data-for="he-00">
             <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
             <span class="sel-word">ACCEPTED · he-00</span>
@@ -405,7 +405,7 @@
         </figure>
 
         <section class="record" id="record">
-          <article class="rec" id="s-he-00" data-for="he-00"><aside class="node-panel" aria-live="polite">
+          <article class="rec" id="s-he-00" data-for="he-00"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
               <p class="eyebrow">ACCEPTED · he-00</p>
@@ -582,8 +582,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-he-01" data-for="he-01"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-he-01" data-for="he-01"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
               <p class="eyebrow">ACCEPTED · he-01</p>
@@ -776,8 +776,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-he-02" data-for="he-02"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-he-02" data-for="he-02"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
               <p class="eyebrow">ACCEPTED · he-02</p>
@@ -970,8 +970,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-he-03" data-for="he-03"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-he-03" data-for="he-03"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="7" cy="7" r="5"/><path class="g-x" d="M4.3 4.3L9.7 9.7M9.7 4.3L4.3 9.7"/></g></svg>
               <p class="eyebrow">REJECTED · he-03</p>
@@ -1164,8 +1164,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-he-05" data-for="he-05"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-he-05" data-for="he-05"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
               <p class="eyebrow">ACCEPTED · he-05</p>
@@ -1358,8 +1358,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-he-06" data-for="he-06"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-he-06" data-for="he-06"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="7" cy="7" r="5"/><path class="g-x" d="M4.3 4.3L9.7 9.7M9.7 4.3L4.3 9.7"/></g></svg>
               <p class="eyebrow">REJECTED · he-06</p>
@@ -1552,8 +1552,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-he-07" data-for="he-07"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-he-07" data-for="he-07"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="7" cy="7" r="5"/><path class="g-x" d="M4.3 4.3L9.7 9.7M9.7 4.3L4.3 9.7"/></g></svg>
               <p class="eyebrow">REJECTED · he-07</p>
@@ -1746,8 +1746,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-he-12" data-for="he-12"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-he-12" data-for="he-12"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
               <p class="eyebrow">ACCEPTED · he-12</p>
@@ -1940,8 +1940,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-he-04" data-for="he-04"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-he-04" data-for="he-04"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
               <p class="eyebrow">PENDING · he-04</p>
@@ -2126,8 +2126,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-he-08" data-for="he-08" data-default><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-he-08" data-for="he-08" data-default><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
               <p class="eyebrow">ACCEPTED · he-08</p>
@@ -2320,8 +2320,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-he-09" data-for="he-09"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-he-09" data-for="he-09"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="7" cy="7" r="5"/><path class="g-x" d="M4.3 4.3L9.7 9.7M9.7 4.3L4.3 9.7"/></g></svg>
               <p class="eyebrow">REJECTED · he-09</p>
@@ -2514,8 +2514,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-he-10" data-for="he-10"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-he-10" data-for="he-10"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
               <p class="eyebrow">PENDING · he-10</p>
@@ -2700,8 +2700,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-he-11" data-for="he-11"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-he-11" data-for="he-11"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="7" cy="7" r="5"/><path class="g-x" d="M4.3 4.3L9.7 9.7M9.7 4.3L4.3 9.7"/></g></svg>
               <p class="eyebrow">REJECTED · he-11</p>
@@ -2894,7 +2894,7 @@
             </li></ol>
           </div>
             
-          </aside></article>
+          </div></article>
 
           <div class="record-info"><div class="panels"><div class="chips" role="radiogroup" aria-label="Tree information">
             <input type="radio" name="panel" id="chip-goal" class="chip-input" checked>
@@ -2997,28 +2997,30 @@
             <div><dt>Recorded</dt><dd>13 versions<small>6 accepted · 5 rejected and kept · 2 pending</small></dd></div>
           </dl>
 
-          <figure class="chart-figure">
-            <div class="plate chart-plate">
-              <svg viewBox="0 0 900 340" role="img" aria-labelledby="chart-cap">
-                <line class="c-axis" x1="70" x2="860" y1="280" y2="280"/>
+          <div class="chart-figure">
+            <figure class="chart-content">
+              <div class="plate chart-plate">
+                <svg viewBox="0 0 900 340" role="img" aria-labelledby="chart-cap">
+                  <line class="c-axis" x1="70" x2="860" y1="280" y2="280"/>
             <text class="c-tick" x="58" y="284" text-anchor="end">0/40</text><line class="c-grid" x1="70" x2="860" y1="221.5" y2="221.5"/>
             <text class="c-tick" x="58" y="225.5" text-anchor="end">10/40</text><line class="c-grid" x1="70" x2="860" y1="163" y2="163"/>
             <text class="c-tick" x="58" y="167" text-anchor="end">20/40</text><line class="c-grid" x1="70" x2="860" y1="104.5" y2="104.5"/>
             <text class="c-tick" x="58" y="108.5" text-anchor="end">30/40</text><line class="c-grid" x1="70" x2="860" y1="46" y2="46"/>
             <text class="c-tick" x="58" y="50" text-anchor="end">40/40</text><text class="c-tick" x="70" y="304" text-anchor="middle">start</text><text class="c-tick" x="267.5" y="304" text-anchor="middle">round 1</text><text class="c-tick" x="465" y="304" text-anchor="middle">round 2</text><text class="c-tick" x="662.5" y="304" text-anchor="middle">round 3</text><text class="c-tick" x="860" y="304" text-anchor="middle">round 4</text><line class="c-bar" x1="70" x2="860" y1="63.5" y2="63.5"/>
             <text class="c-note c-goal" x="860" y="54.5" text-anchor="end">goal · 37/40 tasks</text><circle class="c-pass c-offspine" cx="287.5" cy="151.3" r="6.5"><title>ACCEPTED he-02: 22/40 tasks</title></circle><circle class="c-fail" cx="305.5" cy="180.6" r="6.5"><title>REJECTED he-03: 17/40 tasks</title></circle><circle class="c-fail" cx="485" cy="151.3" r="6.5"><title>REJECTED he-06: 22/40 tasks</title></circle><circle class="c-fail" cx="503" cy="174.7" r="6.5"><title>REJECTED he-07: 18/40 tasks</title></circle><circle class="c-pass c-offspine" cx="521" cy="122" r="6.5"><title>ACCEPTED he-12: 27/40 tasks</title></circle><circle class="c-wait" cx="539" cy="104.5" r="6.5"><title>PENDING he-04: 30/40 tasks</title></circle><circle class="c-fail" cx="682.5" cy="127.9" r="6.5"><title>REJECTED he-09: 26/40 tasks</title></circle><circle class="c-wait" cx="880" cy="57.7" r="6.5"><title>PENDING he-10: 38/40 tasks</title></circle><circle class="c-fail" cx="898" cy="98.7" r="6.5"><title>REJECTED he-11: 31/40 tasks</title></circle><line class="c-line c-climb" x1="70" y1="174.7" x2="287.5" y2="151.3"/><line class="c-line c-climb" x1="287.5" y1="151.3" x2="521" y2="122"/><path class="c-line" d="M70 174.7 L267.5 145.5 L465 116.2 L662.5 87"/><circle class="c-pass" cx="70" cy="174.7" r="7"><title>ACCEPTED he-00: 18/40 tasks</title></circle><circle class="c-pass" cx="267.5" cy="145.5" r="7"><title>ACCEPTED he-01: 23/40 tasks</title></circle><circle class="c-pass" cx="465" cy="116.2" r="7"><title>ACCEPTED he-05: 28/40 tasks</title></circle><circle class="c-pass" cx="662.5" cy="87" r="7"><title>ACCEPTED he-08: 33/40 tasks</title></circle><text class="c-val" x="662.5" y="72" text-anchor="middle">33/40</text>
-              </svg>
-            </div>
-            <div class="legend">
-              <span><svg width="34" height="14" aria-hidden="true"><line class="c-line" x1="2" x2="32" y1="7" y2="7"/><circle class="c-pass" cx="17" cy="7" r="5"/></svg>Accepted, and became the new parent</span>
-              <span><svg width="16" height="16" aria-hidden="true"><circle class="c-fail" cx="8" cy="8" r="5.5"/></svg>Rejected, and kept in the tree</span>
-              <span><svg width="16" height="16" aria-hidden="true"><circle class="c-wait" cx="8" cy="8" r="5.5"/></svg>Pending</span>
-            </div>
-            <figcaption id="chart-cap">
-              Each round is one generation deeper in the tree. Scores are medians re-run by other keys, from the real tree.
-              A version passes only if it beats its parent by +1000bp.
-              
-            </figcaption>
+                </svg>
+              </div>
+              <div class="legend">
+                <span><svg width="34" height="14" aria-hidden="true"><line class="c-line" x1="2" x2="32" y1="7" y2="7"/><circle class="c-pass" cx="17" cy="7" r="5"/></svg>Accepted, and became the new parent</span>
+                <span><svg width="16" height="16" aria-hidden="true"><circle class="c-fail" cx="8" cy="8" r="5.5"/></svg>Rejected, and kept in the tree</span>
+                <span><svg width="16" height="16" aria-hidden="true"><circle class="c-wait" cx="8" cy="8" r="5.5"/></svg>Pending</span>
+              </div>
+              <figcaption id="chart-cap">
+                Each round is one generation deeper in the tree. Scores illustrate median results re-run by other keys, from a hand-authored showcase tree.
+                A version passes only if it beats its parent by +1000bp.
+                
+              </figcaption>
+            </figure>
             <details class="table-view">
               <summary>Show as a table</summary>
               <table>
@@ -3026,7 +3028,7 @@
                 <tbody><tr><td><code>he-00</code></td><td>start</td><td>ACCEPTED</td><td>18/40 tasks</td></tr><tr><td><code>he-01</code></td><td>1</td><td>ACCEPTED</td><td>23/40 tasks</td></tr><tr><td><code>he-02</code></td><td>1</td><td>ACCEPTED</td><td>22/40 tasks</td></tr><tr><td><code>he-03</code></td><td>1</td><td>REJECTED</td><td>17/40 tasks</td></tr><tr><td><code>he-05</code></td><td>2</td><td>ACCEPTED</td><td>28/40 tasks</td></tr><tr><td><code>he-06</code></td><td>2</td><td>REJECTED</td><td>22/40 tasks</td></tr><tr><td><code>he-07</code></td><td>2</td><td>REJECTED</td><td>18/40 tasks</td></tr><tr><td><code>he-12</code></td><td>2</td><td>ACCEPTED</td><td>27/40 tasks</td></tr><tr><td><code>he-04</code></td><td>2</td><td>PENDING</td><td>30/40 tasks</td></tr><tr><td><code>he-08</code></td><td>3</td><td>ACCEPTED</td><td>33/40 tasks</td></tr><tr><td><code>he-09</code></td><td>3</td><td>REJECTED</td><td>26/40 tasks</td></tr><tr><td><code>he-10</code></td><td>4</td><td>PENDING</td><td>38/40 tasks</td></tr><tr><td><code>he-11</code></td><td>4</td><td>REJECTED</td><td>31/40 tasks</td></tr></tbody>
               </table>
             </details>
-          </figure>
+          </div>
         </section>
       </div>
     </main>

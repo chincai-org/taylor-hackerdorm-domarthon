@@ -1,0 +1,13 @@
+{
+  "body": {
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+    "hyp": "Stating each instruction as a positive directive, what the model must do, instead of what it must not do, raises the pass rate and cuts reply tokens, because the model spends less effort reasoning about prohibitions.",
+    "node": "2e7f6b5bacc48ada2e34aba24201d8e076b173addb5977b080ec6517a7834794",
+    "parent": "ecc7cdb0e5d18a743e12e4dd3c00ab99541f25f254512e77005d616ff3293784",
+    "tree": "petri-main",
+    "type": "NodeSubmitted"
+  },
+  "pub": "91b851346bf486649e66aac9581b68c0d126e0fbe3cd2a8d24a14079ee3a662a",
+  "sig": "66bc7185592e8353e4b108cdc05680ef287fd610264cb112902b49825d646d0c2003ebcd821ccef48fc260a4446e0aa3d50ad07e45e0b9d09ed2bce82e60280b",
+  "ver": 1
+}

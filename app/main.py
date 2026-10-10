@@ -1,6 +1,7 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
+from urllib.parse import quote
 
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
@@ -39,6 +40,18 @@ templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
     return templates.TemplateResponse(request, "index.html")
+
+
+@app.get("/tree/{tree_id}", response_class=HTMLResponse)
+def read_tree_page(request: Request, tree_id: str):
+    return templates.TemplateResponse(
+        request,
+        "tree.html",
+        {
+            "tree_id": tree_id,
+            "tree_api_url": f"{settings.API_V1_STR}/trees/{quote(tree_id, safe='')}",
+        },
+    )
 
 
 if __name__ == "__main__":

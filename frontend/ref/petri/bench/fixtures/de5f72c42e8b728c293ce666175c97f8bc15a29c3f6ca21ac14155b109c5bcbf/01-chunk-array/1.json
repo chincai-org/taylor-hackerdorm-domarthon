@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "01-chunk-array",
+  "attemptIndex": 1,
+  "source": "export function chunk(input, size) {\n  if (!Array.isArray(input)) throw new TypeError('input must be an array');\n  if (!Number.isInteger(size) || size < 1) {\n    throw new RangeError('size must be an integer of at least 1');\n  }\n  const out = [];\n  for (let i = 0; i < input.length; i += size) out.push(input.slice(i, i + size));\n  return out;\n}\n",
+  "tokens": 504,
+  "harnessMs": 4125,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "58d3ef6655fae359befbe08dc1c215a5",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "924a070e4cc85f739f956cbc3ea9b6d5973321d4218bd3fb7ac3823fd963ecb7",
+  "inputTokens": 415,
+  "outputTokens": 89
+}

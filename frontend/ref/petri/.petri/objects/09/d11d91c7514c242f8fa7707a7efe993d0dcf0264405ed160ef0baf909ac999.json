@@ -1,0 +1,42 @@
+{
+  "areaMismatch": false,
+  "claimedMedianBp": 0,
+  "claimedRuns": [],
+  "derivedAreas": [
+    "loop"
+  ],
+  "mechanical": {
+    "cls": "typecheck-failed",
+    "command": "/Users/jingyuan/Code/ethonline2026/petri/node_modules/.bin/tsc -p tsconfig.json",
+    "evidence": "harness/loop.ts(34,48): error TS18048: 'code' is possibly 'undefined'.",
+    "exitCode": 2
+  },
+  "mode": "replay",
+  "node": "76fb6041eb96fcf16c55e40e476e0c3f7220bcf24d053d54d7f165c4daf1810a",
+  "parentHarness": "6666aa69455499737042e676fd082a9978c92fb50ef7d845c1c63ef5e7018da3",
+  "proposal": {
+    "contradicts": [],
+    "falsifiedIf": "The score does not rise by at least 1000bp.",
+    "files": [
+      {
+        "contents": "/**\n * LEVER: `loop` — the control flow of one solve call, and how the reply is parsed.\n *\n * V1 makes exactly ONE model call. It does not run the tests, it does not check\n * its own answer and it does not reflect. It takes the FIRST fenced block of the\n * reply. Taking the last one is already a change worth measuring, because a model\n * that explains itself first puts the real answer in the last block.\n *\n * Things a later node might try here:\n *   - take the LAST fenced block instead of the first (motif: last-fence-not-first)\n *   - prefer a block whose language tag is js or javascript\n *   - draw two drafts and keep the longer one (motif: best-of-two)\n *   - raise or lower MAX_OUTPUT_TOKENS, which is the `decoding` lever next door\n *   - call the `recovery` seam for `no-code-block` as well as `empty-file`\n *\n * V1 does NOT catch BudgetExceededError. The runner catches it and scores that\n * task 0. Catching it is a `recovery` change and the tree can measure whether it\n * helps. Every model call needs a distinct label; V1 uses exactly one, \"draft\".\n */\nimport type { TaskView, HarnessContext, Solution, SourceFile } from './contract.js';\nimport { selectContext } from './retrieval.js';\nimport { buildSystemPrompt, buildUserPrompt } from './prompt.js';\nimport { attemptRepair, type Failure } from './recovery.js';\n\nexport const MAX_OUTPUT_TOKENS = 4096;\n\n/** V1 takes the FIRST fenced block. Taking the last one is already a change. */\nexport function extractSolutionFiles(task: TaskView, replyText: string): SourceFile[] {\n  const fence = /```[a-zA-Z0-9_-]*\\n([\\s\\S]*?)```/g;\n  const blocks: string[] = [];\n  let m: RegExpExecArray | null;\n  while ((m = fence.exec(replyText)) !== null) blocks.push(m[1] ?? '');\n  const code = blocks.length > 0 ? blocks.at(-1) : replyText;\n  return [{ path: task.entryFile, contents: `${code.trim()}\\n` }];\n}\n\n/** V1 makes exactly one model call. */\nexport async function runLoop(task: TaskView, ctx: HarnessContext): Promise<Solution> {\n  const context = selectContext(task);\n  ctx.log.event('retrieval', { files: context.files.length, dropped: context.droppedFiles.length });\n\n  const reply = await ctx.model.complete({\n    label: 'draft',\n    system: buildSystemPrompt(),\n    messages: [{ role: 'user', content: buildUserPrompt(task, context) }],\n    maxTokens: MAX_OUTPUT_TOKENS,\n    temperature: 0,\n  });\n  ctx.log.event('model', {\n    label: 'draft', stopReason: reply.stopReason, outputTokens: reply.outputTokens,\n  });\n\n  const files = extractSolutionFiles(task, reply.text);\n  if (files[0]!.contents.trim().length === 0) {\n    const failure: Failure = { kind: 'empty-file', detail: 'the model returned no code' };\n    const repaired = await attemptRepair(task, ctx, failure, reply.text);\n    if (repaired !== null) return repaired;\n    ctx.log.event('give-up', { reason: failure.kind });\n    return { files: [{ path: task.entryFile, contents: '' }], notes: 'no code produced' };\n  }\n  return { files, notes: 'single-shot draft' };\n}\n",
+        "path": "harness/loop.ts"
+      }
+    ],
+    "hypothesis": "Taking the last fenced block instead of the first raises the pass rate, because the model often explains first and puts the real answer last.",
+    "metric": "score",
+    "motif": "last-fence-not-first",
+    "predictedDelta": 1000,
+    "primaryArea": "loop",
+    "reasoning": "",
+    "whyNotUntested": null
+  },
+  "protocol": "petri/detail/1",
+  "provenance": {
+    "digestHash": "",
+    "model": "none",
+    "promptHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "seed": 7,
+    "source": "human"
+  }
+}

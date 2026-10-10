@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "15-glob-match",
+  "title": "Match a path against a glob pattern",
+  "difficulty": "hard",
+  "entry": "solution.mjs",
+  "exports": ["matchGlob"],
+  "signatures": ["export function matchGlob(pattern: string, path: string): boolean"],
+  "timeoutMs": 15000,
+  "testCount": 12,
+  "tags": ["strings", "parsing", "dynamic-programming", "edge-cases"]
+}

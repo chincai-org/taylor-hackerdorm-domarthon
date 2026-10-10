@@ -1,4 +1,37 @@
-# AGENTS.md — Petri "Trees" section (standalone recreation)
+# Frontend guidance — live backend viewer and standalone Petri showcase
+
+## Production integration (takes precedence over the showcase notes below)
+
+- The live gallery is `/`, rendered from `app/templates/index.html`. Native cards
+  navigate to `/tree/{tree_id}`, rendered from `app/templates/tree.html`. The
+  detail page fetches only `/api/v1/trees/{tree_id}` and has a native Back to trees
+  link. FastAPI serves frontend assets under `/trees`; REST contracts are unchanged.
+- Keep loading, failure and retry handling on both live pages. Node selection
+  retains keyboard focus on the selected link; the live region announces changes.
+- `frontend/trees-section/production.js` restores the integration from commit
+  `54019be`; `production.css` scopes the live viewer's styles to `.live-trees`.
+  Keep both assets linked from the production template. No Node build is required
+  to serve the live page in the existing Python container.
+- Live nodes use `pending`, `running`, `complete`, and `failed`, with nullable
+  raw scores, harness JSON, rationale, benchmark results and errors. Do not apply
+  the static showcase's acceptance thresholds, basis points, verification keys,
+  or Petri CLI instructions to backend data.
+- The static showcase remains `/trees/index.html` or a local `file://` page.
+  `main.js` only enhances it; `build.mjs` composes the static `templates/` modules.
+  Never overwrite production integration with standalone showcase code.
+- Run `node checks/integration.mjs` from `frontend/trees-section` for read-only
+  same-origin API-contract/browser tests using local fixtures, without database
+  access. Also run the static build, unit/render tests and static checks.
+- Frontend `lib/` modules must be tracked in Git. The root `.gitignore` explicitly
+  exempts them from the generic Python `lib/` ignore rule.
+- Production's live data requires JavaScript, as in the recovered commit. The
+  no-JavaScript production shell links to the JSON API/docs instead of showing
+  fictional showcase data. The strict no-JavaScript requirements below apply to
+  the standalone showcase only.
+
+---
+
+# Standalone showcase notes
 
 Instructions for any AI agent asked to change this project. Read this file first. The
 **Traps** section is the important one: every entry there is a bug that has already

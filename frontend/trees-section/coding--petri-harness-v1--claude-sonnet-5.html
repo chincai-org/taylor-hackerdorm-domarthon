@@ -1,17 +1,17 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-<meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Petri harness v1 × Claude Sonnet 5 · Petri</title>
-    <meta name="description" content="Solve more of 20 coding tasks. Every version is re-checked by other keys, and failures are kept." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css" />
+    <meta name="description" content="Solve more of 20 coding tasks. Every version is re-checked by other keys, and failures are kept.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
     <!-- This tree's own selection rules. Only the page knows its node ids, so
          build.mjs generates them; nothing here is hand-written. -->
-    <link rel="stylesheet" href="coding--petri-harness-v1--claude-sonnet-5.css" />
+    <link rel="stylesheet" href="coding--petri-harness-v1--claude-sonnet-5.css">
     <!-- Deferred so it never blocks the first paint. Every page is complete
          without it; the script only adds polish. -->
     <script src="main.js" defer></script>
@@ -48,8 +48,8 @@
 
       <div class="view view-tree">
         <figure class="stage">
-          <div class="plate tree-plate" tabindex="0" role="region" aria-label="Lineage figure of 18 versions. Scroll sideways to see the whole tree.">
-            <div class="legend legend-overlay" aria-label="Legend">
+          <section class="plate tree-plate" tabindex="0" aria-label="Lineage figure of 18 versions. Scroll sideways to see the whole tree.">
+            <div class="legend legend-overlay" role="group" aria-label="Legend">
               <span><svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>Accepted — two other keys re-ran it and agreed</span>
               <span><svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="7" cy="7" r="5"/><path class="g-x" d="M4.3 4.3L9.7 9.7M9.7 4.3L4.3 9.7"/></g></svg>Rejected — kept, with the reason</span>
               <span><svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>Pending — waiting for keys</span>
@@ -405,7 +405,7 @@
           </li></ul>
           </li>
         </ul>
-          </div>
+          </section>
           <div class="selected-strip s-pending" data-for="0a54718a">
             <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
             <span class="sel-word">PENDING · 0a54718a</span>
@@ -535,7 +535,7 @@
         </figure>
 
         <section class="record" id="record">
-          <article class="rec" id="s-0a54718a" data-for="0a54718a"><aside class="node-panel" aria-live="polite">
+          <article class="rec" id="s-0a54718a" data-for="0a54718a"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
               <p class="eyebrow">PENDING · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462342.520382104" target="_blank" rel="noreferrer">0a54718a</a></p>
@@ -1044,8 +1044,8 @@
 +  return { files, droppedFiles, charBudget };
 +}
 </pre></details>
-          </aside></article>
-          <article class="rec" id="s-ecc7cdb0" data-for="ecc7cdb0" data-default><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-ecc7cdb0" data-for="ecc7cdb0" data-default><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
               <p class="eyebrow">ACCEPTED · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462344.144377383" target="_blank" rel="noreferrer">ecc7cdb0</a></p>
@@ -1322,8 +1322,8 @@
      parts.push(`Constraints:\n${task.constraints.map((c) =&gt; `- ${c}`).join('\n')}`);
    }
 </pre></details>
-          </aside></article>
-          <article class="rec" id="s-872aaa3d" data-for="872aaa3d"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-872aaa3d" data-for="872aaa3d"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="7" cy="7" r="5"/><path class="g-x" d="M4.3 4.3L9.7 9.7M9.7 4.3L4.3 9.7"/></g></svg>
               <p class="eyebrow">REJECTED · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462349.184424345" target="_blank" rel="noreferrer">872aaa3d</a></p>
@@ -1592,8 +1592,8 @@
      parts.push(`Constraints:\n${task.constraints.map((c) =&gt; `- ${c}`).join('\n')}`);
    }
 </pre></details>
-          </aside></article>
-          <article class="rec" id="s-7619f134" data-for="7619f134"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-7619f134" data-for="7619f134"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
               <p class="eyebrow">PENDING · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462355.108905343" target="_blank" rel="noreferrer">7619f134</a></p>
@@ -1672,7 +1672,7 @@
           </div>
             <div class="np-block checkit">
             <h3>Check it yourself</h3>
-            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <p class="muted">Clone the repo, then run these from the repository root. Reading and checking the record needs no API key; running or scoring this version live needs ANTHROPIC_API_KEY.</p>
             <ol class="checkit-steps"><li>
               <p class="checkit-what">How it works</p>
               <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
@@ -1804,8 +1804,8 @@
    return { files, droppedFiles, charBudget };
  }
 </pre></details>
-          </aside></article>
-          <article class="rec" id="s-76fb6041" data-for="76fb6041"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-76fb6041" data-for="76fb6041"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
               <p class="eyebrow">PENDING · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462357.248329790" target="_blank" rel="noreferrer">76fb6041</a></p>
@@ -1884,7 +1884,7 @@
           </div>
             <div class="np-block checkit">
             <h3>Check it yourself</h3>
-            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <p class="muted">Clone the repo, then run these from the repository root. Reading and checking the record needs no API key; running or scoring this version live needs ANTHROPIC_API_KEY.</p>
             <ol class="checkit-steps"><li>
               <p class="checkit-what">How it works</p>
               <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
@@ -2010,8 +2010,8 @@
  }
  
 </pre></details>
-          </aside></article>
-          <article class="rec" id="s-46858153" data-for="46858153"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-46858153" data-for="46858153"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
               <p class="eyebrow">PENDING · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462358.448398069" target="_blank" rel="noreferrer">46858153</a></p>
@@ -2090,7 +2090,7 @@
           </div>
             <div class="np-block checkit">
             <h3>Check it yourself</h3>
-            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <p class="muted">Clone the repo, then run these from the repository root. Reading and checking the record needs no API key; running or scoring this version live needs ANTHROPIC_API_KEY.</p>
             <ol class="checkit-steps"><li>
               <p class="checkit-what">How it works</p>
               <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
@@ -2250,8 +2250,8 @@
 +  return { files: [{ path: task.entryFile, contents: reply.text }], notes: reply.outputTokens };
  }
 </pre></details>
-          </aside></article>
-          <article class="rec" id="s-3a6869e3" data-for="3a6869e3"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-3a6869e3" data-for="3a6869e3"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
               <p class="eyebrow">PENDING · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462360.700314500" target="_blank" rel="noreferrer">3a6869e3</a></p>
@@ -2330,7 +2330,7 @@
           </div>
             <div class="np-block checkit">
             <h3>Check it yourself</h3>
-            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <p class="muted">Clone the repo, then run these from the repository root. Reading and checking the record needs no API key; running or scoring this version live needs ANTHROPIC_API_KEY.</p>
             <ol class="checkit-steps"><li>
               <p class="checkit-what">How it works</p>
               <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
@@ -2445,8 +2445,8 @@
             </li></ol>
           </div>
             
-          </aside></article>
-          <article class="rec" id="s-ea3b7532" data-for="ea3b7532"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-ea3b7532" data-for="ea3b7532"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
               <p class="eyebrow">ACCEPTED · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462361.927071104" target="_blank" rel="noreferrer">ea3b7532</a></p>
@@ -2715,8 +2715,8 @@
      parts.push(`Constraints:\n${task.constraints.map((c) =&gt; `- ${c}`).join('\n')}`);
    }
 </pre></details>
-          </aside></article>
-          <article class="rec" id="s-e961cb12" data-for="e961cb12"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-e961cb12" data-for="e961cb12"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
               <p class="eyebrow">PENDING · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462366.007628104" target="_blank" rel="noreferrer">e961cb12</a></p>
@@ -2795,7 +2795,7 @@
           </div>
             <div class="np-block checkit">
             <h3>Check it yourself</h3>
-            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <p class="muted">Clone the repo, then run these from the repository root. Reading and checking the record needs no API key; running or scoring this version live needs ANTHROPIC_API_KEY.</p>
             <ol class="checkit-steps"><li>
               <p class="checkit-what">How it works</p>
               <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
@@ -2928,8 +2928,8 @@
      const failure: Failure = { kind: 'empty-file', detail: 'the model returned no code' };
      const repaired = await attemptRepair(task, ctx, failure, reply.text);
 </pre></details>
-          </aside></article>
-          <article class="rec" id="s-d1312480" data-for="d1312480"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-d1312480" data-for="d1312480"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
               <p class="eyebrow">PENDING · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462367.077378104" target="_blank" rel="noreferrer">d1312480</a></p>
@@ -3008,7 +3008,7 @@
           </div>
             <div class="np-block checkit">
             <h3>Check it yourself</h3>
-            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <p class="muted">Clone the repo, then run these from the repository root. Reading and checking the record needs no API key; running or scoring this version live needs ANTHROPIC_API_KEY.</p>
             <ol class="checkit-steps"><li>
               <p class="checkit-what">How it works</p>
               <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
@@ -3142,8 +3142,8 @@
  
    const files = extractSolutionFiles(task, reply.text);
 </pre></details>
-          </aside></article>
-          <article class="rec" id="s-f27ba942" data-for="f27ba942"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-f27ba942" data-for="f27ba942"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
               <p class="eyebrow">PENDING · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462368.337637532" target="_blank" rel="noreferrer">f27ba942</a></p>
@@ -3222,7 +3222,7 @@
           </div>
             <div class="np-block checkit">
             <h3>Check it yourself</h3>
-            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <p class="muted">Clone the repo, then run these from the repository root. Reading and checking the record needs no API key; running or scoring this version live needs ANTHROPIC_API_KEY.</p>
             <ol class="checkit-steps"><li>
               <p class="checkit-what">How it works</p>
               <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
@@ -3348,8 +3348,8 @@
  /** V1 takes the FIRST fenced block. Taking the last one is already a change. */
  export function extractSolutionFiles(task: TaskView, replyText: string): SourceFile[] {
 </pre></details>
-          </aside></article>
-          <article class="rec" id="s-2e7f6b5b" data-for="2e7f6b5b"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-2e7f6b5b" data-for="2e7f6b5b"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
               <p class="eyebrow">PENDING · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462369.296172104" target="_blank" rel="noreferrer">2e7f6b5b</a></p>
@@ -3443,7 +3443,7 @@ petri: no fixture for this harness, task and attempt.
           </div>
             <div class="np-block checkit">
             <h3>Check it yourself</h3>
-            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <p class="muted">Clone the repo, then run these from the repository root. Reading and checking the record needs no API key; running or scoring this version live needs ANTHROPIC_API_KEY.</p>
             <ol class="checkit-steps"><li>
               <p class="checkit-what">How it works</p>
               <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
@@ -3619,8 +3619,8 @@ petri: no fixture for this harness, task and attempt.
    for (const f of context.files) parts.push(`--- ${f.path} ---\n${f.contents}`);
    return parts.join('\n\n');
 </pre></details>
-          </aside></article>
-          <article class="rec" id="s-ec1d39e6" data-for="ec1d39e6"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-ec1d39e6" data-for="ec1d39e6"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
               <p class="eyebrow">ACCEPTED · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462370.409836168" target="_blank" rel="noreferrer">ec1d39e6</a></p>
@@ -3889,8 +3889,8 @@ petri: no fixture for this harness, task and attempt.
      parts.push(`Constraints:\n${task.constraints.map((c) =&gt; `- ${c}`).join('\n')}`);
    }
 </pre></details>
-          </aside></article>
-          <article class="rec" id="s-f07e0c55" data-for="f07e0c55"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-f07e0c55" data-for="f07e0c55"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="7" cy="7" r="5"/><path class="g-x" d="M4.3 4.3L9.7 9.7M9.7 4.3L4.3 9.7"/></g></svg>
               <p class="eyebrow">REJECTED · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462372.967890104" target="_blank" rel="noreferrer">f07e0c55</a></p>
@@ -4159,8 +4159,8 @@ petri: no fixture for this harness, task and attempt.
      parts.push(`Constraints:\n${task.constraints.map((c) =&gt; `- ${c}`).join('\n')}`);
    }
 </pre></details>
-          </aside></article>
-          <article class="rec" id="s-92dc9c49" data-for="92dc9c49"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-92dc9c49" data-for="92dc9c49"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
               <p class="eyebrow">ACCEPTED · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462378.127147104" target="_blank" rel="noreferrer">92dc9c49</a></p>
@@ -4429,8 +4429,8 @@ petri: no fixture for this harness, task and attempt.
      parts.push(`Constraints:\n${task.constraints.map((c) =&gt; `- ${c}`).join('\n')}`);
    }
 </pre></details>
-          </aside></article>
-          <article class="rec" id="s-e1adae18" data-for="e1adae18"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-e1adae18" data-for="e1adae18"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
               <p class="eyebrow">PENDING · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462381.908357208" target="_blank" rel="noreferrer">e1adae18</a></p>
@@ -4691,8 +4691,8 @@ petri: no fixture for this harness, task and attempt.
      parts.push(`Constraints:\n${task.constraints.map((c) =&gt; `- ${c}`).join('\n')}`);
    }
 </pre></details>
-          </aside></article>
-          <article class="rec" id="s-c34b88da" data-for="c34b88da"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-c34b88da" data-for="c34b88da"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
               <p class="eyebrow">PENDING · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462420.173366104" target="_blank" rel="noreferrer">c34b88da</a></p>
@@ -4786,7 +4786,7 @@ petri: no fixture for this harness, task and attempt.
           </div>
             <div class="np-block checkit">
             <h3>Check it yourself</h3>
-            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <p class="muted">Clone the repo, then run these from the repository root. Reading and checking the record needs no API key; running or scoring this version live needs ANTHROPIC_API_KEY.</p>
             <ol class="checkit-steps"><li>
               <p class="checkit-what">How it works</p>
               <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
@@ -4962,8 +4962,8 @@ petri: no fixture for this harness, task and attempt.
    for (const f of context.files) parts.push(`--- ${f.path} ---\n${f.contents}`);
    return parts.join('\n\n');
 </pre></details>
-          </aside></article>
-          <article class="rec" id="s-ae0acec3" data-for="ae0acec3"><aside class="node-panel" aria-live="polite">
+          </div></article>
+          <article class="rec" id="s-ae0acec3" data-for="ae0acec3"><div class="node-panel" aria-live="polite">
             <div class="np-head">
               <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
               <p class="eyebrow">PENDING · <a class="hs-id" href="https://hashscan.io/testnet/transaction/1789462506.489866429" target="_blank" rel="noreferrer">ae0acec3</a></p>
@@ -5224,7 +5224,7 @@ petri: no fixture for this harness, task and attempt.
      parts.push(`Constraints:\n${task.constraints.map((c) =&gt; `- ${c}`).join('\n')}`);
    }
 </pre></details>
-          </aside></article>
+          </div></article>
 
           <div class="record-info"><div class="panels"><div class="chips" role="radiogroup" aria-label="Tree information">
             <input type="radio" name="panel" id="chip-next" class="chip-input" checked>
@@ -5484,28 +5484,30 @@ known motif slugs (reuse one if it fits):
             <div><dt>Recorded</dt><dd>18 versions<small>4 accepted · 2 rejected and kept · 12 pending</small></dd></div>
           </dl>
 
-          <figure class="chart-figure">
-            <div class="plate chart-plate">
-              <svg viewBox="0 0 900 340" role="img" aria-labelledby="chart-cap">
-                <line class="c-axis" x1="70" x2="860" y1="280" y2="280"/>
+          <div class="chart-figure">
+            <figure class="chart-content">
+              <div class="plate chart-plate">
+                <svg viewBox="0 0 900 340" role="img" aria-labelledby="chart-cap">
+                  <line class="c-axis" x1="70" x2="860" y1="280" y2="280"/>
             <text class="c-tick" x="58" y="284" text-anchor="end">0/20</text><line class="c-grid" x1="70" x2="860" y1="221.5" y2="221.5"/>
             <text class="c-tick" x="58" y="225.5" text-anchor="end">5/20</text><line class="c-grid" x1="70" x2="860" y1="163" y2="163"/>
             <text class="c-tick" x="58" y="167" text-anchor="end">10/20</text><line class="c-grid" x1="70" x2="860" y1="104.5" y2="104.5"/>
             <text class="c-tick" x="58" y="108.5" text-anchor="end">15/20</text><line class="c-grid" x1="70" x2="860" y1="46" y2="46"/>
             <text class="c-tick" x="58" y="50" text-anchor="end">20/20</text><text class="c-tick" x="70" y="304" text-anchor="middle">start</text><text class="c-tick" x="228" y="304" text-anchor="middle">round 1</text><text class="c-tick" x="386" y="304" text-anchor="middle">round 2</text><text class="c-tick" x="544" y="304" text-anchor="middle">round 3</text><text class="c-tick" x="702" y="304" text-anchor="middle">round 4</text><text class="c-tick" x="860" y="304" text-anchor="middle">round 5</text><line class="c-bar" x1="70" x2="860" y1="46" y2="46"/>
             <text class="c-note c-goal" x="860" y="37" text-anchor="end">goal · 20/20 tasks</text><circle class="c-fail" cx="406" cy="221.5" r="6.5"><title>REJECTED 872aaa3d: 5/20 tasks</title></circle><circle class="c-pass c-offspine" cx="564" cy="57.7" r="6.5"><title>ACCEPTED ea3b7532: 19/20 tasks</title></circle><circle class="c-pass c-offspine" cx="248" cy="57.7" r="6.5"><title>ACCEPTED ec1d39e6: 19/20 tasks</title></circle><circle class="c-fail" cx="722" cy="221.5" r="6.5"><title>REJECTED f07e0c55: 5/20 tasks</title></circle><circle class="c-pass c-offspine" cx="880" cy="57.7" r="6.5"><title>ACCEPTED 92dc9c49: 19/20 tasks</title></circle><circle class="c-wait" cx="424" cy="221.5" r="6.5"><title>PENDING e1adae18: 5/20 tasks</title></circle><circle class="c-wait" cx="898" cy="57.7" r="6.5"><title>PENDING ae0acec3: 19/20 tasks</title></circle><line class="c-line c-climb" x1="406" y1="221.5" x2="564" y2="57.7"/><line class="c-line c-climb" x1="70" y1="221.5" x2="248" y2="57.7"/><line class="c-line c-climb" x1="722" y1="221.5" x2="880" y2="57.7"/><path class="c-line" d="M70 221.5 L228 57.7"/><circle class="c-pass" cx="70" cy="221.5" r="7"><title>PENDING 0a54718a: 5/20 tasks</title></circle><circle class="c-pass" cx="228" cy="57.7" r="7"><title>ACCEPTED ecc7cdb0: 19/20 tasks</title></circle><text class="c-val" x="228" y="42.7" text-anchor="middle">19/20</text>
-              </svg>
-            </div>
-            <div class="legend">
-              <span><svg width="34" height="14" aria-hidden="true"><line class="c-line" x1="2" x2="32" y1="7" y2="7"/><circle class="c-pass" cx="17" cy="7" r="5"/></svg>Accepted, and became the new parent</span>
-              <span><svg width="16" height="16" aria-hidden="true"><circle class="c-fail" cx="8" cy="8" r="5.5"/></svg>Rejected, and kept in the tree</span>
-              <span><svg width="16" height="16" aria-hidden="true"><circle class="c-wait" cx="8" cy="8" r="5.5"/></svg>Pending</span>
-            </div>
-            <figcaption id="chart-cap">
-              Each round is one generation deeper in the tree. Scores are medians re-run by other keys, from the real tree.
-              A version passes only if it beats its parent by +1000bp.
-               9 versions were stopped before scoring and are not plotted. See the table.
-            </figcaption>
+                </svg>
+              </div>
+              <div class="legend">
+                <span><svg width="34" height="14" aria-hidden="true"><line class="c-line" x1="2" x2="32" y1="7" y2="7"/><circle class="c-pass" cx="17" cy="7" r="5"/></svg>Accepted, and became the new parent</span>
+                <span><svg width="16" height="16" aria-hidden="true"><circle class="c-fail" cx="8" cy="8" r="5.5"/></svg>Rejected, and kept in the tree</span>
+                <span><svg width="16" height="16" aria-hidden="true"><circle class="c-wait" cx="8" cy="8" r="5.5"/></svg>Pending</span>
+              </div>
+              <figcaption id="chart-cap">
+                Each round is one generation deeper in the tree. Scores are medians re-run by other keys, from the real exported tree.
+                A version passes only if it beats its parent by +1000bp.
+                 9 versions were stopped before scoring and are not plotted. See the table.
+              </figcaption>
+            </figure>
             <details class="table-view">
               <summary>Show as a table</summary>
               <table>
@@ -5513,7 +5515,7 @@ known motif slugs (reuse one if it fits):
                 <tbody><tr><td><code>0a54718a</code></td><td>start</td><td>PENDING</td><td>5/20 tasks</td></tr><tr><td><code>ecc7cdb0</code></td><td>1</td><td>ACCEPTED</td><td>19/20 tasks</td></tr><tr><td><code>872aaa3d</code></td><td>2</td><td>REJECTED</td><td>5/20 tasks</td></tr><tr><td><code>7619f134</code></td><td>1</td><td>PENDING</td><td>not scored</td></tr><tr><td><code>76fb6041</code></td><td>1</td><td>PENDING</td><td>not scored</td></tr><tr><td><code>46858153</code></td><td>2</td><td>PENDING</td><td>not scored</td></tr><tr><td><code>3a6869e3</code></td><td>2</td><td>PENDING</td><td>not scored</td></tr><tr><td><code>ea3b7532</code></td><td>3</td><td>ACCEPTED</td><td>19/20 tasks</td></tr><tr><td><code>e961cb12</code></td><td>1</td><td>PENDING</td><td>not scored</td></tr><tr><td><code>d1312480</code></td><td>2</td><td>PENDING</td><td>not scored</td></tr><tr><td><code>f27ba942</code></td><td>4</td><td>PENDING</td><td>not scored</td></tr><tr><td><code>2e7f6b5b</code></td><td>2</td><td>PENDING</td><td>not scored</td></tr><tr><td><code>ec1d39e6</code></td><td>1</td><td>ACCEPTED</td><td>19/20 tasks</td></tr><tr><td><code>f07e0c55</code></td><td>4</td><td>REJECTED</td><td>5/20 tasks</td></tr><tr><td><code>92dc9c49</code></td><td>5</td><td>ACCEPTED</td><td>19/20 tasks</td></tr><tr><td><code>e1adae18</code></td><td>2</td><td>PENDING</td><td>5/20 tasks</td></tr><tr><td><code>c34b88da</code></td><td>2</td><td>PENDING</td><td>not scored</td></tr><tr><td><code>ae0acec3</code></td><td>5</td><td>PENDING</td><td>19/20 tasks</td></tr></tbody>
               </table>
             </details>
-          </figure>
+          </div>
         </section>
       </div>
     </main>

@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "14-decimal-add",
+  "title": "Add two decimal strings exactly",
+  "difficulty": "hard",
+  "entry": "solution.mjs",
+  "exports": ["addDecimal"],
+  "signatures": ["export function addDecimal(a: string, b: string): string"],
+  "timeoutMs": 5000,
+  "testCount": 11,
+  "tags": ["arithmetic", "strings", "precision", "edge-cases"]
+}

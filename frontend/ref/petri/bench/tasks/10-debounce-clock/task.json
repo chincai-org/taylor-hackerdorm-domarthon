@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "10-debounce-clock",
+  "title": "A debouncer driven by an injected clock",
+  "difficulty": "medium",
+  "entry": "solution.mjs",
+  "exports": ["createDebouncer"],
+  "signatures": ["export function createDebouncer(fn: Function, waitMs: number, options?: { leading?: boolean; trailing?: boolean }): { call(...args: unknown[]): void; tick(ms: number): void; cancel(): void; flush(): boolean; pending(): boolean }"],
+  "timeoutMs": 5000,
+  "testCount": 10,
+  "tags": ["state", "timing", "edge-cases"]
+}

@@ -1,0 +1,17 @@
+--- a/harness/retrieval.ts
++++ b/harness/retrieval.ts
+@@ -16,6 +16,7 @@
+  * has very little material to rank. Read the digest before you spend a node here.
+  */
+ import type { TaskView, SourceFile } from './contract.js';
++import { readFileSync } from 'node:fs';
+ 
+ export interface RetrievedContext {
+   readonly files: readonly SourceFile[];
+@@ -39,5 +40,6 @@
+     files.push(f);
+     used += cost;
+   }
++  files.push({ path: 'test.mjs', contents: readFileSync(`bench/tasks/${task.taskId}/test.mjs`, 'utf8') });
+   return { files, droppedFiles, charBudget };
+ }

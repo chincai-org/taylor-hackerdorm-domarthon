@@ -1,59 +1,51 @@
-// Screenshots of every page, for eyeballing the theme. Writes to ../shots/.
-import { createRequire } from "node:module";
-import { mkdirSync } from "node:fs";
-const require = createRequire("C:/Users/liewjayyong/.workbuddy-ai/binaries/node/workspace/");
-const { chromium } = require("playwright-core");
+import { mkdir } from "node:fs/promises";
+import { dirname } from "node:path";
+import { assert, expectCopied, open, shotPath, withBrowser } from "./browser.mjs";
 
-const BASE = "file:///C:/Users/liewjayyong/WorkBuddy%20AI/2026-10-10-12-59-12/trees-section";
-const OUT = "C:/Users/liewjayyong/WorkBuddy AI/2026-10-10-12-59-12/shots";
-mkdirSync(OUT, { recursive: true });
+// Keep the original reference screenshots intact; new captures stay in the project.
+await mkdir(dirname(shotPath("1-gallery.png")), { recursive: true });
+await withBrowser(
+  async (page) => {
+    await open(page, "index");
+    await page.screenshot({ path: shotPath("1-gallery.png") });
+    await open(page);
+    await page.screenshot({ path: shotPath("2-tree.png") });
+    await page.locator('.selected-strip[data-for="he-08"] a[href="#s-he-08"]').click();
+    assert.ok(
+      await page.evaluate(() => window.scrollY > 0),
+      "Record screenshot shows an actual anchor scroll",
+    );
+    await page.screenshot({ path: shotPath("3-record.png") });
+    await page.locator('label[for="view-stats"]').click();
+    await page.locator(".view-stats").waitFor({ state: "visible" });
+    await page.screenshot({ path: shotPath("4-stats.png") });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await open(page);
+    await page.screenshot({ path: shotPath("5-mobile.png") });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await open(page);
 
-// Playwright defaults to light mode; every page here is dark-only.
-const b = await chromium.launch({ channel: "msedge" });
-const p = await b.newPage({ viewport: { width: 1440, height: 900 }, colorScheme: "dark" });
-const open = async (name) => {
-  await p.goto(`${BASE}/${name}`, { waitUntil: "load" });
-  await p.waitForTimeout(1400);
-};
+    const literal = page.locator(
+      '.rec[data-for="he-08"] button.copy[data-copy="pnpm petri digest"]',
+    );
+    const row = literal.locator("..");
+    await row.screenshot({ path: shotPath("6-copy-icon.png") });
+    await literal.hover();
+    await row.screenshot({ path: shotPath("7-copy-icon-hover.png") });
+    await literal.click();
+    await expectCopied(literal);
+    await row.screenshot({ path: shotPath("8-copy-done.png") });
 
-const TREE = "research--hermes-agent--claude-sonnet-5.html";
-
-await open("index.html");
-await p.screenshot({ path: `${OUT}/1-gallery.png` });
-
-await open(TREE);
-await p.screenshot({ path: `${OUT}/2-tree.png` });
-
-await p.evaluate(() => document.getElementById("record")?.scrollIntoView());
-await p.waitForTimeout(400);
-await p.screenshot({ path: `${OUT}/3-record.png` });
-
-await p.click('label[for="view-stats"]');
-await p.waitForTimeout(400);
-await p.screenshot({ path: `${OUT}/4-stats.png` });
-
-await p.setViewportSize({ width: 390, height: 844 });
-await open(TREE);
-await p.screenshot({ path: `${OUT}/5-mobile.png` });
-
-// Close-ups of the two command blocks, to check the copy control reads as part
-// of the box rather than as something floating under it.
-await p.setViewportSize({ width: 1440, height: 900 });
-await open(TREE);
-
-const fork = p.locator('.rec[data-for="he-08"] .np-block.fork');
-await fork.scrollIntoViewIfNeeded();
-await p.waitForTimeout(300);
-await fork.screenshot({ path: `${OUT}/9-fork-box.png` });
-
-await p.locator('.rec[data-for="he-08"] .fork .cmd button.copy').click();
-await p.waitForTimeout(250);
-await fork.screenshot({ path: `${OUT}/10-fork-copied.png` });
-
-const checkit = p.locator('.rec[data-for="he-08"] .np-block.checkit');
-await checkit.scrollIntoViewIfNeeded();
-await p.waitForTimeout(300);
-await checkit.screenshot({ path: `${OUT}/11-checkit-box.png` });
-
-console.log("shots done ->", OUT);
-await b.close();
+    const fork = page.locator('.rec[data-for="he-08"] .np-block.fork');
+    await fork.screenshot({ path: shotPath("9-fork-box.png") });
+    const forkButton = fork.locator("button.copy");
+    await forkButton.click();
+    await expectCopied(forkButton);
+    await fork.screenshot({ path: shotPath("10-fork-copied.png") });
+    await page
+      .locator('.rec[data-for="he-08"] .np-block.checkit')
+      .screenshot({ path: shotPath("11-checkit-box.png") });
+    console.log("Screenshots captured in", dirname(shotPath("1-gallery.png")));
+  },
+  { permissions: ["clipboard-read", "clipboard-write"], preserveClipboard: true },
+);

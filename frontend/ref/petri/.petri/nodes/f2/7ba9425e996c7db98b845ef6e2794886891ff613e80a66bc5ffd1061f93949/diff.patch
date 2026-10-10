@@ -1,0 +1,11 @@
+--- a/harness/loop.ts
++++ b/harness/loop.ts
+@@ -22,7 +22,7 @@
+ import { buildSystemPrompt, buildUserPrompt } from './prompt.js';
+ import { attemptRepair, type Failure } from './recovery.js';
+ 
+-export const MAX_OUTPUT_TOKENS = 4096;
++export const MAX_OUTPUT_TOKENS = Number(process.env.PETRI_MAX_OUTPUT ?? 2048);
+ 
+ /** V1 takes the FIRST fenced block. Taking the last one is already a change. */
+ export function extractSolutionFiles(task: TaskView, replyText: string): SourceFile[] {

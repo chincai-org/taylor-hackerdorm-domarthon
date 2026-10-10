@@ -1,0 +1,11 @@
+{
+  "author": "91b851346bf486649e66aac9581b68c0d126e0fbe3cd2a8d24a14079ee3a662a",
+  "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+  "detail": "9595d6049f9a53c55b6fafb6a522b258d4c2be748bbe2e94d69558aad2cce316",
+  "harness": "ec4b2d8e1cbff8280fcfb70452d6f4573081c5f046f8ccc8cf84d95953c1a18c",
+  "hypothesis": "Stating each instruction as a positive directive, what the model must do, instead of what it must not do, raises the pass rate and cuts reply tokens, because the model spends less effort reasoning about prohibitions.",
+  "nonce": "",
+  "parent": "ecc7cdb0e5d18a743e12e4dd3c00ab99541f25f254512e77005d616ff3293784",
+  "protocol": "petri/node/1",
+  "tree": "petri-main"
+}

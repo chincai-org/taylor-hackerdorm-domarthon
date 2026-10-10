@@ -1,0 +1,289 @@
+{
+  "attemptIndex": 2,
+  "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+  "env": {
+    "arch": "arm64",
+    "benchId": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+    "ledger": "local",
+    "mode": "replay",
+    "model": "none",
+    "nodeVersion": "v26.0.0",
+    "petriCommit": "9b62841d64b9e174cfef7843be826fa9c59b4124",
+    "platform": "darwin"
+  },
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "mode": "replay",
+  "node": "ea3b75324cc6328b38fdb5b2792345653b8e54c1088693e283d095c872a37cb4",
+  "passed": 19,
+  "protocol": "petri/run/1",
+  "runId": "803f8297-2ff1-43e5-831c-b62bb32b05ca",
+  "scoreBp": 9500,
+  "seed": "3f02ee94f3495aad85ec74baf0c55cd8a75287385de8c0c633c8a40b7505c77f",
+  "startedAt": 1789293203462,
+  "tampered": false,
+  "tasks": [
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 10
+      },
+      "exitCode": 0,
+      "harnessMs": 47,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "01-chunk-array",
+      "tokens": 504,
+      "wallMs": 64
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 8
+      },
+      "exitCode": 0,
+      "harnessMs": 50,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "02-run-length-encode",
+      "tokens": 1016,
+      "wallMs": 54
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 10
+      },
+      "exitCode": 0,
+      "harnessMs": 51,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "03-roman-numerals",
+      "tokens": 994,
+      "wallMs": 60
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 8
+      },
+      "exitCode": 0,
+      "harnessMs": 52,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "04-balanced-brackets",
+      "tokens": 780,
+      "wallMs": 54
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 10
+      },
+      "exitCode": 0,
+      "harnessMs": 51,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "05-deep-equal",
+      "tokens": 1049,
+      "wallMs": 56
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 8
+      },
+      "exitCode": 0,
+      "harnessMs": 49,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "06-topological-sort",
+      "tokens": 1055,
+      "wallMs": 55
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 10
+      },
+      "exitCode": 0,
+      "harnessMs": 49,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "07-csv-parse",
+      "tokens": 1059,
+      "wallMs": 56
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 10
+      },
+      "exitCode": 0,
+      "harnessMs": 50,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "08-semver-compare",
+      "tokens": 1478,
+      "wallMs": 60
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 10
+      },
+      "exitCode": 0,
+      "harnessMs": 48,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "09-lru-cache",
+      "tokens": 1162,
+      "wallMs": 54
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 10
+      },
+      "exitCode": 0,
+      "harnessMs": 53,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "10-debounce-clock",
+      "tokens": 1611,
+      "wallMs": 56
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 11
+      },
+      "exitCode": 0,
+      "harnessMs": 53,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "11-interval-merge",
+      "tokens": 1016,
+      "wallMs": 56
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 12
+      },
+      "exitCode": 0,
+      "harnessMs": 55,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "12-template-render",
+      "tokens": 1111,
+      "wallMs": 56
+    },
+    {
+      "assertions": {
+        "fail": 3,
+        "pass": 9
+      },
+      "exitCode": 1,
+      "harnessMs": 50,
+      "outcome": "fail",
+      "passed": false,
+      "taskId": "13-line-diff",
+      "tokens": 1189,
+      "wallMs": 60
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 11
+      },
+      "exitCode": 0,
+      "harnessMs": 49,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "14-decimal-add",
+      "tokens": 978,
+      "wallMs": 56
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 12
+      },
+      "exitCode": 0,
+      "harnessMs": 56,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "15-glob-match",
+      "tokens": 1556,
+      "wallMs": 59
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 11
+      },
+      "exitCode": 0,
+      "harnessMs": 51,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "16-json-pointer",
+      "tokens": 1043,
+      "wallMs": 55
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 11
+      },
+      "exitCode": 0,
+      "harnessMs": 51,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "17-state-machine",
+      "tokens": 1650,
+      "wallMs": 56
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 11
+      },
+      "exitCode": 0,
+      "harnessMs": 51,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "18-word-wrap",
+      "tokens": 884,
+      "wallMs": 55
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 12
+      },
+      "exitCode": 0,
+      "harnessMs": 48,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "19-expression-eval",
+      "tokens": 1415,
+      "wallMs": 60
+    },
+    {
+      "assertions": {
+        "fail": 0,
+        "pass": 12
+      },
+      "exitCode": 0,
+      "harnessMs": 53,
+      "outcome": "pass",
+      "passed": true,
+      "taskId": "20-immutable-set-in",
+      "tokens": 1281,
+      "wallMs": 59
+    }
+  ],
+  "tokens": 22831,
+  "total": 20,
+  "wallMs": 2169
+}

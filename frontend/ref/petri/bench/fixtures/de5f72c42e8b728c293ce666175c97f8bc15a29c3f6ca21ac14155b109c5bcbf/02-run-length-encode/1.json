@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "02-run-length-encode",
+  "attemptIndex": 1,
+  "source": "export function encode(input) {\n  if (typeof input !== 'string') throw new TypeError('input must be a string');\n  let out = '';\n  let i = 0;\n  while (i < input.length) {\n    const ch = input[i];\n    let run = 1;\n    while (i + run < input.length && input[i + run] === ch) run += 1;\n    out += `${run}x${ch}`;\n    i += run;\n  }\n  return out;\n}\n\nexport function decode(input) {\n  if (typeof input !== 'string') throw new TypeError('input must be a string');\n  let out = '';\n  let i = 0;\n  while (i < input.length) {\n    let j = i;\n    while (j < input.length && input[j] >= '0' && input[j] <= '9') j += 1;\n    if (j === i) throw new SyntaxError('a run must start with a decimal digit');\n    const digits = input.slice(i, j);\n    if (digits.length > 1 && digits[0] === '0') throw new SyntaxError('a count has no leading zero');\n    const count = Number(digits);\n    if (count === 0) throw new SyntaxError('a count of zero is not valid');\n    if (input[j] !== 'x') throw new SyntaxError('a count must be followed by x');\n    if (j + 1 >= input.length) throw new SyntaxError('the x must be followed by a character');\n    out += input[j + 1].repeat(count);\n    i = j + 2;\n  }\n  return out;\n}\n",
+  "tokens": 1016,
+  "harnessMs": 5451,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "58d3ef6655fae359befbe08dc1c215a5",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "bc0d0efae7fb1a7a3ef3aef6e2891a0764950c7827373db1f25ba8fa53e9ced9",
+  "inputTokens": 717,
+  "outputTokens": 299
+}

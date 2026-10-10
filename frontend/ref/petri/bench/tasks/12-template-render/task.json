@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "12-template-render",
+  "title": "Render a template with dotted placeholders",
+  "difficulty": "medium",
+  "entry": "solution.mjs",
+  "exports": ["render"],
+  "signatures": ["export function render(template: string, data: object): string"],
+  "timeoutMs": 5000,
+  "testCount": 12,
+  "tags": ["strings", "parsing", "validation", "edge-cases"]
+}

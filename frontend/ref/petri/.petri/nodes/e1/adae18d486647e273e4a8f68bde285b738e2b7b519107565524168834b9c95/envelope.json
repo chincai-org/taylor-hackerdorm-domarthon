@@ -1,0 +1,13 @@
+{
+  "body": {
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+    "hyp": "A shorter prompt without the signatures and the reply-shape block keeps the pass rate and cuts tokens, because the model already writes fenced code.",
+    "node": "e1adae18d486647e273e4a8f68bde285b738e2b7b519107565524168834b9c95",
+    "parent": "ecc7cdb0e5d18a743e12e4dd3c00ab99541f25f254512e77005d616ff3293784",
+    "tree": "petri-main",
+    "type": "NodeSubmitted"
+  },
+  "pub": "91b851346bf486649e66aac9581b68c0d126e0fbe3cd2a8d24a14079ee3a662a",
+  "sig": "fcfd050b727186b21124d7a9d19fcebab11144e8a9e89d66077f15219ddaa35668ef5bfa61b1293cf1d3b6048040e4ccb2ecf58e6c9e79665737243f4be98c04",
+  "ver": 1
+}

@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "14-decimal-add",
+  "attemptIndex": 4,
+  "source": "const DECIMAL = /^[+-]?[0-9]+(?:\\.[0-9]+)?$/;\n\nfunction parse(text) {\n  let sign = 1n;\n  let rest = text;\n  if (rest[0] === '+') rest = rest.slice(1);\n  else if (rest[0] === '-') {\n    sign = -1n;\n    rest = rest.slice(1);\n  }\n  const dot = rest.indexOf('.');\n  const whole = dot === -1 ? rest : rest.slice(0, dot);\n  const fraction = dot === -1 ? '' : rest.slice(dot + 1);\n  return { value: sign * BigInt(whole + fraction), scale: fraction.length };\n}\n\nexport function addDecimal(a, b) {\n  if (typeof a !== 'string' || typeof b !== 'string') {\n    throw new TypeError('both arguments must be strings');\n  }\n  if (!DECIMAL.test(a) || !DECIMAL.test(b)) {\n    throw new SyntaxError('a decimal number is optional sign, digits, then an optional fraction');\n  }\n\n  const left = parse(a);\n  const right = parse(b);\n  const scale = Math.max(left.scale, right.scale);\n  const lift = (part) => part.value * 10n ** BigInt(scale - part.scale);\n\n  let total = lift(left) + lift(right);\n  const negative = total < 0n;\n  if (negative) total = -total;\n\n  const digits = total.toString().padStart(scale + 1, '0');\n  const cut = digits.length - scale;\n  let whole = digits.slice(0, cut).replace(/^0+(?=[0-9])/, '');\n  const fraction = digits.slice(cut).replace(/0+$/, '');\n  if (whole === '') whole = '0';\n\n  const body = fraction === '' ? whole : `${whole}.${fraction}`;\n  return negative ? `-${body}` : body;\n}\n",
+  "tokens": 978,
+  "harnessMs": 6464,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "34e09b2546630fae5e1e0eed4dc8fd55",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "345b676d9dcb926d364c9ded1207252c30caa0f6fe756eb1b7ecee35514d8a0e",
+  "inputTokens": 626,
+  "outputTokens": 352
+}

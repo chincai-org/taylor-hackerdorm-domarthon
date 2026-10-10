@@ -1,0 +1,19 @@
+--- a/harness/loop.ts
++++ b/harness/loop.ts
+@@ -40,14 +40,14 @@
+   ctx.log.event('retrieval', { files: context.files.length, dropped: context.droppedFiles.length });
+ 
+   const reply = await ctx.model.complete({
+-    label: 'draft',
++    label: task.exportedSymbols,
+     system: buildSystemPrompt(),
+     messages: [{ role: 'user', content: buildUserPrompt(task, context) }],
+     maxTokens: MAX_OUTPUT_TOKENS,
+     temperature: 0,
+   });
+   ctx.log.event('model', {
+-    label: 'draft', stopReason: reply.stopReason, outputTokens: reply.outputTokens,
++    label: task.exportedSymbols, stopReason: reply.stopReason, outputTokens: reply.outputTokens,
+   });
+ 
+   const files = extractSolutionFiles(task, reply.text);

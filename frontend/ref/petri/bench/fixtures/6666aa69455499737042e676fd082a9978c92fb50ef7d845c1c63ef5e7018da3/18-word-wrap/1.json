@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "6666aa69455499737042e676fd082a9978c92fb50ef7d845c1c63ef5e7018da3",
+  "taskId": "18-word-wrap",
+  "attemptIndex": 1,
+  "source": "export function wrapText(text, width) {\n  if (typeof text !== 'string') throw new TypeError('text must be a string');\n  if (!Number.isInteger(width) || width < 1) throw new RangeError('bad width');\n\n  return text.split('\\n').map((part) => {\n    const words = part.split(/\\s+/).filter(Boolean);\n    const lines = [];\n    let line = '';\n    for (const word of words) {\n      if (line === '') {\n        line = word;\n        continue;\n      }\n      if (line.length + 1 + word.length <= width) {\n        line += ` ${word}`;\n        continue;\n      }\n      lines.push(line);\n      line = word;\n    }\n    if (line !== '') lines.push(line);\n    return lines.join('\\n');\n  }).join('\\n');\n}\n",
+  "tokens": 748,
+  "harnessMs": 7649,
+  "recordedAt": "2026-09-12T10:04:11.000Z",
+  "recordedFrom": {
+    "runId": "236220a010c71feb2d6c788c45ff7cb7",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "7853bc1f4d9769174d66b1abdec4078ccc067f9319553c830c76fc0cd7405c16",
+  "inputTokens": 575,
+  "outputTokens": 173
+}

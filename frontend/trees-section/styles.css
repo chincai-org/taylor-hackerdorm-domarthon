@@ -17,126 +17,6 @@
 
 @layer tokens, base, layout, card, glyph, page, motion;
 
-.tree-card {
-  width: 100%;
-  border: 0;
-  color: inherit;
-  text-align: start;
-  cursor: pointer;
-  font: inherit;
-}
-
-.notice {
-  padding: 14px 16px;
-  border-radius: var(--shape-md);
-  background: var(--md-sys-color-surface-container);
-  color: var(--md-sys-color-on-surface-variant);
-}
-
-.notice-error, .error-copy {
-  color: var(--md-sys-color-error);
-}
-
-.empty-state {
-  padding: 32px;
-  border-radius: var(--shape-md);
-  background: var(--md-sys-color-surface-container);
-  list-style: none;
-}
-
-.tree-detail {
-  scroll-margin-block-start: 68px;
-}
-
-.detail-close {
-  border: 1px solid var(--md-sys-color-outline);
-  border-radius: var(--shape-full);
-  padding: 8px 16px;
-  color: var(--md-sys-color-on-surface);
-  background: transparent;
-  cursor: pointer;
-}
-
-.stage {
-  gap: 12px;
-}
-
-.tree-svg {
-  display: block;
-  min-width: 700px;
-  width: 100%;
-  height: auto;
-}
-
-.node-panel {
-  padding: 20px;
-  border-radius: var(--shape-md);
-  background: var(--md-sys-color-surface-container);
-}
-
-.node-panel-head, .node-facts {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.node-facts {
-  justify-content: flex-start;
-  margin-block: 18px;
-}
-
-.node-facts div {
-  min-width: 140px;
-}
-
-.node-facts dt, .node-facts dd {
-  margin: 0;
-}
-
-.node-facts dt {
-  color: var(--md-sys-color-on-surface-dim);
-  font: var(--type-label-medium);
-}
-
-.node-facts dd {
-  margin-block-start: 4px;
-}
-
-.node-panel details {
-  margin-block-start: 14px;
-}
-
-.node-panel pre {
-  max-height: 280px;
-  overflow: auto;
-  padding: 14px;
-  margin-block-start: 10px;
-  border-radius: var(--shape-sm);
-  background: var(--md-sys-color-surface-container-lowest);
-}
-
-.legend-dot {
-  width: 10px;
-  height: 10px;
-  display: inline-block;
-  border-radius: 50%;
-  background: var(--md-sys-color-primary);
-}
-
-.legend-dot.wait {
-  background: transparent;
-  border: 2px solid var(--md-sys-color-outline);
-}
-
-.legend-dot.fail {
-  background: var(--md-sys-color-error);
-}
-
-.status-failed {
-  color: var(--md-sys-color-error);
-}
-
 @layer tokens {
   :root {
     /* Dark scheme only. Tells the browser to theme form controls, scrollbars
@@ -507,7 +387,11 @@
     border-radius: var(--shape-full);
     background:
       radial-gradient(circle at 35% 35%, var(--md-sys-color-primary) 0 38%, transparent 40%),
-      conic-gradient(var(--md-sys-color-primary) 0 25%, var(--md-sys-color-tertiary) 0 30%, var(--md-sys-color-outline) 0);
+      conic-gradient(
+        var(--md-sys-color-primary) 0 25%,
+        var(--md-sys-color-tertiary) 0 30%,
+        var(--md-sys-color-outline) 0
+      );
     box-shadow: inset 0 0 0 1.5px var(--md-sys-color-surface-container);
   }
 
@@ -632,7 +516,8 @@
     }
   }
 
-  .seg-input {
+  .seg-input,
+  .chip-input {
     position: absolute;
     inline-size: 1px;
     block-size: 1px;
@@ -692,8 +577,16 @@
       radial-gradient(farthest-side at 0 50%, var(--md-scrim), transparent),
       radial-gradient(farthest-side at 100% 50%, var(--md-scrim), transparent);
     background-repeat: no-repeat;
-    background-position: left center, right center, left center, right center;
-    background-size: 40px 100%, 40px 100%, 16px 100%, 16px 100%;
+    background-position:
+      left center,
+      right center,
+      left center,
+      right center;
+    background-size:
+      40px 100%,
+      40px 100%,
+      16px 100%,
+      16px 100%;
     background-attachment: local, local, scroll, scroll;
   }
 
@@ -790,7 +683,7 @@
 
   /* The selected look is driven by four custom properties, so the generated
      per-node rules only have to set variables on the group rather than repeat
-     four declarations each. See `selectionRules` in build.mjs. */
+     four declarations each. See `selectionCss` in templates/selection.mjs. */
   .h-node {
     cursor: pointer;
     outline: none;
@@ -955,11 +848,11 @@
     color: var(--md-sys-color-on-surface-dim);
   }
 
-  .s-accepted .t-row .t-word {
+  .s-accepted > .t-row .t-word {
     color: var(--md-sys-color-primary);
   }
 
-  .s-rejected .t-row .t-word {
+  .s-rejected > .t-row .t-word {
     color: var(--md-sys-color-error);
   }
 
@@ -978,8 +871,8 @@
   }
 
   /* ---- the selected-version strip ----
-     Each strip carries the id the figure links to. `--sel-strip` is set by the
-     generated rules in the page head, so exactly one strip is ever laid out. */
+     Each strip shares its data-for key with the record that owns the fragment id.
+     Generated selection rules set --sel-strip so exactly one strip is laid out. */
   /* The strip is a container-tonal bar under the figure, matching the reference
      8px/12px inset. It is not chrome, so it gets no M3 shadow or extra height. */
   .selected-strip {
@@ -1485,44 +1378,9 @@
     }
   }
 
-  /* M3 text button. */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    block-size: 40px;
-    padding-inline: 16px;
-    border: 0;
-    border-radius: var(--shape-full);
-    background: transparent;
-    color: var(--md-sys-color-primary);
-    font: var(--type-label-large);
-    letter-spacing: 0.1px;
-    text-decoration: none;
-    white-space: nowrap;
-    cursor: pointer;
-  }
-
-  .btn:hover {
-    background: var(--md-state-hover);
-  }
-
-  .btn-sm {
-    block-size: 32px;
-    padding-inline: 12px;
-    font: var(--type-label-medium);
-    letter-spacing: 0.5px;
-    align-self: flex-start;
-  }
-
   /* Anything that only works with a script stays hidden until one is running. */
   .needs-js {
     display: none;
-  }
-
-  html.has-js .btn.needs-js {
-    display: inline-flex;
   }
 
   html.has-js .icon-btn.needs-js {
@@ -1633,14 +1491,6 @@
     gap: 8px;
     inline-size: fit-content;
     max-inline-size: 100%;
-  }
-
-  .chip-input {
-    position: absolute;
-    inline-size: 1px;
-    block-size: 1px;
-    opacity: 0;
-    pointer-events: none;
   }
 
   /* M3 filter chip: 32px tall, 16px inset, small corner. Selected state swaps to
@@ -1920,7 +1770,8 @@
     color: var(--md-sys-color-on-surface-dim);
   }
 
-  .chart-figure {
+  .chart-figure,
+  .chart-content {
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -2038,7 +1889,9 @@
     .card.will-reveal.is-revealed .card-mini {
       opacity: 1;
       translate: 0 0;
-      transition: opacity 0.45s ease, translate 0.5s cubic-bezier(0.2, 0.7, 0.3, 1);
+      transition:
+        opacity 0.45s ease,
+        translate 0.5s cubic-bezier(0.2, 0.7, 0.3, 1);
     }
   }
 

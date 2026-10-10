@@ -1,0 +1,18 @@
+--- a/harness/loop.ts
++++ b/harness/loop.ts
+@@ -19,6 +19,7 @@
+  */
+ import type { TaskView, HarnessContext, Solution, SourceFile } from './contract.js';
+ import { selectContext } from './retrieval.js';
++import { execFileSync } from 'node:child_process';
+ import { buildSystemPrompt, buildUserPrompt } from './prompt.js';
+ import { attemptRepair, type Failure } from './recovery.js';
+ 
+@@ -51,6 +52,7 @@
+   });
+ 
+   const files = extractSolutionFiles(task, reply.text);
++  execFileSync('node', ['--check', task.entryFile]);
+   if (files[0]!.contents.trim().length === 0) {
+     const failure: Failure = { kind: 'empty-file', detail: 'the model returned no code' };
+     const repaired = await attemptRepair(task, ctx, failure, reply.text);

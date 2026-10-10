@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "6666aa69455499737042e676fd082a9978c92fb50ef7d845c1c63ef5e7018da3",
+  "taskId": "20-immutable-set-in",
+  "attemptIndex": 1,
+  "source": "const clone = (value) => {\n  if (Array.isArray(value)) return value.map(clone);\n  if (value !== null && typeof value === 'object') {\n    const copy = {};\n    for (const key of Object.keys(value)) copy[key] = clone(value[key]);\n    return copy;\n  }\n  return value;\n};\n\nexport function setIn(obj, path, value) {\n  if (path.length === 0) return value;\n  const out = clone(obj);\n  let current = out;\n  for (let i = 0; i < path.length - 1; i += 1) {\n    const key = path[i];\n    if (current[key] === undefined || current[key] === null) {\n      current[key] = typeof path[i + 1] === 'number' ? [] : {};\n    }\n    current = current[key];\n  }\n  current[path[path.length - 1]] = value;\n  return out;\n}\n",
+  "tokens": 909,
+  "harnessMs": 3635,
+  "recordedAt": "2026-09-12T10:04:11.000Z",
+  "recordedFrom": {
+    "runId": "236220a010c71feb2d6c788c45ff7cb7",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "74d89ecaadc4e01e2b87e2d5976faf2b23aff2acd59d6d3ad5dc7cffa672544a",
+  "inputTokens": 733,
+  "outputTokens": 176
+}

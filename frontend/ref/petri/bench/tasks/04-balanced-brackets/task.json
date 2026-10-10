@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "04-balanced-brackets",
+  "title": "Check that brackets nest correctly outside strings",
+  "difficulty": "easy",
+  "entry": "solution.mjs",
+  "exports": ["isBalanced"],
+  "signatures": ["export function isBalanced(source: string): boolean"],
+  "timeoutMs": 5000,
+  "testCount": 8,
+  "tags": ["strings", "parsing", "edge-cases"]
+}

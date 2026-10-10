@@ -21,25 +21,20 @@ def _load_dotenv(path=".env"):
 _load_dotenv()
 
 # -----------------------------
-# OpenRouter client
+# DeepSeek client (OpenAI-compatible)
 # -----------------------------
-api_key = os.getenv("OPENROUTER_API_KEY")
+api_key = os.getenv("DEEPSEEK_API_KEY")
 if not api_key:
     raise RuntimeError(
-        "OPENROUTER_API_KEY missing. Run: "
-        'export OPENROUTER_API_KEY="$(pi auth print-api-key --provider openrouter)"'
+        'DEEPSEEK_API_KEY missing. Run: export DEEPSEEK_API_KEY="<your-deepseek-key>"'
     )
 client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
+    base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com/v1"),
     api_key=api_key,
-    default_headers={
-        "HTTP-Referer": "http://localhost:5000",
-        "X-Title": "Support Harness Optimizer",
-    },
 )
 
-MODEL = "poolside/laguna-s-2.1:free"  # same free model as pi agent (models.json)
-FALLBACK_MODELS = ["openrouter/free", "qwen/qwen3.8-27b:free"]
+MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+FALLBACK_MODELS: list[str] = []
 MAX_RETRIES = 3
 RETRY_BASE_S = 5
 SLEEP_BETWEEN_CALLS = 3

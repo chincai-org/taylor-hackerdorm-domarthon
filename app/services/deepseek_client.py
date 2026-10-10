@@ -1,9 +1,9 @@
-"""DeepSeek chat client (OpenAI-compatible) replacing the Pi RPC subprocess.
+"""DeepSeek chat client (OpenAI-compatible).
 
 Uses the ``openai`` SDK against ``https://api.deepseek.com/v1`` by default.
 API key comes from ``DEEPSEEK_API_KEY`` (see ``app/core/config.py``).
 
-Drop-in replacement for the old Pi RPC subprocess wrapper:
+Interface:
 - ``run_prompt_single(prompt)`` -> complete reply text
 - ``stream_prompt(prompt)`` -> SSE ``data:`` lines with ``{"delta": ...}``
 """
@@ -83,7 +83,7 @@ class DeepSeekClient:
     async def stream_prompt(self, prompt: str) -> AsyncGenerator[str, None]:
         """Yield SSE lines streaming DeepSeek token deltas.
 
-        Same event shape as the old Pi route:
+        Event shape:
         ``{"delta": ...}`` chunks, then ``{"status": "done"}`` or ``{"error": ...}``.
         """
         import json

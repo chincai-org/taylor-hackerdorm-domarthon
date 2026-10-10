@@ -1,9 +1,10 @@
 """DeepSeek agent API routes: REST + SSE streaming (OpenAI-compatible).
 
-Each POST spawns one harness instance for that call only. Pass per-call
-plugins via ``harness`` (validated dsh patch-layer JSON, see
-``app/harness/dsh.py``) and/or the ``system_prompt`` / ``tools`` / ``model``
-overrides. Omit all of them for the old bare behavior (user prompt only).
+Each POST spawns one harness instance for that call only. Pass the harness
+as dsh patch-layer JSON (``harness`` dict) **or** as raw ``cordis.patch.yml``
+text (``harness_yml`` string, or a string in ``harness``). Per-call
+``system_prompt`` / ``tools`` / ``model`` overrides still apply on top.
+Omit all of them for the old bare behavior (user prompt only).
 """
 
 from typing import Any
@@ -13,7 +14,8 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
-from app.harness.dsh import resolve_runtime
+from app.harness.dsh import resolve_runtime, to_cordis_patch_yml
+from app.harness.importer import coerce_harness
 from app.services.deepseek_client import (
     DeepSeekClient,
     DeepSeekEmptyReplyError,
@@ -49,10 +51,22 @@ class ChatRequest(BaseModel):
     tools: list[dict[str, Any]] | None = Field(
         default=None, description="OpenAI-style tool schemas exposed for this call only"
     )
-    harness: dict[str, Any] | None = Field(
+    harness: dict[str, Any] | str | None = Field(
         default=None,
-        description="dsh patch-layer JSON ({version, kind, profile, dsh_plugins}); "
-        "validated, persona/model take effect per call",
+        description="dsh patch-layer JSON dict, or raw cordis.patch.yml text as a "
+        "string. Prefer 'harness_yml' for yml text. Mutually exclusive with "
+        "'harness_yml'.",
+    )
+    harness_yml: str | None = Field(
+        default=None,
+        description="Raw cordis.patch.yml text (dsh --profile <name> --dump-config "
+        "output or a patch document). Converted to harness JSON server-side. "
+        "Mutually exclusive with 'harness'.",
+    )
+    harness_profile: str | None = Field(
+        default=None,
+        description="Profile override for 'harness_yml' (else read from the "
+        "document, else headless)",
     )
 
 
@@ -65,13 +79,32 @@ class ChatResponse(BaseModel):
     applied_plugins: list[str] = Field(default_factory=list)
     ignored_plugins: list[str] = Field(default_factory=list)
     policy_notes: list[str] = Field(default_factory=list)
+    harness: dict[str, Any] | None = Field(
+        default=None, description="Normalized harness JSON actually used for this call"
+    )
+    patch_yml: str | None = Field(
+        default=None, description="cordis.patch.yml rendering of the used harness"
+    )
+    harness_source: str = Field(
+        default="none", description="Where the harness came from: none | json | yml"
+    )
+    warnings: list[str] = Field(default_factory=list)
+    dropped: list[dict[str, str]] = Field(default_factory=list)
 
 
 def _resolve(req: ChatRequest) -> dict[str, Any]:
     try:
-        return resolve_runtime(req.harness, system_prompt=req.system_prompt, model=req.model)
+        harness, meta = coerce_harness(req.harness, req.harness_yml, profile=req.harness_profile)
+        rt = resolve_runtime(harness, system_prompt=req.system_prompt, model=req.model)
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
+    patch_yml: str | None = None
+    if harness is not None:
+        try:
+            patch_yml = to_cordis_patch_yml(harness)
+        except ValueError as e:  # pragma: no cover - coerce already validated
+            raise HTTPException(status_code=422, detail=str(e)) from e
+    return {**rt, "harness": harness, "patch_yml": patch_yml, **meta}
 
 
 @router.get("/health")
@@ -118,6 +151,11 @@ async def chat_with_deepseek(req: ChatRequest) -> ChatResponse:
         applied_plugins=rt["applied_plugins"],
         ignored_plugins=rt["ignored_plugins"],
         policy_notes=rt["policy_notes"],
+        harness=rt["harness"],
+        patch_yml=rt["patch_yml"],
+        harness_source=rt.get("source", "none"),
+        warnings=rt.get("warnings", []),
+        dropped=rt.get("dropped", []),
     )
 
 
@@ -126,7 +164,8 @@ async def stream_with_deepseek(req: ChatRequest) -> StreamingResponse:
     """Stream DeepSeek token deltas as Server-Sent Events.
 
     First event is always ``{"harness": {...}}`` describing the per-call
-    harness instance (model, applied/ignored plugins), then ``{"delta"}``
+    harness instance (normalized harness JSON, cordis.patch.yml rendering,
+    model, applied/ignored plugins, import warnings), then ``{"delta"}``
     chunks, an optional ``{"tool_calls": [...]}`` event, then
     ``{"status": "done"}`` or ``{"error"}``.
     """

@@ -10,7 +10,8 @@ from mcp.server.transport_security import TransportSecuritySettings
 from app.core.config import settings
 from app.db import repository
 from app.db.engine import session_scope
-from app.schemas.harness import validate_deepseek_harness
+from app.harness.dsh import to_cordis_patch_yml
+from app.harness.importer import coerce_harness
 from app.services.tree_digest import digest_tree
 
 
@@ -120,24 +121,35 @@ def checkout_tree(tree_id: str) -> dict[str, Any]:
 def create_child_node(
     tree_id: str,
     parent_id: str,
-    harness: dict[str, Any],
+    harness: dict[str, Any] | str | None = None,
     rationale: str | None = None,
+    harness_yml: str | None = None,
+    harness_profile: str | None = None,
 ) -> dict[str, Any]:
     """Store a validated DeepSeek harness as a new child node.
 
-    The harness must have exactly this JSON shape: name, system_prompt, tools,
-    policy, and settings. Tools must contain name, signature, and description.
-    Evaluation is deliberately skipped until the test runner is implemented;
-    the node is stored as pending and no score is invented.
+    Pass the harness as dsh patch-layer JSON (``harness`` dict) **or** as raw
+    ``cordis.patch.yml`` text (``harness_yml`` string, or a string in
+    ``harness``). Yml text is converted server-side via the importer, so a
+    Workbuddy proposal can paste ``dsh --profile <name> --dump-config`` output
+    or a patch document verbatim. Evaluation is deliberately skipped until the
+    test runner is implemented; the node is stored as pending and no score is
+    invented.
     """
-    try:
-        normalized_harness = validate_deepseek_harness(harness)
-    except Exception as exc:  # Pydantic's validation error is client-facing.
+    if harness is None and harness_yml is None:
         raise ValueError(
-            "Invalid DeepSeek harness. Expected {name, system_prompt, tools, "
-            "policy, settings}; tools require {name, signature, description}. "
-            f"Details: {exc}"
-        ) from exc
+            "Missing harness. Pass 'harness' (dsh patch-layer JSON dict) or "
+            "'harness_yml' (raw cordis.patch.yml text)."
+        )
+    try:
+        normalized_harness, meta = coerce_harness(harness, harness_yml, profile=harness_profile)
+    except Exception as exc:
+        raise ValueError(f"Invalid DeepSeek harness. Details: {exc}") from exc
+    assert normalized_harness is not None  # coerce returns None only when both inputs are None
+    try:
+        patch_yml = to_cordis_patch_yml(normalized_harness)
+    except ValueError as exc:
+        raise ValueError(f"Invalid DeepSeek harness. Details: {exc}") from exc
 
     with session_scope() as session:
         if repository.get_tree(session, tree_id) is None:
@@ -162,6 +174,10 @@ def create_child_node(
             "parent_id": node.parent_id,
             "status": node.status,
             "harness": node.harness,
+            "patch_yml": patch_yml,
+            "harness_source": meta.get("source", "none"),
+            "warnings": meta.get("warnings", []),
+            "dropped": meta.get("dropped", []),
             "rationale": node.rationale,
             "evaluation": {
                 "status": "skipped",

@@ -1,3 +1,12 @@
+"""Legacy harness schema (pre-dsh).
+
+Kept for back-compat only. New code stores the dsh patch-layer harness
+(``app/harness/dsh.py``: ``{version, kind, profile, dsh_plugins}``) and
+accepts raw ``cordis.patch.yml`` text via
+``app/harness/importer.coerce_harness``. The MCP optimizer and the
+``/deepseek/*`` routes no longer use this schema.
+"""
+
 from __future__ import annotations
 
 from typing import Any

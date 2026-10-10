@@ -195,11 +195,22 @@ def _render_digest_text(digest: dict[str, Any], position_by_id: dict[str, str]) 
         )
         harness = node["harness"]
         if isinstance(harness, dict):
-            harness_name = harness.get("name") or harness.get("model") or "unnamed"
-            lines.append(
-                f"  harness={harness_name} tools={len(harness.get('tools', []))} "
-                f"policy_items={len(harness.get('policy', []))}"
-            )
+            if isinstance(harness.get("dsh_plugins"), list):
+                # dsh patch-layer harness: profile + plugin rows.
+                plugin_ids = [
+                    p.get("id", "?") for p in harness["dsh_plugins"] if isinstance(p, dict)
+                ]
+                lines.append(
+                    f"  harness=dsh:{harness.get('profile', '?')} "
+                    f"plugins={len(plugin_ids)}"
+                    + (f" [{', '.join(plugin_ids)}]" if plugin_ids else "")
+                )
+            else:
+                harness_name = harness.get("name") or harness.get("model") or "unnamed"
+                lines.append(
+                    f"  harness={harness_name} tools={len(harness.get('tools', []))} "
+                    f"policy_items={len(harness.get('policy', []))}"
+                )
         if node["rationale"]:
             lines.append(f"  rationale: {node['rationale']}")
         result = node["benchmark_result"]

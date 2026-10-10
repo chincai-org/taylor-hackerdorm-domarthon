@@ -101,7 +101,5 @@ def create_tree_with_default_harness(
         harness=to_cordis_patch_yml(imported["harness"]),
         rationale="Initial DeepSeek harness loaded from cordis.patch.yml.",
     )
-    nodes = list(
-        session.query(Node).filter(Node.tree_id == tree.id).order_by(Node.created_at)
-    )
+    nodes = list(session.query(Node).filter(Node.tree_id == tree.id).order_by(Node.created_at))
     return serialize_tree(tree, nodes, benchmark)

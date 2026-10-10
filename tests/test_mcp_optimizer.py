@@ -139,14 +139,15 @@ def test_create_tree_tool_matches_website_initialization(monkeypatch) -> None:
     assert result["benchmark"]["scenarios"] == []
     assert result["stats"] == {
         "node_count": 1,
-        "complete_count": 0,
+        "complete_count": 1,
         "failed_count": 0,
-        "best_score": None,
+        "best_score": 0.0,
     }
 
     root = result["nodes"][0]
     assert root["id"] == result["root_node_id"]
-    assert root["status"] == "pending"
+    assert root["status"] == "complete"
+    assert root["score"] == 0.0
     assert root["rationale"] == "Initial DeepSeek harness loaded from cordis.patch.yml."
     assert 'model: "grafilab/deepseek-v4-flash"' in root["harness"]
 

@@ -94,8 +94,8 @@ def create_tree(name: str, description: str | None = None) -> dict[str, Any]:
 
     Ask the user for the required name and optional description before calling
     this tool. Name and description are normalized exactly like the website's
-    Create tree form, and the default benchmark and pending root node are
-    initialized the same way.
+    Create tree form, and the default benchmark and baseline root node
+    (score 0, complete) are initialized the same way.
     """
     try:
         request = CreateTreeRequest(name=name, description=description)

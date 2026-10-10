@@ -44,30 +44,10 @@ def test_create_tree_persists_default_harness_and_root(monkeypatch) -> None:
 
     import app.services.evaluator as evaluator
 
-    seen: dict[str, object] = {}
+    def _must_not_run(*args: object, **kwargs: object) -> tuple[float, dict]:
+        raise AssertionError("root creation must not call the judge")
 
-    def fake_evaluate(patch_yml: str, scenarios: list) -> tuple[float, dict]:
-        seen["scenarios"] = scenarios
-        result = {
-            "score": 100.0,
-            "passed": 1,
-            "total": 1,
-            "judge": "llm",
-            "generic": True,
-            "judge_model": "test-judge",
-            "scenarios": [
-                {
-                    "scenario_id": "generic-harness-review",
-                    "id": "generic-harness-review",
-                    "passed": True,
-                    "score": 100.0,
-                    "reason": "solid",
-                },
-            ],
-        }
-        return 100.0, result
-
-    monkeypatch.setattr(evaluator, "evaluate_harness_sync", fake_evaluate)
+    monkeypatch.setattr(evaluator, "evaluate_harness_sync", _must_not_run)
 
     result = trees.create_tree_endpoint(
         trees.CreateTreeRequest(name="  Refund support  ", description="  First experiment  ")
@@ -89,11 +69,11 @@ def test_create_tree_persists_default_harness_and_root(monkeypatch) -> None:
     root = result["nodes"][0]
     assert root["id"] == result["root_node_id"]
     assert root["parent_id"] is None
-    assert seen["scenarios"] == []
     assert root["status"] == "complete"
-    assert root["score"] == 100.0
+    assert root["score"] == 0.0
     assert root["benchmark_result"] is not None
-    assert root["benchmark_result"]["generic"] is True
+    assert root["benchmark_result"]["scenarios"] == []
+    assert root["benchmark_result"].get("baseline") is True
     assert isinstance(root["harness"], str)
     assert 'model: "grafilab/deepseek-v4-flash"' in root["harness"]
     assert all(
@@ -158,7 +138,7 @@ def test_benchmark_scenarios_can_be_created_updated_and_deleted(monkeypatch) -> 
     assert deleted["benchmark"]["version"] == 4
 
 
-def test_create_tree_root_judge_error_marks_failed(monkeypatch) -> None:
+def test_create_tree_root_never_calls_judge_and_scores_zero(monkeypatch) -> None:
     factory, _ = _session_factory()
 
     @contextmanager
@@ -182,10 +162,11 @@ def test_create_tree_root_judge_error_marks_failed(monkeypatch) -> None:
 
     monkeypatch.setattr(evaluator, "evaluate_harness_sync", _fail)
 
-    result = trees.create_tree_endpoint(trees.CreateTreeRequest(name="Failing root"))
+    result = trees.create_tree_endpoint(trees.CreateTreeRequest(name="Baseline root"))
 
     root = result["nodes"][0]
-    assert root["status"] == "failed"
-    assert root["score"] is None
-    assert root["error"] is not None
-    assert root["error"]["code"] == "RuntimeError"
+    assert root["status"] == "complete"
+    assert root["score"] == 0.0
+    assert root["error"] is None
+    assert root["benchmark_result"] is not None
+    assert root["benchmark_result"].get("baseline") is True

@@ -54,7 +54,25 @@ def create_root_node(
     if tree.root_node_id is not None:
         raise ValueError(f"Tree {tree_id} already has a root node")
 
-    node = Node(tree_id=tree_id, harness=harness, rationale=rationale)
+    # New roots are baselines, not judged: instant score 0 + complete so the
+    # optimizer can branch immediately. Real scoring happens on child nodes
+    # once benchmark scenarios exist in the database.
+    node = Node(
+        tree_id=tree_id,
+        harness=harness,
+        rationale=rationale,
+        status="complete",
+        score=0.0,
+        benchmark_result={
+            "score": 0.0,
+            "passed": 0,
+            "total": 0,
+            "scenarios": [],
+            "generic": False,
+            "baseline": True,
+            "note": "Root baseline: score 0 until scenarios are added and children are evaluated.",
+        },
+    )
     session.add(node)
     session.flush()
     tree.root_node_id = node.id

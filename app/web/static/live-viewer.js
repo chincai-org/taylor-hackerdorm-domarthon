@@ -82,8 +82,8 @@
       submit.disabled = true;
       submit.textContent = "Creating…";
       createForm.setAttribute("aria-busy", "true");
-      // Show the incoming card immediately: the POST evaluates the root
-      // node, so the round-trip is slow and needs a placeholder.
+      // Show the incoming card immediately: the root node is created with
+      // an instant baseline score, but the round-trip still needs a placeholder.
       prependCreatingSkeleton();
       try {
         const response = await fetch(
@@ -540,16 +540,34 @@
     schedulePoll();
   }
 
-  // Live eval progress: while the selected node is pending/running, re-fetch
-  // the tree every few seconds and re-render only on status/score/result change.
-  // Pauses when the tab is hidden (API quota!), never overlaps requests.
+  // Live refresh: fast 3s poll while the selected node is pending/running
+  // (eval progress), plus a slower 5s background poll for any tree update
+  // (new child nodes from Workbuddy, score changes, benchmark scenario
+  // edits). Re-renders only when something actually changed, pauses when
+  // the tab is hidden, never overlaps requests.
+  // Benchmark tab stays scenario-only: it renders tree.benchmark.scenarios
+  // from the database (existing + newly added); node evaluation results
+  // render in the Nodes tab panel instead.
+  function treeSignature(tree) {
+    const nodes = [...tree.nodeMap.values()]
+      .map((node) => `${node.id}:${node.status}:${node.score}`)
+      .sort()
+      .join("|");
+    const benchmark = tree.benchmark
+      ? `${tree.benchmark.version}:${(tree.benchmark.scenarios || []).length}`
+      : "no-benchmark";
+    return `${nodes}#${benchmark}`;
+  }
+  let lastTreeSignature = null;
+
   function schedulePoll() {
     window.clearTimeout(pollTimer);
-    if (!detail || !selectedTree || !selectedNodeId) return;
-    const node = selectedTree.nodeMap.get(selectedNodeId);
-    if (!node || (node.status !== "pending" && node.status !== "running"))
-      return;
-    pollTimer = window.setTimeout(refreshSelected, 3000);
+    if (!detail || !selectedTree) return;
+    const node = selectedNodeId
+      ? selectedTree.nodeMap.get(selectedNodeId)
+      : null;
+    const live = node && (node.status === "pending" || node.status === "running");
+    pollTimer = window.setTimeout(refreshSelected, live ? 3000 : 5000);
   }
 
   async function refreshSelected() {
@@ -568,16 +586,20 @@
       if (fresh.id !== selectedTree.id) return;
       const before = selectedTree.nodeMap.get(selectedNodeId);
       const after = fresh.nodeMap.get(selectedNodeId);
-      selectedTree = fresh;
-      if (
+      const selectedChanged =
         after &&
         (!before ||
           before.status !== after.status ||
           before.score !== after.score ||
           JSON.stringify(before.benchmark_result) !==
-            JSON.stringify(after.benchmark_result))
-      ) {
-        renderDetail(fresh);
+            JSON.stringify(after.benchmark_result));
+      const structuralChanged =
+        lastTreeSignature !== null &&
+        treeSignature(fresh) !== lastTreeSignature;
+      selectedTree = fresh;
+      lastTreeSignature = treeSignature(fresh);
+      if (selectedChanged || structuralChanged) {
+        renderDetail(fresh, detail.dataset.activeTab || "nodes");
       } else {
         schedulePoll();
       }
@@ -605,6 +627,7 @@
 
   function renderDetail(tree, activeTab = detail.dataset.activeTab || "nodes") {
     selectedTree = tree;
+    lastTreeSignature = treeSignature(tree);
     detail.dataset.activeTab = activeTab;
     document.getElementById("detail-heading").textContent = tree.name;
     document.title = `${tree.name} · Harness trees`;
@@ -615,6 +638,10 @@
       tree.nodeMap.get(tree.root_node_id) ??
       tree.nodes[0];
     if (activeTab === "nodes") selectNode(node);
+    else {
+      selectedNodeId = node?.id ?? null;
+      schedulePoll();
+    }
   }
 
   /** Clipboard write with legacy fallback: navigator.clipboard is absent or
@@ -850,6 +877,7 @@
           ? prepared.map(card).join("")
           : '<li class="empty-state"><h2>No trees yet</h2><p>Create a session and evaluate its root node to see it here.</p></li>';
         revealCards(cards);
+        gallerySignature = galleryListSignature(payload.data);
       } else {
         const tree = prepareTree(payload);
         if (tree.id !== detail.dataset.treeId)
@@ -873,5 +901,66 @@
   }
 
   retry.addEventListener("click", loadTrees);
+
+  // Gallery auto-refresh: when another client (Workbuddy via MCP, scenario
+  // editor, tree creator) mutates trees/nodes/scores, refresh the card list
+  // in place. Compares a lightweight signature first so idle polling never
+  // churns the DOM or steals focus; pauses when the tab is hidden.
+  let gallerySignature = null;
+  let galleryPollTimer = 0;
+  let galleryPollInflight = false;
+  function galleryListSignature(payloadData) {
+    return (payloadData || [])
+      .map(
+        (tree) =>
+          `${tree.id}:${(tree.nodes || []).length}:${(tree.nodes || [])
+            .map((node) => `${node.id}:${node.status}:${node.score}`)
+            .sort()
+            .join(",")}:${tree.updated_at || ""}`,
+      )
+      .sort()
+      .join("|");
+  }
+  function scheduleGalleryRefresh() {
+    if (!cards) return;
+    window.clearTimeout(galleryPollTimer);
+    galleryPollTimer = window.setTimeout(refreshGallery, 5000);
+  }
+  async function refreshGallery() {
+    if (
+      document.hidden ||
+      galleryPollInflight ||
+      !cards ||
+      content.getAttribute("aria-busy") === "true" ||
+      createForm?.getAttribute("aria-busy") === "true"
+    ) {
+      scheduleGalleryRefresh();
+      return;
+    }
+    galleryPollInflight = true;
+    try {
+      const response = await fetch("/api/v1/trees", {
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) throw new Error(`Tree API returned ${response.status}`);
+      const payload = await response.json();
+      if (Array.isArray(payload?.data)) {
+        const signature = galleryListSignature(payload.data);
+        if (gallerySignature !== null && signature !== gallerySignature) {
+          await loadTrees();
+        } else {
+          gallerySignature = signature;
+        }
+      }
+    } catch {
+      // Transient blip; the next tick retries. Real failures surface on the
+      // next manual loadTrees via the retry button.
+    } finally {
+      galleryPollInflight = false;
+      scheduleGalleryRefresh();
+    }
+  }
+  if (cards) scheduleGalleryRefresh();
   loadTrees();
 })();

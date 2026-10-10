@@ -11,7 +11,6 @@ from app.db.repository import (
     get_benchmark,
     get_tree,
     list_trees,
-    update_node_evaluation,
 )
 from app.services.tree_creation import create_tree_with_default_harness
 
@@ -119,13 +118,12 @@ def create_tree_endpoint(request: CreateTreeRequest) -> dict[str, Any]:
     """Create a support tree with the repository's default DeepSeek harness."""
     try:
         with session_scope() as session:
+            # Root node is a baseline: score 0 + complete, no judge call.
+            # Benchmark stays reserved for DB scenarios (empty until added
+            # below via /benchmark/scenarios); real scoring happens on child
+            # nodes once scenarios exist.
             created = create_tree_with_default_harness(session, request)
-            tree_id = created["id"]
-            root_id = created["root_node_id"]
-            created_nodes = created.get("nodes") or []
-            root_harness = created_nodes[0]["harness"] if created_nodes else None
-            if root_harness is None:
-                raise ValueError("Default harness creation returned no root node")
+            return created
     except OSError as exc:
         raise HTTPException(
             status_code=500,
@@ -133,39 +131,6 @@ def create_tree_endpoint(request: CreateTreeRequest) -> dict[str, Any]:
         ) from exc
     except ValueError as exc:
         raise HTTPException(status_code=500, detail=f"Default harness is invalid: {exc}") from exc
-
-    # Score the root node right away (generic review: new trees have no
-    # scenarios yet) so it never gets stuck in pending.
-    with session_scope() as session:
-        update_node_evaluation(session, tree_id=tree_id, node_id=root_id, status="running")
-
-    try:
-        from app.services.evaluator import evaluate_harness_sync
-
-        score, benchmark_result = evaluate_harness_sync(root_harness, [])
-    except Exception as exc:  # noqa: BLE001 - root must land failed, never stuck running
-        error: dict[str, Any] = {"code": type(exc).__name__, "message": str(exc)[:500]}
-        with session_scope() as session:
-            update_node_evaluation(
-                session, tree_id=tree_id, node_id=root_id, status="failed", error=error
-            )
-    else:
-        with session_scope() as session:
-            update_node_evaluation(
-                session,
-                tree_id=tree_id,
-                node_id=root_id,
-                status="complete",
-                score=score,
-                benchmark_result=benchmark_result,
-            )
-
-    with session_scope() as session:
-        tree = get_tree(session, tree_id)
-        if tree is None:  # pragma: no cover - just created above
-            raise HTTPException(status_code=500, detail="Tree was lost after creation.")
-        nodes = list(session.query(Node).filter(Node.tree_id == tree.id).order_by(Node.created_at))
-        return _tree(tree, nodes, get_benchmark(session, tree_id=tree.id))
 
 
 @router.get("")

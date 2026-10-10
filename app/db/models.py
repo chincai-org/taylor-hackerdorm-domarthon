@@ -33,9 +33,7 @@ class Tree(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
-    benchmark_id: Mapped[str] = mapped_column(
-        ForeignKey("benchmarks.id"), nullable=False
-    )
+    benchmark_id: Mapped[str] = mapped_column(ForeignKey("benchmarks.id"), nullable=False)
     root_node_id: Mapped[str | None] = mapped_column(String(36))
     status: Mapped[str] = mapped_column(String(32), default="active", nullable=False)
     metadata_json: Mapped[dict[str, Any]] = mapped_column(

@@ -95,6 +95,8 @@ Benchmark: id, name, version, scenarios (JSON), created_at
 
 - The **root node** of every tree has a seed harness and is evaluated on creation.
 - **Invariant:** any node that is `complete` has a harness *and* a benchmark result. Workbuddy can assume this when reading.
+- A tree has exactly one root node; child nodes must reference a parent in the same tree.
+- Node status values are `pending`, `running`, `complete`, and `failed`.
 - Never delete nodes — failed/low-scoring nodes remain visible and queryable.
 - Store `rationale` (why Workbuddy made this change) on each node; it helps future attempts.
 
@@ -239,9 +241,7 @@ Environment variables (never commit secrets; provide `.env.example`):
 - The local SQLite file is ignored by Git and must not be used as Vercel production storage because serverless filesystems are ephemeral.
 - Database schema creation is exposed through `create_tables()` for local setup. Production migrations should be added before schema changes are deployed.
 
-## 16. Open Questions (resolve early, then update this file)
 
-- Final database choice (SQLite default).
 - Exact GraffiLab AI / PI API shape, auth, and rate limits.
 - Whether evaluation is synchronous or async-with-polling for MCP.
 - Whether "Create session" is in the MVP.

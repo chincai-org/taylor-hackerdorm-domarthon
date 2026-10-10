@@ -89,11 +89,7 @@ def get_tree(session: Session, tree_id: str) -> Tree | None:
 
 
 def list_trees(session: Session, *, limit: int = 50) -> list[Tree]:
-    return list(
-        session.scalars(
-            select(Tree).order_by(Tree.updated_at.desc()).limit(max(1, limit))
-        )
-    )
+    return list(session.scalars(select(Tree).order_by(Tree.updated_at.desc()).limit(max(1, limit))))
 
 
 def get_node(session: Session, *, tree_id: str, node_id: str) -> Node | None:
@@ -113,9 +109,7 @@ def get_children(session: Session, *, tree_id: str, parent_id: str) -> list[Node
 
 def get_benchmark(session: Session, *, tree_id: str) -> Benchmark | None:
     benchmark = session.scalars(
-        select(Benchmark)
-        .join(Tree, Tree.benchmark_id == Benchmark.id)
-        .where(Tree.id == tree_id)
+        select(Benchmark).join(Tree, Tree.benchmark_id == Benchmark.id).where(Tree.id == tree_id)
     ).first()
     return benchmark
 
@@ -144,6 +138,5 @@ def update_node_evaluation(
 
 def tree_node_count(session: Session, *, tree_id: str) -> int:
     return int(
-        session.scalar(select(func.count()).select_from(Node).where(Node.tree_id == tree_id))
-        or 0
+        session.scalar(select(func.count()).select_from(Node).where(Node.tree_id == tree_id)) or 0
     )

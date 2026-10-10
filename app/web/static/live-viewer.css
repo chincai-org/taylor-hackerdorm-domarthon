@@ -1,4 +1,4 @@
-/* FastAPI viewer styles from 54019be, scoped so the static showcase is unchanged. */
+/* FastAPI viewer styles, scoped to live pages so nothing leaks elsewhere. */
 @layer page {
 	.live-trees [hidden],
 	html:not(.has-js) .live-trees :is(#tree-status, #tree-count) {

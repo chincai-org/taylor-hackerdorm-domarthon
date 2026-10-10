@@ -4,7 +4,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -30,13 +30,8 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 app.mount("/mcp", mcp_app)
 app.mount(
     "/trees",
-    StaticFiles(directory=Path(__file__).parent / "web" / "static"),
+    StaticFiles(directory=Path(__file__).parent / "web" / "static", html=True),
     name="trees",
-)
-app.mount(
-    "/showcase",
-    StaticFiles(directory=Path(__file__).parent / "web" / "showcase" / "dist"),
-    name="showcase",
 )
 
 templates = Jinja2Templates(directory=Path(__file__).parent / "web" / "templates")
@@ -57,6 +52,11 @@ def read_tree_page(request: Request, tree_id: str):
             "tree_api_url": f"{settings.API_V1_STR}/trees/{quote(tree_id, safe='')}",
         },
     )
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return FileResponse(Path(__file__).parent.parent / "public" / "favicon.ico")
 
 
 if __name__ == "__main__":

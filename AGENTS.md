@@ -52,7 +52,7 @@ We are building a system where **one AI optimizes the harness of another AI**, i
 ## 4. Tech Stack
 
 - **Backend:** Python, FastAPI, official MCP Python SDK (`mcp`) mounted alongside FastAPI.
-- **Database:** SQLAlchemy models and repository helpers with SQLite by default for local development and Neon Postgres for Vercel. Store harnesses, benchmark scenarios, and results in JSON fields; keep DB access behind `app/db/repository.py`.
+- **Database:** SQLAlchemy models and repository helpers backed by Neon Postgres in both local development and Vercel. Store harnesses, benchmark scenarios, and results in JSON fields; keep DB access behind `app/db/repository.py`.
 - **Frontend:** hosted on **Vercel**. Tree visualization (e.g., React Flow / d3 / simple SVG). Prefer whatever the team already scaffolded.
 - **Evaluation runtime:** PI via the GraffiLab AI API.
 
@@ -173,7 +173,7 @@ uv run uvicorn app.main:app --reload --port 5001
 # Or use the development entry point
 uv run python main.py
 
-# Create the local SQLite schema
+# Create the local Neon Postgres schema
 uv run python -c "from app.db import create_tables; create_tables()"
 
 # Format and lint
@@ -184,15 +184,14 @@ uv run ruff check .
 uv run pytest
 ```
 
-Local development uses SQLite at `data/local.db` by default. Set
-`LOCAL_DATABASE_PATH` to use another local SQLite file. For Vercel/Neon,
-set `DATABASE_URL` to the pooled Postgres connection string before starting
-the application; do not use SQLite as the production database.
+Local development and Vercel production both use Neon Postgres. Put the local
+pooled connection string in `.env.development.local`; Vercel provides its own
+`DATABASE_URL` value in the deployment environment. The application uses the
+same database code in both environments and only the credentials differ.
 
 Environment variables (never commit secrets; provide `.env.example`):
 - `GRAFFILAB_API_KEY` (confirm name) — PI evaluation API
-- `DATABASE_URL` — optional production database URL; use Neon Postgres on Vercel
-- `LOCAL_DATABASE_PATH` — local SQLite path, default `data/local.db`
+- `DATABASE_URL` — Neon Postgres connection URL; loaded from `.env.development.local` locally
 - `NEXT_PUBLIC_API_URL` / equivalent — frontend → server base URL
 
 ## 12. Coding Conventions
@@ -231,15 +230,71 @@ Environment variables (never commit secrets; provide `.env.example`):
 
 ## 15. Database Plan
 
-- Production uses **Neon Postgres** through Vercel's `DATABASE_URL`.
-- Local development uses SQLite at `data/local.db` when `DATABASE_URL` is unset.
-- SQLAlchemy is the shared database layer; SQLite and Postgres use the same models and repository functions.
+- Local development and production use **Neon Postgres** through `DATABASE_URL`.
+- SQLAlchemy is the shared database layer in both environments; only the connection credentials differ.
 - `trees` store optimization sessions, `benchmarks` store immutable scenario sets, and `nodes` store the general tree using `tree_id` plus `parent_id`.
 - Harnesses, benchmark scenarios, benchmark results, metadata, and evaluation errors are JSON fields.
 - `create_root_node` enforces one root per tree; `create_child_node` validates that the parent belongs to the requested tree.
 - Nodes are retained, including failed and regressed attempts. Evaluation updates status, score, result, and error through `update_node_evaluation`.
-- The local SQLite file is ignored by Git and must not be used as Vercel production storage because serverless filesystems are ephemeral.
 - Database schema creation is exposed through `create_tables()` for local setup. Production migrations should be added before schema changes are deployed.
+
+### Database schema
+
+The schema currently contains three tables. The application generates UUID
+values as 36-character strings; timestamps are timezone-aware and default to
+the database server's current time.
+
+```text
+benchmarks
+-----------
+id          VARCHAR(36) PRIMARY KEY
+name        VARCHAR(255) NOT NULL
+version     INTEGER NOT NULL DEFAULT 1
+scenarios   JSON NOT NULL
+created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+
+trees
+-----
+id            VARCHAR(36) PRIMARY KEY
+name          VARCHAR(255) NOT NULL
+description   TEXT NULL
+benchmark_id  VARCHAR(36) NOT NULL REFERENCES benchmarks(id)
+root_node_id  VARCHAR(36) NULL
+status        VARCHAR(32) NOT NULL DEFAULT 'active'
+metadata      JSON NOT NULL DEFAULT {}
+created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+updated_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+
+nodes
+-----
+id                VARCHAR(36) PRIMARY KEY
+tree_id           VARCHAR(36) NOT NULL REFERENCES trees(id)
+parent_id         VARCHAR(36) NULL
+harness           JSON NOT NULL
+status            VARCHAR(32) NOT NULL DEFAULT 'pending'
+score             FLOAT NULL
+benchmark_result  JSON NULL
+rationale         TEXT NULL
+error             JSON NULL
+created_at        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+updated_at        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+```
+
+Relationships and constraints:
+
+- Each tree references one immutable benchmark through `trees.benchmark_id`.
+- Each node belongs to one tree through `nodes.tree_id`.
+- A root node has `parent_id = NULL`; a child node stores its parent in
+  `parent_id`. The parent column is not a database foreign key because tree
+  creation and parent validation are enforced by the repository.
+- `trees.root_node_id` identifies the tree's root node and may be null while a
+  tree is being created.
+- JSON fields contain benchmark scenarios, harness definitions, benchmark
+  results, tree metadata, and evaluation errors.
+- Expected node statuses are `pending`, `running`, `complete`, and `failed`.
+- `ix_nodes_tree_parent` indexes `(tree_id, parent_id)` for tree traversal.
+- `ix_nodes_tree_status` indexes `(tree_id, status)` for status filtering.
+- `ix_nodes_tree_score` indexes `(tree_id, score)` for ranking nodes.
 
 
 - Exact GraffiLab AI / PI API shape, auth, and rate limits.

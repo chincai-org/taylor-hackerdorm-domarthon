@@ -170,14 +170,21 @@ def import_harness(content: str, profile: str | None = None) -> dict[str, Any]:
 
     persona = _cfg("@deepseek-ai/dsh-persona")
     model_cfg = _cfg("@deepseek-ai/dsh-agent-default-model")
+    openai_cfg = _cfg("@deepseek-ai/dsh-plugin-openai")
+    # The OpenAI-compatible adapter carries the effective model id
+    # (e.g. tencent/hy3) when no dsh-agent-default-model row is present.
+    provider = str(model_cfg.get("provider", "deepseek-official"))
+    model_id = str(
+        model_cfg.get("model") or openai_cfg.get("model") or "deepseek-chat"
+    )
     harness = {
         "version": HARNESS_VERSION,
         "kind": HARNESS_KIND,
         "profile": profile or doc_profile or "headless",
         "system_prompt": str(persona.get("prefix", "")),
         "model": {
-            "provider": str(model_cfg.get("provider", "deepseek-official")),
-            "model": str(model_cfg.get("model", "deepseek-chat")),
+            "provider": provider,
+            "model": model_id,
         },
         "dsh_plugins": kept,
     }

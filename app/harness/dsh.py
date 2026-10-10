@@ -90,6 +90,11 @@ SUPPORTED_DSH_PLUGINS: dict[str, dict[str, Any]] = {
         "allowed_config_keys": {"mode"},
         "required": {"mode"},
     },
+    "@deepseek-ai/dsh-plugin-openai": {
+        "description": "OpenAI-compatible LLM adapter (baseURL + apiKey + model).",
+        "allowed_config_keys": {"baseURL", "apiKey", "apiKeyEnv", "model"},
+        "required": {"model"},
+    },
     "@deepseek-ai/dsh-llm-deepseek-api-key": {
         "description": "DeepSeek messages adapter (per-request API-key ref).",
         "allowed_config_keys": {
@@ -486,7 +491,8 @@ def resolve_runtime(
     - system text = explicit ``system_prompt`` arg > ``harness.system_prompt``
       > ``dsh-persona.prefix`` (+ suffix) > ``dsh-system-prompt`` prefix/suffix
     - model = explicit ``model`` arg > ``dsh-agent-default-model.model`` >
-      ``harness.model.model`` > server default (caller fills in)
+      ``dsh-plugin-openai.model`` > ``harness.model.model`` > server default
+      (caller fills in)
     - tools presentation / approval / sandbox / compaction / presets are
       returned as ``policy_notes`` + ``ignored``: they shape the prompt text
       only via the persona, they do not change the HTTP call.
@@ -545,6 +551,15 @@ def resolve_runtime(
             resolved_model = str(model_cfg.get("model") or "")
         if model_cfg.get("reasoningEffort"):
             policy_notes.append(f"reasoningEffort={model_cfg['reasoningEffort']}")
+
+    openai_cfg = plugin_config(h, "@deepseek-ai/dsh-plugin-openai")
+    if openai_cfg:
+        applied.append("dsh-plugin-openai")
+        if resolved_model is None and openai_cfg.get("model"):
+            resolved_model = str(openai_cfg.get("model") or "")
+        if openai_cfg.get("baseURL"):
+            policy_notes.append(f"harness baseURL={openai_cfg['baseURL']}")
+
     if resolved_model is None and isinstance(h.get("model"), dict):
         resolved_model = h["model"].get("model")  # type: ignore[union-attr]
         if resolved_model:

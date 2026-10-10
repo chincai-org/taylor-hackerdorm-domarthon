@@ -13,15 +13,21 @@
   Keep both assets linked from the production template. No Node build is required
   to serve the live page in the existing Python container.
 - Live nodes use `pending`, `running`, `complete`, and `failed`, with nullable
-  raw scores, harness JSON, rationale, benchmark results and errors. Do not apply
-  the static showcase's acceptance thresholds, basis points, verification keys,
-  or Petri CLI instructions to backend data.
+  raw scores, harness JSON, rationale, benchmark results and errors. Harness and
+  result payloads have copy controls. Scenario-array benchmark results render as
+  passed/failed/unscored cards; summary-only results render as labeled facts.
+  Do not show raw result JSON in the normal detail UI. Keep copy payload verbatim.
+  The wide lineage SVG is centered in a bounded scroll stage. Do not apply the
+  static showcase's acceptance thresholds, basis points, verification keys, or
+  Petri CLI instructions to backend data.
 - The static showcase remains `/trees/index.html` or a local `file://` page.
   `main.js` only enhances it; `build.mjs` composes the static `templates/` modules.
   Never overwrite production integration with standalone showcase code.
 - Run `node checks/integration.mjs` from `frontend/trees-section` for read-only
   same-origin API-contract/browser tests using local fixtures, without database
-  access. Also run the static build, unit/render tests and static checks.
+  access. It covers clipboard payloads, scenario result rendering, sparse-tree
+  centering and dropdown pointer behavior. Also run the static build, unit/render
+  tests and static checks.
 - Frontend `lib/` modules must be tracked in Git. The root `.gitignore` explicitly
   exempts them from the generic Python `lib/` ignore rule.
 - Production's live data requires JavaScript, as in the recovered commit. The

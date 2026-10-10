@@ -91,11 +91,13 @@
         stats.best_score =
           stats.best_score === null ? node.score : Math.max(stats.best_score, node.score);
     }
-    const bounds = { depth: 0, row: 0 };
+    const bounds = { depth: 0, firstRow: Infinity, lastRow: 0 };
     for (const slot of slots.values()) {
       bounds.depth = Math.max(bounds.depth, slot.depth);
-      bounds.row = Math.max(bounds.row, slot.row);
+      bounds.firstRow = Math.min(bounds.firstRow, slot.row);
+      bounds.lastRow = Math.max(bounds.lastRow, slot.row);
     }
+    if (slots.size === 0) bounds.firstRow = 0;
     return { ...tree, nodeMap: nodes, slots, bounds, stats };
   }
 
@@ -115,10 +117,13 @@
     const columnGap = compact ? 95 : 220;
     const rowGap = compact ? 25 : 64;
     const width = Math.max(520, (tree.bounds.depth + 1) * columnGap + 50);
-    const height = Math.max(compact ? 140 : 300, (tree.bounds.row + 1) * rowGap + 40);
+    const naturalHeight = (tree.bounds.lastRow + 1) * rowGap + 40;
+    const height = Math.max(compact ? 140 : 300, naturalHeight);
+    const rowCenter = 20 + ((tree.bounds.firstRow + tree.bounds.lastRow) / 2) * rowGap;
+    const verticalOffset = compact ? 0 : Math.max(0, height / 2 - rowCenter);
     const point = (id) => {
       const slot = tree.slots.get(id);
-      return { x: 25 + slot.depth * columnGap, y: 20 + slot.row * rowGap };
+      return { x: 25 + slot.depth * columnGap, y: 20 + slot.row * rowGap + verticalOffset };
     };
     const edges = tree.nodes
       .filter((node) => tree.slots.has(node.parent_id))
@@ -157,10 +162,67 @@
       .join("")}</span></a></li>`;
   }
 
+  function copyControl(nodeId, kind, label) {
+    return `<button class="live-copy" type="button" data-copy-node="${escape(nodeId)}" data-copy-kind="${kind}" aria-label="Copy ${label}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M5 8h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Z"/></svg><span>Copy</span></button><span class="live-copy-status" role="status" aria-live="polite"></span>`;
+  }
+
+  function benchmarkResult(node) {
+    const result = node.benchmark_result;
+    if (!result || typeof result !== "object") return "";
+    const scenarios = Array.isArray(result.scenarios) ? result.scenarios : null;
+    if (scenarios) {
+      const passed = scenarios.filter((scenario) => scenario?.passed === true).length;
+      const failed = scenarios.filter((scenario) => scenario?.passed === false).length;
+      const unscored = scenarios.length - passed - failed;
+      const summary = `${passed} passed · ${failed} failed · ${unscored} unscored · ${scenarios.length} total`;
+      const rows = scenarios
+        .map((scenario, index) => {
+          const state =
+            scenario?.passed === true
+              ? "passed"
+              : scenario?.passed === false
+                ? "failed"
+                : "unknown";
+          const name = scenario?.name ?? scenario?.scenario ?? `Scenario ${index + 1}`;
+          const expected = scenario?.expected_action ?? scenario?.expected;
+          const actual = scenario?.actual_action ?? scenario?.actual;
+          const reason = scenario?.reason ?? scenario?.failure_reason;
+          return `<li class="scenario-result scenario-status-${state}"><div class="scenario-heading"><strong>${escape(name)}</strong><span class="scenario-badge">${state === "unknown" ? "No verdict" : state}</span></div>${expected !== undefined || actual !== undefined ? `<dl class="scenario-actions">${expected !== undefined ? `<div><dt>Expected</dt><dd>${escape(expected)}</dd></div>` : ""}${actual !== undefined ? `<div><dt>Actual</dt><dd>${escape(actual)}</dd></div>` : ""}</dl>` : ""}${reason ? `<p class="scenario-reason">${escape(reason)}</p>` : ""}</li>`;
+        })
+        .join("");
+      return `<section class="benchmark-results" aria-labelledby="benchmark-heading"><header class="result-header"><div><p class="eyebrow">Evaluation</p><h4 id="benchmark-heading">Benchmark result</h4></div><span class="result-summary">${summary}</span>${copyControl(node.id, "benchmark_result", "benchmark result")}</header>${scenarios.length ? `<ul class="scenario-list">${rows}</ul>` : '<p class="muted">No scenario results are available.</p>'}</section>`;
+    }
+    const entries = Object.entries(result);
+    const facts = entries.filter(
+      ([, value]) => value === null || ["string", "number", "boolean"].includes(typeof value),
+    );
+    const rows = facts
+      .map(
+        ([key, value]) =>
+          `<div class="result-fact"><dt>${escape(key.replaceAll("_", " "))}</dt><dd>${escape(value)}</dd></div>`,
+      )
+      .join("");
+    const lists = entries
+      .filter(([, value]) => Array.isArray(value))
+      .map(
+        ([key, values]) =>
+          `<section class="result-list"><h5>${escape(key.replaceAll("_", " "))}</h5><ul>${values
+            .map(
+              (value) =>
+                `<li>${escape(value && typeof value === "object" ? (value.name ?? value.reason ?? JSON.stringify(value)) : value)}</li>`,
+            )
+            .join("")}</ul></section>`,
+      )
+      .join("");
+    return `<section class="benchmark-results" aria-labelledby="benchmark-heading"><header class="result-header"><div><p class="eyebrow">Evaluation</p><h4 id="benchmark-heading">Benchmark result</h4></div>${copyControl(node.id, "benchmark_result", "benchmark result")}</header>${rows ? `<dl class="result-facts">${rows}</dl>` : ""}${lists}${rows || lists ? "" : '<p class="muted">Result details are unavailable.</p>'}</section>`;
+  }
+
   function nodePanel(node) {
     if (!node) return '<p class="muted">This tree has no nodes yet.</p>';
     const json = (value) => escape(JSON.stringify(value, null, 2));
-    return `<div class="node-panel-head"><div><p class="eyebrow">Selected node</p><h3 id="live-node-heading" tabindex="-1">${escape(labelOf(node))}</h3></div><span class="tag status-${node.status}">${escape(node.status)}</span></div><dl class="node-facts"><div><dt>Node ID</dt><dd><code>${escape(node.id)}</code></dd></div><div><dt>Score</dt><dd>${score(node.score)}</dd></div><div><dt>Parent</dt><dd><code>${escape(node.parent_id || "Root")}</code></dd></div></dl>${node.error !== null && node.error !== undefined ? `<p class="error-copy">${json(node.error)}</p>` : ""}<details><summary>Harness configuration</summary><pre><code>${json(node.harness ?? {})}</code></pre></details>${node.benchmark_result !== null && node.benchmark_result !== undefined ? `<details><summary>Benchmark result</summary><pre><code>${json(node.benchmark_result)}</code></pre></details>` : ""}`;
+    const harness = node.harness ?? {};
+    const hasResult = node.benchmark_result !== null && node.benchmark_result !== undefined;
+    return `<div class="node-panel-head"><div><p class="eyebrow">Selected node</p><h3 id="live-node-heading" tabindex="-1">${escape(labelOf(node))}</h3></div><span class="tag status-${node.status}">${escape(node.status)}</span></div><dl class="node-facts"><div><dt>Node ID</dt><dd><code>${escape(node.id)}</code></dd></div><div><dt>Score</dt><dd>${score(node.score)}</dd></div><div><dt>Parent</dt><dd><code>${escape(node.parent_id || "Root")}</code></dd></div></dl>${node.error !== null && node.error !== undefined ? `<p class="error-copy">${escape(typeof node.error === "string" ? node.error : (node.error.message ?? "Evaluation failed"))}</p>` : ""}<details class="config-details"><summary>Harness configuration</summary><div class="copyable-panel"><pre><code>${json(harness)}</code></pre>${copyControl(node.id, "harness", "harness configuration")}</div></details>${hasResult ? benchmarkResult(node) : ""}`;
   }
 
   function selectNode(node) {
@@ -181,7 +243,28 @@
     selectNode(tree.nodeMap.get(tree.root_node_id) ?? tree.nodes[0]);
   }
 
-  detail?.addEventListener("click", (event) => {
+  detail?.addEventListener("click", async (event) => {
+    const copyButton = event.target.closest("button[data-copy-node]");
+    if (copyButton) {
+      const node = selectedTree?.nodeMap.get(copyButton.dataset.copyNode);
+      const value =
+        copyButton.dataset.copyKind === "harness" ? node?.harness : node?.benchmark_result;
+      const status = copyButton.nextElementSibling;
+      if (!node || value === null || value === undefined) {
+        status.textContent = "Copy failed. Content is unavailable.";
+        return;
+      }
+      copyButton.disabled = true;
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(value, null, 2));
+        status.textContent = "Copied to clipboard";
+      } catch {
+        status.textContent = "Copy failed. Allow clipboard access and try again.";
+      } finally {
+        copyButton.disabled = false;
+      }
+      return;
+    }
     const link = event.target.closest("a[data-node-id]");
     if (
       !link ||

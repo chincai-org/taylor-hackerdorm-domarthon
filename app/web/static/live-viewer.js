@@ -182,8 +182,8 @@
       .join("")}</span></a></li>`;
   }
 
-  function copyControl(nodeId, kind, label) {
-    return `<button class="live-copy" type="button" data-copy-node="${escape(nodeId)}" data-copy-kind="${kind}" aria-label="Copy ${label}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M5 8h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Z"/></svg><span>Copy</span></button><span class="live-copy-status" role="status" aria-live="polite"></span>`;
+  function copyControl(nodeId, label) {
+    return `<button class="live-copy" type="button" data-copy-node="${escape(nodeId)}" aria-label="Copy ${label}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M5 8h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Z"/></svg><span>Copy</span></button><span class="live-copy-status" role="status" aria-live="polite"></span>`;
   }
 
   function benchmarkResult(node) {
@@ -215,7 +215,7 @@
           return `<li class="scenario-result scenario-status-${state}"><div class="scenario-heading"><strong>${escape(name)}</strong><span class="scenario-badge">${state === "unknown" ? "No verdict" : state}</span></div>${expected !== undefined || actual !== undefined ? `<dl class="scenario-actions">${expected !== undefined ? `<div><dt>Expected</dt><dd>${escape(expected)}</dd></div>` : ""}${actual !== undefined ? `<div><dt>Actual</dt><dd>${escape(actual)}</dd></div>` : ""}</dl>` : ""}${reason ? `<p class="scenario-reason">${escape(reason)}</p>` : ""}</li>`;
         })
         .join("");
-      return `<section class="benchmark-results" aria-labelledby="benchmark-heading"><header class="result-header"><div><p class="eyebrow">Evaluation</p><h4 id="benchmark-heading">Benchmark result</h4></div><span class="result-summary">${summary}</span>${copyControl(node.id, "benchmark_result", "benchmark result")}</header>${scenarios.length ? `<ul class="scenario-list">${rows}</ul>` : '<p class="muted">No scenario results are available.</p>'}</section>`;
+      return `<section class="benchmark-results" aria-labelledby="benchmark-heading"><header class="result-header"><div><p class="eyebrow">Evaluation</p><h4 id="benchmark-heading">Benchmark result</h4></div><span class="result-summary">${summary}</span></header>${scenarios.length ? `<ul class="scenario-list">${rows}</ul>` : '<p class="muted">No scenario results are available.</p>'}</section>`;
     }
     const entries = Object.entries(result);
     const facts = entries.filter(
@@ -241,7 +241,7 @@
             .join("")}</ul></section>`,
       )
       .join("");
-    return `<section class="benchmark-results" aria-labelledby="benchmark-heading"><header class="result-header"><div><p class="eyebrow">Evaluation</p><h4 id="benchmark-heading">Benchmark result</h4></div>${copyControl(node.id, "benchmark_result", "benchmark result")}</header>${rows ? `<dl class="result-facts">${rows}</dl>` : ""}${lists}${rows || lists ? "" : '<p class="muted">Result details are unavailable.</p>'}</section>`;
+    return `<section class="benchmark-results" aria-labelledby="benchmark-heading"><header class="result-header"><div><p class="eyebrow">Evaluation</p><h4 id="benchmark-heading">Benchmark result</h4></div></header>${rows ? `<dl class="result-facts">${rows}</dl>` : ""}${lists}${rows || lists ? "" : '<p class="muted">Result details are unavailable.</p>'}</section>`;
   }
 
   function nodePanel(node) {
@@ -249,9 +249,8 @@
     const harness = node.harness ?? "";
     const hasResult =
       node.benchmark_result !== null && node.benchmark_result !== undefined;
-    return `<div class="node-panel-head"><div><p class="eyebrow">Selected node</p><h3 id="live-node-heading" tabindex="-1">${escape(labelOf(node))}</h3></div><span class="tag status-${node.status}">${escape(node.status)}</span></div><dl class="node-facts"><div><dt>Node ID</dt><dd><code>${escape(node.id)}</code></dd></div><div><dt>Score</dt><dd>${score(node.score)}</dd></div><div><dt>Parent</dt><dd><code>${escape(node.parent_id || "Root")}</code></dd></div></dl>${node.error !== null && node.error !== undefined ? `<p class="error-copy">${escape(typeof node.error === "string" ? node.error : (node.error.message ?? "Evaluation failed"))}</p>` : ""}<details class="config-details"><summary>Harness configuration</summary><div class="copyable-panel"><pre><code>${escape(harness)}</code></pre>${copyControl(node.id, "harness", "harness configuration")}</div></details>${hasResult ? benchmarkResult(node) : ""}`;
+    return `<div class="node-panel-head"><div><p class="eyebrow">Selected node</p><h3 id="live-node-heading" tabindex="-1">${escape(labelOf(node))}</h3></div><span class="tag status-${node.status}">${escape(node.status)}</span></div><dl class="node-facts"><div><dt>Node ID</dt><dd><code>${escape(node.id)}</code></dd></div><div><dt>Score</dt><dd>${score(node.score)}</dd></div><div><dt>Parent</dt><dd><code>${escape(node.parent_id || "Root")}</code></dd></div></dl>${node.error !== null && node.error !== undefined ? `<p class="error-copy">${escape(typeof node.error === "string" ? node.error : (node.error.message ?? "Evaluation failed"))}</p>` : ""}<details class="config-details"><summary>Harness configuration</summary><div class="copyable-panel"><pre><code>${escape(harness)}</code></pre>${copyControl(node.id, "harness configuration")}</div></details>${hasResult ? benchmarkResult(node) : ""}`;
   }
-
   function selectNode(node) {
     const panel = detail.querySelector(".node-panel");
     panel.innerHTML = nodePanel(node);
@@ -341,19 +340,19 @@
     const copyButton = event.target.closest("button[data-copy-node]");
     if (copyButton) {
       const node = selectedTree?.nodeMap.get(copyButton.dataset.copyNode);
+      const harness = node?.harness;
+      // Harness is TEXT (yml): copy raw. Objects (legacy) stay pretty JSON.
       const value =
-        copyButton.dataset.copyKind === "harness"
-          ? node?.harness
-          : node?.benchmark_result;
+        typeof harness === "string" ? harness : JSON.stringify(harness, null, 2);
       const status = copyButton.nextElementSibling;
-      if (!node || value === null || value === undefined) {
+      if (!node || value === null || value === undefined || value === "") {
         status.textContent = "Copy failed. Content is unavailable.";
         return;
       }
       copyButton.disabled = true;
       let copied = false;
       try {
-        copied = await writeClipboard(JSON.stringify(value, null, 2));
+        copied = await writeClipboard(value);
       } finally {
         copyButton.disabled = false;
       }

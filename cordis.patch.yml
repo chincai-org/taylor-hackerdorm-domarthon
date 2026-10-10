@@ -1,0 +1,20 @@
+- insert:
+  - id: core-logger
+    name: '@cordisjs/plugin-logger'
+    config:
+      level: 2
+      
+  - id: llm-adapter
+    name: '@deepseek-ai/dsh-plugin-openai'
+    config:
+      baseURL: 'https://api.deepseek.com'
+      apiKey: '${ENV:DEEPSEEK_API_KEY}'
+      model: 'tencent/hy3'
+      
+  - id: tool-filesystem
+    name: '@deepseek-ai/dsh-plugin-fs'
+    config:
+      workspace: './workspace'
+      
+  - id: tool-search
+    name: '@deepseek-ai/dsh-plugin-web-search'

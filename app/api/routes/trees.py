@@ -1,21 +1,19 @@
+from collections.abc import Iterable
 from typing import Any
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field, field_validator
 
 from app.db.engine import session_scope
 from app.db.models import Benchmark, Node, Tree
 from app.db.repository import (
-    create_benchmark,
-    create_root_node,
     get_benchmark,
     get_tree,
     list_trees,
     update_node_evaluation,
 )
-from app.db.repository import create_tree as persist_tree
-from app.harness.dsh import to_cordis_patch_yml
-from app.harness.importer import import_harness
+from app.services.tree_creation import create_tree_with_default_harness
 
 router = APIRouter(prefix="/trees", tags=["trees"])
 
@@ -121,7 +119,13 @@ def create_tree_endpoint(request: CreateTreeRequest) -> dict[str, Any]:
     """Create a support tree with the repository's default DeepSeek harness."""
     try:
         with session_scope() as session:
-            return create_tree_with_default_harness(session, request)
+            created = create_tree_with_default_harness(session, request)
+            tree_id = created["id"]
+            root_id = created["root_node_id"]
+            created_nodes = created.get("nodes") or []
+            root_harness = created_nodes[0]["harness"] if created_nodes else None
+            if root_harness is None:
+                raise ValueError("Default harness creation returned no root node")
     except OSError as exc:
         raise HTTPException(
             status_code=500,
@@ -129,37 +133,6 @@ def create_tree_endpoint(request: CreateTreeRequest) -> dict[str, Any]:
         ) from exc
     except ValueError as exc:
         raise HTTPException(status_code=500, detail=f"Default harness is invalid: {exc}") from exc
-
-    with session_scope() as session:
-        benchmark = create_benchmark(
-            session,
-            name="Customer support benchmark (unconfigured)",
-            scenarios=[],
-        )
-        tree = persist_tree(
-            session,
-            name=request.name,
-            description=request.description,
-            benchmark_id=benchmark.id,
-            metadata={
-                "initial_harness_source": "cordis.patch.yml",
-                "harness_import": {
-                    "kept": imported["kept"],
-                    "dropped": imported["dropped"],
-                    "warnings": imported["warnings"],
-                },
-                "benchmark_status": "unconfigured",
-            },
-        )
-        root = create_root_node(
-            session,
-            tree_id=tree.id,
-            harness=to_cordis_patch_yml(imported["harness"]),
-            rationale="Initial DeepSeek harness loaded from cordis.patch.yml.",
-        )
-        tree_id = tree.id
-        root_id = root.id
-        root_harness = root.harness
 
     # Score the root node right away (generic review: new trees have no
     # scenarios yet) so it never gets stuck in pending.
@@ -204,7 +177,7 @@ def read_trees() -> dict[str, Any]:
             nodes = list(
                 session.query(Node).filter(Node.tree_id == tree.id).order_by(Node.created_at)
             )
-            result.append(serialize_tree(tree, nodes, get_benchmark(session, tree_id=tree.id)))
+            result.append(_tree(tree, nodes, get_benchmark(session, tree_id=tree.id)))
         return {"data": result, "total": len(result)}
 
 

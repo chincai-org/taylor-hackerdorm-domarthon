@@ -13,5 +13,10 @@ class Settings(BaseSettings):
     DATABASE_URL: str | None = None
     LOCAL_DATABASE_PATH: str = "data/local.db"
 
+    # Pi headless RPC (`pi --mode rpc`) settings.
+    PI_BINARY: str = "pi"
+    PI_MODEL: str | None = None
+    PI_TIMEOUT_S: float = 120.0
+
 
 settings = Settings()

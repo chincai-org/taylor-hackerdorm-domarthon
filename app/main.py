@@ -4,6 +4,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.api.main import api_router
@@ -26,6 +27,11 @@ app = FastAPI(
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 app.mount("/mcp", mcp_app)
+app.mount(
+    "/trees",
+    StaticFiles(directory=Path(__file__).parent.parent / "frontend" / "trees-section"),
+    name="trees",
+)
 
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 

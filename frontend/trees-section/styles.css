@@ -17,6 +17,126 @@
 
 @layer tokens, base, layout, card, glyph, page, motion;
 
+.tree-card {
+  width: 100%;
+  border: 0;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+  font: inherit;
+}
+
+.notice {
+  padding: 14px 16px;
+  border-radius: var(--shape-md);
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.notice-error, .error-copy {
+  color: var(--md-sys-color-error);
+}
+
+.empty-state {
+  padding: 32px;
+  border-radius: var(--shape-md);
+  background: var(--md-sys-color-surface-container);
+  list-style: none;
+}
+
+.tree-detail {
+  scroll-margin-block-start: 68px;
+}
+
+.detail-close {
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--shape-full);
+  padding: 8px 16px;
+  color: var(--md-sys-color-on-surface);
+  background: transparent;
+  cursor: pointer;
+}
+
+.stage {
+  gap: 12px;
+}
+
+.tree-svg {
+  display: block;
+  min-width: 700px;
+  width: 100%;
+  height: auto;
+}
+
+.node-panel {
+  padding: 20px;
+  border-radius: var(--shape-md);
+  background: var(--md-sys-color-surface-container);
+}
+
+.node-panel-head, .node-facts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.node-facts {
+  justify-content: flex-start;
+  margin-block: 18px;
+}
+
+.node-facts div {
+  min-width: 140px;
+}
+
+.node-facts dt, .node-facts dd {
+  margin: 0;
+}
+
+.node-facts dt {
+  color: var(--md-sys-color-on-surface-dim);
+  font: var(--type-label-medium);
+}
+
+.node-facts dd {
+  margin-block-start: 4px;
+}
+
+.node-panel details {
+  margin-block-start: 14px;
+}
+
+.node-panel pre {
+  max-height: 280px;
+  overflow: auto;
+  padding: 14px;
+  margin-block-start: 10px;
+  border-radius: var(--shape-sm);
+  background: var(--md-sys-color-surface-container-lowest);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--md-sys-color-primary);
+}
+
+.legend-dot.wait {
+  background: transparent;
+  border: 2px solid var(--md-sys-color-outline);
+}
+
+.legend-dot.fail {
+  background: var(--md-sys-color-error);
+}
+
+.status-failed {
+  color: var(--md-sys-color-error);
+}
+
 @layer tokens {
   :root {
     /* Dark scheme only. Tells the browser to theme form controls, scrollbars

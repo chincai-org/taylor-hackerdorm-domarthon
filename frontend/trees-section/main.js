@@ -1,207 +1,109 @@
-/**
- * Progressive enhancement for the whole site.
- *
- * Nothing here is needed to read a page. The gallery and every tree page are
- * complete static HTML, and the CSS on its own already handles the Tree/Stats
- * switch, the info chips, and which version's record is on show. This file only
- * smooths the edges:
- *
- *   - it fades a gallery card's tree in as the card scrolls into view;
- *   - it picks a version without the page jumping to the anchor;
- *   - it reveals the two controls that genuinely need a script (copy buttons,
- *     the fork direction picker) — those are hidden until `has-js` is set, so
- *     nothing inert is ever shown.
- *
- * Everything it does is additive: if this file never loads, the pages still work.
- */
-
 document.documentElement.classList.add("has-js");
 
-/** `CSS.escape` is not in every engine; the ids here are plain slugs anyway. */
-const escapeId = (value) => (window.CSS?.escape ? CSS.escape(value) : value);
+const cards = document.querySelector("#tree-cards");
+const detail = document.querySelector("#tree-detail");
+const count = document.querySelector("#tree-count");
+const status = document.querySelector("#tree-status");
 
-/** A plain left click. Modified clicks mean "open in a new tab", so leave them. */
-const isPlainClick = (event) =>
-  event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
+const esc = (value) =>
+  String(value ?? "").replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  })[character]);
 
-/* ------------------------------------------------------------------ *
- * Gallery — reveal each card's tree as it scrolls in
- * ------------------------------------------------------------------ */
+const score = (node) => node.score == null ? "—" : Number(node.score).toFixed(1);
+const statusLabel = (value) => value ? value.replaceAll("_", " ") : "pending";
 
-(() => {
-  if (!("IntersectionObserver" in window)) return;
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      for (const { target, isIntersecting } of entries) {
-        if (!isIntersecting) continue;
-        target.classList.add("is-revealed");
-        observer.unobserve(target); // one-shot: reveal once, then stop watching
-      }
-    },
-    { rootMargin: "0px 0px -10% 0px" },
-  );
-
-  for (const card of document.querySelectorAll(".card")) {
-    // Leave anything already on screen alone: animating content the visitor can
-    // see reads as a flicker, not as a reveal.
-    if (card.getBoundingClientRect().top >= window.innerHeight) {
-      card.classList.add("will-reveal");
-      observer.observe(card);
-    }
+function nodeTree(nodes, compact = false) {
+  const byParent = new Map();
+  for (const node of nodes) {
+    const children = byParent.get(node.parent_id) ?? [];
+    children.push(node);
+    byParent.set(node.parent_id, children);
   }
-})();
-
-/* ------------------------------------------------------------------ *
- * Tree page — choose a version
- * ------------------------------------------------------------------ */
-
-/**
- * The figure links straight to a version's record id (`#s-<short>`), so with no
- * script the record swap is pure CSS and the browser also scrolls to it — one
- * fragment does both jobs.
- *
- * With a script we take over the choosing, because `:target` is NOT re-evaluated
- * when the fragment is rewritten in place — so driving selection off the fragment
- * alone would leave a click doing nothing. Selection is therefore an `is-open`
- * class on the strip, and the fragment is kept only so the URL stays shareable.
- * The generated rules in the page head switch the `:target` path off as soon as a
- * strip is marked, so the two can never show two records at once.
- */
-(() => {
-  const strips = [...document.querySelectorAll(".selected-strip")];
-  const ids = new Set(strips.map((strip) => strip.dataset.for));
-  if (ids.size === 0) return;
-
-  // Selection is keyed by the version's short name; the record article carries
-  // the `s-<short>` id that the fragment matches.
-  const select = (short) => {
-    for (const strip of strips) strip.classList.toggle("is-open", strip.dataset.for === short);
+  const roots = byParent.get(null) ?? nodes.filter((node) => !node.parent_id);
+  const positions = new Map();
+  let nextRow = 0;
+  const visit = (node, depth) => {
+    const children = byParent.get(node.id) ?? [];
+    const childRows = children.map((child) => visit(child, depth + 1));
+    const row = childRows.length ? (childRows[0] + childRows.at(-1)) / 2 : nextRow++;
+    positions.set(node.id, { depth, row });
+    return row;
   };
+  roots.forEach((root) => visit(root, 0));
+  const maxDepth = Math.max(0, ...[...positions.values()].map(({ depth }) => depth));
+  const maxRow = Math.max(0, ...[...positions.values()].map(({ row }) => row));
+  const width = Math.max(520, (maxDepth + 1) * (compact ? 95 : 220) + 50);
+  const height = Math.max(compact ? 140 : 300, (maxRow + 1) * (compact ? 25 : 64) + 40);
+  const col = compact ? 95 : 220;
+  const row = compact ? 25 : 64;
+  const point = (id) => {
+    const position = positions.get(id);
+    return { x: 25 + position.depth * col, y: 20 + position.row * row };
+  };
+  const edgeMarkup = nodes.filter((node) => node.parent_id && positions.has(node.parent_id)).map((node) => {
+    const from = point(node.parent_id);
+    const to = point(node.id);
+    const middle = (from.x + to.x) / 2;
+    return `<path class="h-edge ${node.status === "failed" ? "dead" : ""}" d="M${from.x} ${from.y} C${middle} ${from.y} ${middle} ${to.y} ${to.x} ${to.y}"/>`;
+  }).join("");
+  const nodeMarkup = nodes.filter((node) => positions.has(node.id)).map((node) => {
+    const { x, y } = point(node.id);
+    const failed = node.status === "failed";
+    const label = compact ? "" : `<text class="h-hyp" x="${x + 14}" y="${y - 3}">${esc(node.rationale || node.id).slice(0, 30)}</text><text class="h-num" x="${x + 14}" y="${y + 14}">${esc(statusLabel(node.status))} · ${esc(score(node))}</text>`;
+    return `<g class="h-node" tabindex="0" role="button" data-node-id="${esc(node.id)}" aria-label="${esc(node.rationale || node.id)}"><circle class="${failed ? "g-hollow g-fail" : "g-pass"}" cx="${x}" cy="${y}" r="${compact ? 5 : 8}"/>${failed ? `<path class="g-x" d="M${x - 3} ${y - 3}L${x + 3} ${y + 3}M${x + 3} ${y - 3}L${x - 3} ${y + 3}"/>` : ""}${label}</g>`;
+  }).join("");
+  return `<svg class="${compact ? "mini" : "tree-svg"} viewBox="0 0 ${width} ${height}" role="img" aria-label="Tree with ${nodes.length} nodes">${edgeMarkup}${nodeMarkup}</svg>`;
+}
 
-  for (const link of document.querySelectorAll('a[href^="#s-"]')) {
-    link.addEventListener("click", (event) => {
-      if (!isPlainClick(event)) return;
+function card(tree) {
+  const best = tree.stats.best_score == null ? "—" : Number(tree.stats.best_score).toFixed(1);
+  return `<li><button class="card tree-card" type="button" data-tree-id="${esc(tree.id)}"><div class="card-top"><div><p class="card-title">${esc(tree.name)}</p><p class="card-sub">${esc(tree.description || "Customer-support harness")}</p></div><span class="tag">${esc(tree.status)}</span></div><div class="card-mini">${nodeTree(tree.nodes, true)}</div><p class="card-goal">${esc(tree.benchmark?.name || "Benchmark pending")}</p><dl class="card-stats"><div><dt>Nodes</dt><dd>${tree.stats.node_count}</dd></div><div><dt>Complete</dt><dd>${tree.stats.complete_count}</dd></div><div><dt>Failed</dt><dd>${tree.stats.failed_count}</dd></div><div><dt>Best score</dt><dd>${esc(best)}</dd></div></dl></button></li>`;
+}
 
-      const short = link.getAttribute("href").slice(3);
-      if (!ids.has(short)) return;
-
-      event.preventDefault();
-      select(short);
-      history.replaceState(null, "", `#s-${short}`);
+function renderDetail(tree) {
+  const root = tree.nodes.find((node) => node.id === tree.root_node_id) || tree.nodes[0];
+  detail.hidden = false;
+  detail.innerHTML = `<div class="section-head"><div><p class="eyebrow">Tree detail</p><h2 id="detail-heading">${esc(tree.name)}</h2></div><button class="detail-close" type="button">Close</button></div><p class="muted">${esc(tree.description || "No description provided.")}</p><div class="stage plate"><div class="tree-plate" tabindex="0">${nodeTree(tree.nodes)}</div><div class="legend"><span><i class="legend-dot pass"></i>Complete</span><span><i class="legend-dot wait"></i>Pending / running</span><span><i class="legend-dot fail"></i>Failed</span></div></div><article class="node-panel" aria-live="polite">${nodePanel(root)}</article>`;
+  detail.querySelector(".detail-close").addEventListener("click", () => { detail.hidden = true; });
+  detail.querySelectorAll("[data-node-id]").forEach((element) => {
+    element.addEventListener("click", () => {
+      const node = tree.nodes.find((candidate) => candidate.id === element.dataset.nodeId);
+      detail.querySelector(".node-panel").innerHTML = nodePanel(node);
     });
-  }
+    element.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") element.click();
+    });
+  });
+  detail.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
-  // A fragment present on load was already honoured by the CSS; mirror it into
-  // the class so both mechanisms agree from here on.
-  const initial = location.hash.replace(/^#s-/, "");
-  if (ids.has(initial)) select(initial);
-})();
+function nodePanel(node) {
+  if (!node) return "<p class=\"muted\">Select a node to inspect it.</p>";
+  const harness = JSON.stringify(node.harness ?? {}, null, 2);
+  return `<div class="node-panel-head"><div><p class="eyebrow">Selected node</p><h3>${esc(node.rationale || node.id)}</h3></div><span class="tag status-${esc(node.status)}">${esc(statusLabel(node.status))}</span></div><dl class="node-facts"><div><dt>Node ID</dt><dd><code>${esc(node.id)}</code></dd></div><div><dt>Score</dt><dd>${esc(score(node))}</dd></div><div><dt>Parent</dt><dd><code>${esc(node.parent_id || "Root")}</code></dd></div></dl>${node.error ? `<p class="error-copy">${esc(JSON.stringify(node.error))}</p>` : ""}<details><summary>Harness configuration</summary><pre><code>${esc(harness)}</code></pre></details>${node.benchmark_result ? `<details><summary>Benchmark result</summary><pre><code>${esc(JSON.stringify(node.benchmark_result, null, 2))}</code></pre></details>` : ""}`;
+}
 
-/* ------------------------------------------------------------------ *
- * Tree page — the fork command follows the direction picker
- * ------------------------------------------------------------------ */
-
-(() => {
-  for (const picker of document.querySelectorAll("select[data-fork]")) {
-    const out = document.querySelector(`[data-fork-out="${escapeId(picker.dataset.fork)}"]`);
-    if (!out) continue;
-
-    // The command text ships in the markup (see `forkTemplate` in build.mjs), so
-    // there is only ever one copy of it to keep right.
-    const render = () => {
-      const direction = picker.value;
-      out.textContent = picker.dataset.template
-        .replaceAll("{{motif}}", direction.replace(/\s+/g, "-"))
-        .replaceAll("{{direction}}", direction);
-    };
-    picker.addEventListener("change", render);
-    render();
-  }
-})();
-
-/* ------------------------------------------------------------------ *
- * Copy buttons — a literal command, or whatever the fork picker shows
- * ------------------------------------------------------------------ */
-
-/**
- * Put `text` on the clipboard.
- *
- * `navigator.clipboard` needs a secure context, so it is absent when a page is
- * opened straight from disk over `file://` — which is exactly how this is meant
- * to be used. The `execCommand` path covers that: `document.execCommand` is
- * deprecated but it is still the only route in a non-secure context, and a
- * deprecated fallback that works beats a modern API that silently does nothing.
- */
-const writeClipboard = async (text) => {
-  if (navigator.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } catch {
-      // Denied permission, or a context the API will not serve. Try the fallback.
-    }
-  }
-
+async function loadTrees() {
   try {
-    const scratch = document.createElement("textarea");
-    scratch.value = text;
-    // Off-screen but still focusable: `select()` does nothing on a detached node.
-    scratch.setAttribute("readonly", "");
-    scratch.style.position = "fixed";
-    scratch.style.top = "0";
-    scratch.style.left = "-9999px";
-    document.body.append(scratch);
-    scratch.select();
-    const ok = document.execCommand("copy");
-    scratch.remove();
-    return ok;
-  } catch {
-    return false;
-  }
-};
-
-(() => {
-  /** The text this button is responsible for. */
-  const textOf = (button) => {
-    if (button.dataset.copy) return button.dataset.copy;
-    if (button.dataset.copyOut) {
-      return document.querySelector(`[data-fork-out="${escapeId(button.dataset.copyOut)}"]`)?.textContent ?? "";
-    }
-    return "";
-  };
-
-  for (const button of document.querySelectorAll("button.copy")) {
-    // The button has no text, so success is shown by swapping an icon and
-    // announcing it. Without the announcement an icon-only control gives a
-    // screen reader no feedback at all that anything happened.
-    const status = document.createElement("span");
-    status.className = "sr-only";
-    status.setAttribute("role", "status");
-    button.after(status);
-
-    let reset = 0;
-
-    button.addEventListener("click", async () => {
-      const text = textOf(button);
-      if (!text) return;
-
-      const copied = await writeClipboard(text);
-      status.textContent = copied ? "Copied to clipboard" : "Copy failed. Select the command and copy it by hand.";
-
-      // No tick on failure: the icon must not claim something that did not happen.
-      if (!copied) return;
-
-      button.classList.add("is-copied");
-      button.setAttribute("aria-label", "Copied");
-      window.clearTimeout(reset);
-      reset = window.setTimeout(() => {
-        button.classList.remove("is-copied");
-        button.setAttribute("aria-label", button.dataset.label ?? "Copy");
-      }, 1600);
+    const response = await fetch("/api/v1/trees");
+    if (!response.ok) throw new Error(`Tree API returned ${response.status}`);
+    const payload = await response.json();
+    const trees = payload.data ?? [];
+    count.textContent = `${trees.length} tree${trees.length === 1 ? "" : "s"}`;
+    status.hidden = trees.length > 0;
+    cards.innerHTML = trees.length ? trees.map(card).join("") : `<li class="empty-state"><h2>No trees yet</h2><p>Create a session and evaluate its root node to see it here.</p></li>`;
+    cards.querySelectorAll("[data-tree-id]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const tree = trees.find((candidate) => candidate.id === button.dataset.treeId);
+        renderDetail(tree);
+      });
     });
-
-    // Remember the original label so the reset above can restore it exactly.
-    button.dataset.label = button.getAttribute("aria-label") ?? "Copy";
+  } catch (error) {
+    count.textContent = "Unable to load trees";
+    status.textContent = `Could not load tree data. ${error.message}`;
+    status.classList.add("notice-error");
   }
-})();
+}
+
+loadTrees();

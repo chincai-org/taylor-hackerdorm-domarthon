@@ -260,7 +260,7 @@ class PiRpcWrapper:
         logger.error("Pi empty reply; stderr tail: %r", stderr_tail)
         raise self._empty_reply_error(state, stderr_tail)
 
-async def stream_prompt(self, prompt: str) -> AsyncGenerator[str, None]:
+    async def stream_prompt(self, prompt: str) -> AsyncGenerator[str, None]:
         """Yield Server-Sent Event lines streaming Pi token deltas."""
         if not prompt or not prompt.strip():
             raise ValueError("prompt must be a non-empty string")

@@ -28,6 +28,7 @@ from app.harness.dsh import (
     HARNESS_VERSION,
     SUPPORTED_DSH_PLUGINS,
     SUPPORTED_PROFILES,
+    is_generic_plugin,
     validate_dsh_harness,
 )
 
@@ -146,11 +147,25 @@ def import_harness(content: str, profile: str | None = None) -> dict[str, Any]:
             continue
         meta = SUPPORTED_DSH_PLUGINS.get(row["name"])
         if meta is None:
+            if is_generic_plugin(row["name"]):
+                # Deployed but unpinned: store verbatim for real-dsh replay.
+                # No per-call effect on this server (see resolve_runtime).
+                kept.append({"id": row["id"], "name": row["name"], "config": row["config"]})
+                kept_ids.append(row["id"])
+                warnings.append(
+                    f"{row['id']}: unvalidated plugin {row['name']!r} — stored "
+                    "opaque, no per-call effect here"
+                )
+                continue
             dropped.append(
                 {"id": row["id"], "name": row["name"], "reason": "plugin not in supported set"}
             )
             continue
-        allowed: set[str] = meta["allowed_config_keys"]
+        allowed = meta["allowed_config_keys"]
+        if allowed is None:
+            kept.append({"id": row["id"], "name": row["name"], "config": row["config"]})
+            kept_ids.append(row["id"])
+            continue
         config = {k: v for k, v in row["config"].items() if k in allowed}
         for k in sorted(set(row["config"]) - allowed):
             warnings.append(f"{row['id']}: dropped unsupported config key {k!r}")
@@ -174,9 +189,7 @@ def import_harness(content: str, profile: str | None = None) -> dict[str, Any]:
     # The OpenAI-compatible adapter carries the effective model id
     # (e.g. tencent/hy3) when no dsh-agent-default-model row is present.
     provider = str(model_cfg.get("provider", "deepseek-official"))
-    model_id = str(
-        model_cfg.get("model") or openai_cfg.get("model") or "deepseek-chat"
-    )
+    model_id = str(model_cfg.get("model") or openai_cfg.get("model") or "deepseek-chat")
     harness = {
         "version": HARNESS_VERSION,
         "kind": HARNESS_KIND,

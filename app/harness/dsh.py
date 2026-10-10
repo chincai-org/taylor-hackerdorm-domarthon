@@ -49,9 +49,16 @@ from difflib import get_close_matches
 from typing import Any
 
 # Plugin name -> metadata. ``allowed_config_keys`` is the settable subset from
-# the official config catalog (verbatim field names). ``required`` lists keys
+# the official config catalog (verbatim field names). ``None`` means opaque:
+# any config object is accepted and passed through to real dsh (no per-call
+# effect on this server — see resolve_runtime). ``required`` lists keys
 # dsh fails plugin load without. Keep this list general-purpose:
 # prompt/model/tools/policy/safety/context — not browsers, desktops, or IDEs.
+# Opaque entries below cover the legacy/local names seen in real
+# cordis.patch.yml files (logger, fs, web-search, commands, marketplace)
+# plus their upstream counterparts; anything else under
+# GENERIC_PLUGIN_PREFIXES is accepted opaque by the validator/importer so a
+# deployed dsh tree round-trips instead of being dropped.
 # Source revisions: config-catalog.md @ deepseek-ai/deepseek-harness master.
 SUPPORTED_DSH_PLUGINS: dict[str, dict[str, Any]] = {
     "@deepseek-ai/dsh-persona": {
@@ -221,7 +228,113 @@ SUPPORTED_DSH_PLUGINS: dict[str, dict[str, Any]] = {
         },
         "required": {"maxBytes"},
     },
+    # --- Opaque passthrough: deployed locally, no per-call HTTP effect. ---
+    # Vendored cordis logger (not in the upstream config catalog by policy).
+    "@cordisjs/plugin-logger": {
+        "description": "Cordis console logger (opaque: stored, passed to real dsh).",
+        "allowed_config_keys": None,
+        "required": set(),
+    },
+    "@cordisjs/plugin-logger-console": {
+        "description": "Cordis console logger variant (opaque: stored, passed to real dsh).",
+        "allowed_config_keys": None,
+        "required": set(),
+    },
+    # Legacy local names from real cordis.patch.yml files (no npm upstream).
+    "@deepseek-ai/dsh-plugin-fs": {
+        "description": "Legacy filesystem tool plugin (opaque: stored, passed to real dsh).",
+        "allowed_config_keys": None,
+        "required": set(),
+    },
+    "@deepseek-ai/dsh-plugin-web-search": {
+        "description": "Legacy web-search tool plugin (opaque: stored, passed to real dsh).",
+        "allowed_config_keys": None,
+        "required": set(),
+    },
+    "@deepseek-ai/dsh-plugin-openai-compatible": {
+        "description": "OpenAI-compatible adapter alias (opaque: stored, passed to real dsh).",
+        "allowed_config_keys": None,
+        "required": set(),
+    },
+    # Upstream counterparts (catalog-verified names, config not pinned here).
+    "@deepseek-ai/dsh-commands": {
+        "description": "Human commands (opaque: stored, passed to real dsh).",
+        "allowed_config_keys": None,
+        "required": set(),
+    },
+    "@deepseek-ai/dsh-command-compact": {
+        "description": "Compact command (opaque: stored, passed to real dsh).",
+        "allowed_config_keys": None,
+        "required": set(),
+    },
+    "@deepseek-ai/dsh-fs": {
+        "description": "Filesystem capability (opaque: stored, passed to real dsh).",
+        "allowed_config_keys": None,
+        "required": set(),
+    },
+    "@deepseek-ai/dsh-fs-local": {
+        "description": "Local filesystem backend (opaque: stored, passed to real dsh).",
+        "allowed_config_keys": None,
+        "required": set(),
+    },
+    "@deepseek-ai/dsh-fs-sandbox": {
+        "description": "Sandboxed filesystem backend (opaque: stored, passed to real dsh).",
+        "allowed_config_keys": None,
+        "required": set(),
+    },
+    "@deepseek-ai/dsh-tool-fs": {
+        "description": "Model-facing filesystem tool (opaque: stored, passed to real dsh).",
+        "allowed_config_keys": None,
+        "required": set(),
+    },
+    "@deepseek-ai/dsh-tool-web": {
+        "description": "Model-facing web tool (opaque: stored, passed to real dsh).",
+        "allowed_config_keys": None,
+        "required": set(),
+    },
+    "@deepseek-ai/dsh-web-search-deepseek": {
+        "description": "DeepSeek web-search provider (opaque: stored, passed to real dsh).",
+        "allowed_config_keys": None,
+        "required": set(),
+    },
+    "@deepseek-ai/dsh-web-search-exa": {
+        "description": "Exa web-search provider (opaque: stored, passed to real dsh).",
+        "allowed_config_keys": None,
+        "required": set(),
+    },
+    "@deepseek-ai/dsh-web-search-perplexity": {
+        "description": "Perplexity web-search provider (opaque: stored, passed to real dsh).",
+        "allowed_config_keys": None,
+        "required": set(),
+    },
+    "dsh-plugin-marketplace": {
+        "description": "Plugin marketplace (opaque: stored, passed to real dsh).",
+        "allowed_config_keys": None,
+        "required": set(),
+    },
+    "@liustack/modlens": {
+        "description": "Modlens extension (opaque: stored, passed to real dsh).",
+        "allowed_config_keys": None,
+        "required": set(),
+    },
 }
+
+# Any other plugin under these prefixes is accepted opaque (stored verbatim,
+# reported as ignored per-call): this covers the ~300 catalog plugins without
+# pinning every schema here. Anything outside these prefixes is rejected.
+GENERIC_PLUGIN_PREFIXES = (
+    "@deepseek-ai/",
+    "@cordisjs/",
+    "dsh-plugin-",
+    "@liustack/",
+    "cordis-",
+)
+
+
+def is_generic_plugin(name: object) -> bool:
+    """True when an unlisted plugin name is trusted enough to store opaque."""
+    return isinstance(name, str) and name.startswith(GENERIC_PLUGIN_PREFIXES)
+
 
 SUPPORTED_PROFILES = {"headless", "web", "sdk", "sdk-minimal", "acp"}
 BASE_BUNDLES = ("dsh-base",)
@@ -235,15 +348,29 @@ LEGACY_HARNESS_KINDS = frozenset({"dsh-customer-support"})
 
 def list_supported_plugins() -> list[dict[str, Any]]:
     """Concise catalog for MCP/Workbuddy prompts (name + description + keys)."""
-    return [
+    out = []
+    for name, meta in sorted(SUPPORTED_DSH_PLUGINS.items()):
+        allowed = meta["allowed_config_keys"]
+        out.append(
+            {
+                "name": name,
+                "description": meta["description"],
+                "allowed_config_keys": sorted(allowed) if allowed is not None else ["*"],
+                "required": sorted(meta["required"]),
+            }
+        )
+    out.append(
         {
-            "name": name,
-            "description": meta["description"],
-            "allowed_config_keys": sorted(meta["allowed_config_keys"]),
-            "required": sorted(meta["required"]),
+            "name": "<prefix>…",
+            "description": (
+                "Any other plugin under " + ", ".join(GENERIC_PLUGIN_PREFIXES) + " is "
+                "accepted opaque (any config, stored verbatim, no per-call effect)."
+            ),
+            "allowed_config_keys": ["*"],
+            "required": [],
         }
-        for name, meta in sorted(SUPPORTED_DSH_PLUGINS.items())
-    ]
+    )
+    return out
 
 
 def _fail(msg: str) -> ValueError:
@@ -289,7 +416,14 @@ def validate_dsh_harness(data: dict[str, Any]) -> dict[str, Any]:
         if pid in seen_ids:
             raise _fail(f"{where}.id {pid!r} is duplicated; patch rows replace by id")
         seen_ids.add(pid)
-        if name not in SUPPORTED_DSH_PLUGINS:
+        if not isinstance(config, dict):
+            raise _fail(f"{where}.config must be an object")
+        meta = SUPPORTED_DSH_PLUGINS.get(name) if isinstance(name, str) else None
+        if meta is None:
+            # Opaque passthrough for deployed-but-unpinned plugins.
+            if is_generic_plugin(name):
+                normalized_plugins.append({"id": pid, "name": name, "config": dict(config)})
+                continue
             hint = get_close_matches(str(name), SUPPORTED_DSH_PLUGINS.keys(), n=3)
             raise _fail(
                 f"{where}.name {name!r} is not an advertised dsh plugin. "
@@ -297,17 +431,15 @@ def validate_dsh_harness(data: dict[str, Any]) -> dict[str, Any]:
                 f"See list_supported_plugins() / config-catalog; base bundles stay "
                 f"{list(BASE_BUNDLES)} and only the patch layer lives here."
             )
-        if not isinstance(config, dict):
-            raise _fail(f"{where}.config must be an object")
-        meta = SUPPORTED_DSH_PLUGINS[name]
-        allowed: set[str] = meta["allowed_config_keys"]
-        unknown = set(config) - allowed
-        if unknown:
-            raise _fail(
-                f"{where} ({name}) has unknown config keys {sorted(unknown)}; "
-                f"allowed: {sorted(allowed)}. "
-                f"Check the Plugin Config Catalog — runtime-only seams are not settable."
-            )
+        allowed = meta["allowed_config_keys"]
+        if allowed is not None:
+            unknown = set(config) - allowed
+            if unknown:
+                raise _fail(
+                    f"{where} ({name}) has unknown config keys {sorted(unknown)}; "
+                    f"allowed: {sorted(allowed)}. "
+                    f"Check the Plugin Config Catalog — runtime-only seams are not settable."
+                )
         missing = set(meta["required"]) - set(config)
         if missing:
             raise _fail(f"{where} ({name}) is missing required keys {sorted(missing)}")
@@ -598,6 +730,23 @@ def resolve_runtime(
                 policy_notes.append(f"approval={cfg['policy']}")
             if name == "@deepseek-ai/dsh-sandbox-policy" and cfg.get("mode"):
                 policy_notes.append(f"sandbox={cfg['mode']}")
+
+    # Catch-all: every other stored plugin (opaque passthrough incl. logger,
+    # fs, web-search, commands) is kept for real-dsh replay but has no
+    # per-HTTP-call effect here. Empty configs still count as present.
+    applied_names = {
+        "@deepseek-ai/dsh-persona",
+        "@deepseek-ai/dsh-system-prompt",
+        "@deepseek-ai/dsh-agent-default-model",
+        "@deepseek-ai/dsh-plugin-openai",
+    }
+    for p in h.get("dsh_plugins", []):
+        pname = p.get("name")
+        if not isinstance(pname, str) or pname in applied_names:
+            continue
+        short = pname.replace("@deepseek-ai/", "").replace("@cordisjs/", "cordisjs:")
+        if short not in ignored:
+            ignored.append(short)
 
     return {
         "system_text": "\n\n".join(system_parts) if system_parts else None,

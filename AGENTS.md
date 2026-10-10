@@ -194,6 +194,37 @@ node app/web/showcase/build.mjs
 node --test app/web/showcase/checks/unit.mjs app/web/showcase/checks/render.mjs
 ```
 
+### DeepSeek agent API (prompt + harness, streamed over SSE)
+
+- `POST /api/v1/deepseek/chat` returns one JSON reply (`reply`, `tool_calls`, harness echo).
+- `POST /api/v1/deepseek/stream` streams the same result as SSE (`-N` / no-buffer keeps it live).
+- Both take `{ prompt, harness_yml?, harness?, system_prompt?, tools?, model?, timeout? }`.
+  Pass the harness as raw `cordis.patch.yml` text in `harness_yml` (preferred for yml),
+  or as dsh patch-layer JSON in `harness`. The two are mutually exclusive; omit both
+  for bare prompt-only behavior.
+- First SSE event is always `{"harness": {...}}` (normalized harness, `patch_yml`,
+  model, applied/ignored plugins, warnings), then `{"delta"}` chunks, an optional
+  `{"tool_calls"}` event, then `{"status": "done"}` or `{"error"}`.
+- Requires `DEEPSEEK_API_KEY` on the server (`GET /api/v1/deepseek/health` reports
+  `available`; otherwise chat/stream return `503`).
+
+Example — stream one customer-support prompt with a harness file:
+
+```bash
+jq -n --arg prompt "I was charged twice for the same order." \
+  --rawfile yml cordis.patch.yml \
+  '{prompt: $prompt, harness_yml: $yml}' > /tmp/body.json
+
+curl -N -X POST https://taylor-hackerdorm-domarthon-production.up.railway.app/api/v1/deepseek/stream \
+  -H 'Content-Type: application/json' \
+  -d @/tmp/body.json
+```
+
+What this does: `jq --rawfile yml` reads `cordis.patch.yml` as a raw string into
+`$yml`, builds `{prompt, harness_yml}` JSON into `/tmp/body.json`, and `curl -N`
+POSTs it to the production host (use `http://127.0.0.1:5001/api/v1/deepseek/stream`
+locally). Replace `prompt` / `yml` to test other scenarios or harnesses.
+
 Local development and Vercel production both use Neon Postgres. Put the local
 pooled connection string in `.env.development.local`; Vercel provides its own
 `DATABASE_URL` value in the deployment environment. The application uses the

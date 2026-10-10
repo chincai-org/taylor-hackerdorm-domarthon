@@ -387,4 +387,6 @@ Relationships/constraints:
 - Gallery create form (`#tree-create-form`) POSTs JSON to `/api/v1/trees`, shows inline
   status, resets + refreshes cards on 201. Button sits in fields row; status is own
   full-width row below (`:empty` hidden).
+- Detail auto-refreshes pending/running selection every 3s (re-render only on
+  status/score/result change; pauses when tab hidden; no overlapping fetches).
 - Verify via `uv run pytest` + live HTTP smoke (`/`, `/tree/x`, `/favicon.ico`, assets).

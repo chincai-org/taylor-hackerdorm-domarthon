@@ -34,6 +34,9 @@
   const statuses = new Set(["pending", "running", "complete", "failed"]);
   let trees = new Map();
   let selectedTree = null;
+  let selectedNodeId = null;
+  let pollTimer = 0;
+  let pollInflight = false;
 
   // Gallery create form posts JSON and refreshes the card list in place.
   // Without this the button falls back to a plain GET reload that creates nothing.
@@ -319,7 +322,56 @@
         link.setAttribute("aria-current", "true");
       else link.removeAttribute("aria-current");
     }
+    selectedNodeId = node?.id ?? null;
     ensureVisible();
+    schedulePoll();
+  }
+
+  // Live eval progress: while the selected node is pending/running, re-fetch
+  // the tree every few seconds and re-render only on status/score/result change.
+  // Pauses when the tab is hidden (API quota!), never overlaps requests.
+  function schedulePoll() {
+    window.clearTimeout(pollTimer);
+    if (!detail || !selectedTree || !selectedNodeId) return;
+    const node = selectedTree.nodeMap.get(selectedNodeId);
+    if (!node || (node.status !== "pending" && node.status !== "running")) return;
+    pollTimer = window.setTimeout(refreshSelected, 3000);
+  }
+
+  async function refreshSelected() {
+    if (document.hidden || pollInflight || !selectedTree || !selectedNodeId) {
+      schedulePoll();
+      return;
+    }
+    pollInflight = true;
+    try {
+      const response = await fetch(detail.dataset.treeUrl, {
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+      });
+      if (!response.ok) throw new Error(`Tree API returned ${response.status}`);
+      const fresh = prepareTree(await response.json());
+      if (fresh.id !== selectedTree.id) return;
+      const before = selectedTree.nodeMap.get(selectedNodeId);
+      const after = fresh.nodeMap.get(selectedNodeId);
+      selectedTree = fresh;
+      if (
+        after &&
+        (!before ||
+          before.status !== after.status ||
+          before.score !== after.score ||
+          JSON.stringify(before.benchmark_result) !==
+            JSON.stringify(after.benchmark_result))
+      ) {
+        renderDetail(fresh);
+      } else {
+        schedulePoll();
+      }
+    } catch {
+      schedulePoll(); // transient blip; the normal error path owns real failures
+    } finally {
+      pollInflight = false;
+    }
   }
 
   // Keep the selected node inside the scrollable plate (vertical + horizontal).
@@ -342,7 +394,11 @@
     document.title = `${tree.name} · Harness trees`;
     detail.hidden = false;
     detail.innerHTML = `<p class="muted">${escape(tree.description || "No description provided.")}</p><div class="stage plate"><section class="tree-plate" tabindex="0" aria-label="Scrollable harness tree">${nodeTree(tree)}</section><div class="legend" role="group" aria-label="Node status"><span><i class="legend-dot pass" aria-hidden="true"></i>Complete</span><span><i class="legend-dot wait" aria-hidden="true"></i>Pending / running</span><span><i class="legend-dot fail" aria-hidden="true"></i>Failed</span></div></div><article id="live-node" class="node-panel" aria-live="polite"></article>`;
-    selectNode(tree.nodeMap.get(tree.root_node_id) ?? tree.nodes[0]);
+    selectNode(
+      (selectedNodeId && tree.nodeMap.get(selectedNodeId)) ??
+        tree.nodeMap.get(tree.root_node_id) ??
+        tree.nodes[0],
+    );
   }
 
   /** Clipboard write with legacy fallback: navigator.clipboard is absent or

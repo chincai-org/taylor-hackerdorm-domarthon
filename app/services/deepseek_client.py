@@ -3,15 +3,22 @@
 Uses the ``openai`` SDK against ``https://api.deepseek.com/v1`` by default.
 API key comes from ``DEEPSEEK_API_KEY`` (see ``app/core/config.py``).
 
+Each call spawns one "harness instance": the caller may pass per-request
+plugins via ``harness`` (validated dsh patch-layer JSON, see
+``app/harness/dsh.py``) plus ``system_prompt`` / ``tools`` / ``model``
+overrides. Bare calls (all omitted) keep the old behavior: just the user
+prompt, no system text, no tools.
+
 Interface:
-- ``run_prompt_single(prompt)`` -> complete reply text
-- ``stream_prompt(prompt)`` -> SSE ``data:`` lines with ``{"delta": ...}``
+- ``run_prompt_single(prompt, ...)`` -> complete reply text
+- ``stream_prompt(prompt, ...)`` -> SSE ``data:`` lines with ``{"delta": ...}``
 """
 
 from __future__ import annotations
 
 import logging
 from collections.abc import AsyncGenerator
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -58,21 +65,33 @@ class DeepSeekClient:
             timeout=timeout or self.default_timeout,
         )
 
+    @staticmethod
+    def _messages(prompt: str, system_text: str | None) -> list[dict[str, str]]:
+        messages: list[dict[str, str]] = []
+        if system_text and system_text.strip():
+            messages.append({"role": "system", "content": system_text.strip()})
+        messages.append({"role": "user", "content": prompt})
+        return messages
+
     async def run_prompt_single(
         self,
         prompt: str,
         timeout: float | None = None,
+        *,
+        system_text: str | None = None,
+        model: str | None = None,
+        tools: list[dict[str, Any]] | None = None,
     ) -> str:
         """Send one prompt, return the complete assistant reply."""
         if not prompt or not prompt.strip():
             raise ValueError("prompt must be a non-empty string")
+        messages = self._messages(prompt, system_text)
+        create_kwargs: dict[str, Any] = {"model": model or self.model, "messages": messages}
+        if tools:
+            create_kwargs["tools"] = tools
         client = self._client(timeout)
         try:
-            resp = await client.chat.completions.create(
-                model=self.model,
-                messages=[{"role": "user", "content": prompt}],
-                stream=False,
-            )
+            resp = await client.chat.completions.create(stream=False, **create_kwargs)
         finally:
             await client.close()
         text = (resp.choices[0].message.content or "").strip() if resp.choices else ""
@@ -80,7 +99,14 @@ class DeepSeekClient:
             return text
         raise DeepSeekEmptyReplyError(f"DeepSeek model '{self.model}' returned no assistant text.")
 
-    async def stream_prompt(self, prompt: str) -> AsyncGenerator[str, None]:
+    async def stream_prompt(
+        self,
+        prompt: str,
+        *,
+        system_text: str | None = None,
+        model: str | None = None,
+        tools: list[dict[str, Any]] | None = None,
+    ) -> AsyncGenerator[str, None]:
         """Yield SSE lines streaming DeepSeek token deltas.
 
         Event shape:
@@ -96,11 +122,14 @@ class DeepSeekClient:
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
             return
         try:
-            stream = await client.chat.completions.create(
-                model=self.model,
-                messages=[{"role": "user", "content": prompt}],
-                stream=True,
-            )
+            create_kwargs: dict[str, Any] = {
+                "model": model or self.model,
+                "messages": self._messages(prompt, system_text),
+                "stream": True,
+            }
+            if tools:
+                create_kwargs["tools"] = tools
+            stream = await client.chat.completions.create(**create_kwargs)
             got_text = False
             try:
                 async for chunk in stream:

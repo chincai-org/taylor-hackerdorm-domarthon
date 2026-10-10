@@ -319,6 +319,37 @@ def default_customer_support_harness() -> dict[str, Any]:
     }
 
 
+def example_verifiable_harness() -> dict[str, Any]:
+    """Minimal harness with one plugin whose effect is checkable via the API.
+
+    The ``dsh-persona`` prefix instructs a distinctive, observable behavior
+    (every reply starts with the literal word ``VERIFIED``). Call
+    ``GET /harness/example`` to fetch it, pass it as ``harness`` to
+    ``POST /deepseek/chat``, and check the reply — no mocks, no guessing.
+    Opt-in only; the default harness stays bare.
+    """
+    return {
+        "version": HARNESS_VERSION,
+        "kind": HARNESS_KIND,
+        "profile": "headless",
+        "system_prompt": "",
+        "model": {"provider": "deepseek-official", "model": "deepseek-chat"},
+        "dsh_plugins": [
+            {
+                "id": "persona",
+                "name": "@deepseek-ai/dsh-persona",
+                "config": {
+                    "prefix": (
+                        "You are a customer-support agent. Start every reply "
+                        "with the literal word VERIFIED on its own line, "
+                        "then answer the customer normally."
+                    ),
+                },
+            },
+        ],
+    }
+
+
 def _yaml_scalar(value: Any) -> str:
     if value is True:
         return "true"

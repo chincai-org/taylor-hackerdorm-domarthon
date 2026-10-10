@@ -3,6 +3,7 @@
 from app.harness.dsh import (
     SUPPORTED_DSH_PLUGINS,
     default_customer_support_harness,
+    example_verifiable_harness,
     harness_diff,
     list_supported_plugins,
     resolve_runtime,
@@ -13,6 +14,7 @@ from app.harness.dsh import (
 __all__ = [
     "SUPPORTED_DSH_PLUGINS",
     "default_customer_support_harness",
+    "example_verifiable_harness",
     "harness_diff",
     "list_supported_plugins",
     "resolve_runtime",

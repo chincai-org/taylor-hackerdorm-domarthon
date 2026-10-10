@@ -58,6 +58,9 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     reply: str
+    tool_calls: list[dict[str, Any]] = Field(
+        default_factory=list, description="Tool calls the model made (not executed server-side)"
+    )
     model: str | None = None
     applied_plugins: list[str] = Field(default_factory=list)
     ignored_plugins: list[str] = Field(default_factory=list)
@@ -91,7 +94,7 @@ async def chat_with_deepseek(req: ChatRequest) -> ChatResponse:
         client = _get_client()
         if req.timeout is not None:
             client.default_timeout = req.timeout
-        reply = await client.run_prompt_single(
+        result = await client.run_prompt_single(
             req.prompt,
             timeout=req.timeout,
             system_text=rt["system_text"],
@@ -109,7 +112,8 @@ async def chat_with_deepseek(req: ChatRequest) -> ChatResponse:
     except Exception as e:  # noqa: BLE001 - surface SDK failures as 500
         raise HTTPException(status_code=500, detail=str(e)) from e
     return ChatResponse(
-        reply=reply,
+        reply=result["reply"],
+        tool_calls=result["tool_calls"],
         model=rt["model"] or settings.DEEPSEEK_MODEL,
         applied_plugins=rt["applied_plugins"],
         ignored_plugins=rt["ignored_plugins"],
@@ -123,7 +127,8 @@ async def stream_with_deepseek(req: ChatRequest) -> StreamingResponse:
 
     First event is always ``{"harness": {...}}`` describing the per-call
     harness instance (model, applied/ignored plugins), then ``{"delta"}``
-    chunks, then ``{"status": "done"}`` or ``{"error"}``.
+    chunks, an optional ``{"tool_calls": [...]}`` event, then
+    ``{"status": "done"}`` or ``{"error"}``.
     """
     import json
 

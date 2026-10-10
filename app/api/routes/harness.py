@@ -5,7 +5,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from app.harness.dsh import to_cordis_patch_yml
+from app.harness.dsh import example_verifiable_harness, to_cordis_patch_yml
 from app.harness.importer import import_harness
 
 router = APIRouter(prefix="/harness", tags=["harness"])
@@ -32,6 +32,20 @@ class ImportResponse(BaseModel):
 class ExportResponse(BaseModel):
     profile: str
     patch_yml: str
+
+
+@router.get("/example", response_model=ImportResponse)
+def example_harness_endpoint() -> ImportResponse:
+    """Fetch a minimal harness with one verifiable plugin (dsh-persona).
+
+    Pass the returned ``harness`` to ``POST /deepseek/chat`` and check the
+    reply starts with ``VERIFIED`` — proves the per-call plugin path works.
+    """
+    from app.harness.dsh import validate_dsh_harness
+
+    harness = example_verifiable_harness()
+    validate_dsh_harness(harness)
+    return ImportResponse(harness=harness, kept=["persona"], dropped=[], warnings=[])
 
 
 @router.post("/import", response_model=ImportResponse)

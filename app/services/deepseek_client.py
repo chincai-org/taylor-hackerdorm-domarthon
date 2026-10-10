@@ -73,6 +73,28 @@ class DeepSeekClient:
         messages.append({"role": "user", "content": prompt})
         return messages
 
+    @staticmethod
+    def _parse_tool_calls(message: Any) -> list[dict[str, Any]]:
+        """Extract OpenAI-style tool calls from a chat message (lenient)."""
+        import json
+
+        calls: list[dict[str, Any]] = []
+        for tc in getattr(message, "tool_calls", None) or []:
+            fn = getattr(tc, "function", None)
+            raw_args = getattr(fn, "arguments", "") or ""
+            try:
+                args = json.loads(raw_args) if raw_args else {}
+            except (json.JSONDecodeError, ValueError):
+                args = {"_raw": raw_args}
+            calls.append(
+                {
+                    "id": getattr(tc, "id", ""),
+                    "name": getattr(fn, "name", ""),
+                    "arguments": args,
+                }
+            )
+        return calls
+
     async def run_prompt_single(
         self,
         prompt: str,
@@ -81,8 +103,13 @@ class DeepSeekClient:
         system_text: str | None = None,
         model: str | None = None,
         tools: list[dict[str, Any]] | None = None,
-    ) -> str:
-        """Send one prompt, return the complete assistant reply."""
+    ) -> dict[str, Any]:
+        """Send one prompt, return ``{"reply": str, "tool_calls": [...]}``.
+
+        ``reply`` is ``""`` when the model only made tool calls (no assistant
+        text yet) — that is a working tool call, not an error. Raises only
+        when there is neither text nor any tool call.
+        """
         if not prompt or not prompt.strip():
             raise ValueError("prompt must be a non-empty string")
         messages = self._messages(prompt, system_text)
@@ -94,10 +121,14 @@ class DeepSeekClient:
             resp = await client.chat.completions.create(stream=False, **create_kwargs)
         finally:
             await client.close()
-        text = (resp.choices[0].message.content or "").strip() if resp.choices else ""
-        if text:
-            return text
-        raise DeepSeekEmptyReplyError(f"DeepSeek model '{self.model}' returned no assistant text.")
+        message = resp.choices[0].message if resp.choices else None
+        text = (message.content or "").strip() if message and message.content else ""
+        tool_calls = self._parse_tool_calls(message) if message is not None else []
+        if text or tool_calls:
+            return {"reply": text, "tool_calls": tool_calls}
+        raise DeepSeekEmptyReplyError(
+            f"DeepSeek model '{self.model}' returned no text or tool call."
+        )
 
     async def stream_prompt(
         self,
@@ -110,7 +141,8 @@ class DeepSeekClient:
         """Yield SSE lines streaming DeepSeek token deltas.
 
         Event shape:
-        ``{"delta": ...}`` chunks, then ``{"status": "done"}`` or ``{"error": ...}``.
+        ``{"delta": ...}`` chunks, optional ``{"tool_calls": [...]}`` event
+        when the model invoked tools, then ``{"status": "done"}`` or ``{"error": ...}``.
         """
         import json
 
@@ -131,6 +163,7 @@ class DeepSeekClient:
                 create_kwargs["tools"] = tools
             stream = await client.chat.completions.create(**create_kwargs)
             got_text = False
+            tool_accum: dict[int, dict[str, str]] = {}
             try:
                 async for chunk in stream:
                     for choice in chunk.choices or []:
@@ -138,9 +171,31 @@ class DeepSeekClient:
                         if delta:
                             got_text = True
                             yield f"data: {json.dumps({'delta': delta})}\n\n"
+                        for tc in getattr(choice.delta, "tool_calls", None) or []:
+                            slot = tool_accum.setdefault(
+                                getattr(tc, "index", 0),
+                                {"id": "", "name": "", "arguments": ""},
+                            )
+                            if getattr(tc, "id", None):
+                                slot["id"] += tc.id
+                            fn = getattr(tc, "function", None)
+                            if fn is not None:
+                                if getattr(fn, "name", None):
+                                    slot["name"] += fn.name
+                                if getattr(fn, "arguments", None):
+                                    slot["arguments"] += fn.arguments
             finally:
                 await stream.close()
-            if not got_text:
+            tool_calls: list[dict[str, Any]] = []
+            for slot in tool_accum.values():
+                try:
+                    args = json.loads(slot["arguments"]) if slot["arguments"] else {}
+                except ValueError:
+                    args = {"_raw": slot["arguments"]}
+                tool_calls.append({"id": slot["id"], "name": slot["name"], "arguments": args})
+            if tool_calls:
+                yield f"data: {json.dumps({'tool_calls': tool_calls})}\n\n"
+            if not got_text and not tool_calls:
                 yield f"data: {json.dumps({'error': 'DeepSeek returned no text'})}\n\n"
             else:
                 yield f"data: {json.dumps({'status': 'done'})}\n\n"

@@ -1,8 +1,10 @@
 """Harness package: DeepSeek Harness (dsh) plugin configs stored in Node.harness."""
 
 from app.harness.dsh import (
+    LEGACY_HARNESS_KINDS,
     SUPPORTED_DSH_PLUGINS,
     default_customer_support_harness,
+    default_harness,
     example_verifiable_harness,
     harness_diff,
     list_supported_plugins,
@@ -12,8 +14,10 @@ from app.harness.dsh import (
 )
 
 __all__ = [
+    "LEGACY_HARNESS_KINDS",
     "SUPPORTED_DSH_PLUGINS",
     "default_customer_support_harness",
+    "default_harness",
     "example_verifiable_harness",
     "harness_diff",
     "list_supported_plugins",

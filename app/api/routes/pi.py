@@ -5,7 +5,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from app.core.config import settings
-from app.services.pi_rpc import PiNotAvailableError, PiRpcWrapper
+from app.services.pi_rpc import PiEmptyReplyError, PiNotAvailableError, PiRpcWrapper
 
 router = APIRouter(prefix="/pi", tags=["pi"])
 
@@ -54,6 +54,9 @@ async def chat_with_pi(req: ChatRequest) -> ChatResponse:
         raise HTTPException(status_code=422, detail=str(e)) from e
     except PiNotAvailableError as e:
         raise HTTPException(status_code=503, detail=str(e)) from e
+    except PiEmptyReplyError as e:
+        # Pi ran but produced no text: config/model issue, not a crash.
+        raise HTTPException(status_code=502, detail=str(e)) from e
     except TimeoutError as e:
         raise HTTPException(status_code=504, detail=str(e)) from e
     except Exception as e:  # noqa: BLE001 - surface subprocess failures as 500

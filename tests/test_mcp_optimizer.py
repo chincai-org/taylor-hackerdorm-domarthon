@@ -116,6 +116,57 @@ def test_list_and_checkout_return_database_tree(monkeypatch) -> None:
     assert "nodes[].id" in digest["workflow"]["parent_id_rule"]
 
 
+def test_create_tree_tool_matches_website_initialization(monkeypatch) -> None:
+    factory, _ = _session_factory()
+    _patch_mcp_scope(monkeypatch, factory)
+
+    signature = inspect.signature(mcp_server.create_tree)
+    assert list(signature.parameters) == ["name", "description"]
+
+    tools = asyncio.run(mcp_server.mcp_server.list_tools())
+    create_tool = next(tool for tool in tools if tool.name == "create_tree")
+    assert set(create_tool.input_schema["properties"]) == {"name", "description"}
+    assert create_tool.input_schema["required"] == ["name"]
+    assert "Create tree form" in (create_tool.description or "")
+
+    result = mcp_server.create_tree("  Refund support  ", "  First experiment  ")
+
+    assert result["name"] == "Refund support"
+    assert result["description"] == "First experiment"
+    assert result["metadata"]["initial_harness_source"] == "cordis.patch.yml"
+    assert result["metadata"]["benchmark_status"] == "unconfigured"
+    assert result["benchmark"]["name"] == "Customer support benchmark (unconfigured)"
+    assert result["benchmark"]["scenarios"] == []
+    assert result["stats"] == {
+        "node_count": 1,
+        "complete_count": 0,
+        "failed_count": 0,
+        "best_score": None,
+    }
+
+    root = result["nodes"][0]
+    assert root["id"] == result["root_node_id"]
+    assert root["status"] == "pending"
+    assert root["rationale"] == "Initial DeepSeek harness loaded from cordis.patch.yml."
+    assert 'model: "grafilab/deepseek-v4-flash"' in root["harness"]
+
+    with factory() as session:
+        tree = session.get(Tree, result["id"])
+        assert tree is not None
+        assert tree.root_node_id == root["id"]
+        assert session.get(Benchmark, result["benchmark_id"]) is not None
+        assert session.get(Node, root["id"]) is not None
+
+
+def test_create_tree_tool_rejects_blank_name() -> None:
+    try:
+        mcp_server.create_tree("   ")
+    except ValueError as exc:
+        assert "Name cannot be blank" in str(exc)
+    else:
+        raise AssertionError("blank tree name was accepted")
+
+
 def test_mcp_contract_requires_parent_relative_suggestions() -> None:
     signature = inspect.signature(mcp_server.create_child_node)
     assert list(signature.parameters) == [

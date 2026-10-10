@@ -15,6 +15,8 @@ from app.db.engine import session_scope
 from app.harness.dsh import harness_diff, to_cordis_patch_yml
 from app.harness.importer import coerce_harness
 from app.harness.suggested_changes import apply_suggested_changes
+from app.schemas.trees import CreateTreeRequest
+from app.services.tree_creation import create_tree_with_default_harness
 from app.services.tree_digest import digest_tree
 
 
@@ -61,6 +63,10 @@ Canonical workflow (follow this order):
 7. Call create_child_node(tree_id, parent_id, parent_revision, suggested_changes,
    rationale).
 
+To start a new optimization session, ask the user for a tree name and optional description,
+then call create_tree(name, description). It performs the same initialization as the
+website's Create tree form.
+
 create_child_node is parent-relative. Do not send a full harness, raw YAML, or
 fields such as version, kind, profile, or dsh_plugins. Send only a JSON object
 with the changes to apply: existing plugin config updates go in `plugins`, new
@@ -74,6 +80,29 @@ mcp_server = MCPServer(
     instructions=MCP_WORKFLOW_INSTRUCTIONS,
     version=settings.VERSION,
 )
+
+
+@mcp_server.tool()
+def create_tree(name: str, description: str | None = None) -> dict[str, Any]:
+    """Create a new optimization tree with the website's default harness.
+
+    Ask the user for the required name and optional description before calling
+    this tool. Name and description are normalized exactly like the website's
+    Create tree form, and the default benchmark and pending root node are
+    initialized the same way.
+    """
+    try:
+        request = CreateTreeRequest(name=name, description=description)
+    except ValueError as exc:
+        raise ValueError(str(exc)) from exc
+
+    try:
+        with session_scope() as session:
+            return create_tree_with_default_harness(session, request)
+    except OSError as exc:
+        raise ValueError("The default cordis.patch.yml harness could not be read.") from exc
+    except ValueError as exc:
+        raise ValueError(f"Default harness is invalid: {exc}") from exc
 
 
 @mcp_server.tool()

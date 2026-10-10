@@ -24,7 +24,7 @@ Guide for AI coding agents (+ humans). **24h hackathon**: end-to-end > polish, s
 | **Benchmark**      | Fixed customer-support scenarios + deterministic checks, owned by tree.                     |
 | **Child nodes**    | Prior attempts incl. failures/regressions — signal, not noise.                              |
 | **Workbuddy**      | Optimizer agent calling MCP tools.                                                          |
-| **PI**             | Agent harness/runtime server uses for benchmark (GraffiLab AI API — confirm name/endpoint). |
+| **Judge model**    | Model the server scores harnesses with (GraffiLab AI API, OpenAI-compatible). |
 
 ## 3. Architecture
 
@@ -33,16 +33,16 @@ Guide for AI coding agents (+ humans). **24h hackathon**: end-to-end > polish, s
 │ Workbuddy (user)   │ ─────────────────► │ Hosted server (FastAPI)      │
 │ "Improve this node"│ ◄───────────────── │  - MCP server (python mcp)   │
 └────────────────────┘                    │  - REST API for frontend     │
-                                          │  - Evaluator (runs PI vs     │
+                                          │  - Evaluator (judges dsh     │
 ┌────────────────────┐      REST/JSON     │    benchmark)                │
 │ Web frontend       │ ─────────────────► │  - DB (trees, nodes, results)│
 │ (Vercel)           │ ◄───────────────── └──────────────┬───────────────┘
 └────────────────────┘                                   │
                                                          ▼
-                                              GraffiLab AI API (PI)
+                                              GraffiLab AI API (judge)
 ```
 
-- **Server**: stores tree, runs PI vs benchmark, stores results, exposes MCP + REST.
+- **Server**: stores tree, judges dsh harnesses vs benchmark, stores results, exposes MCP + REST.
 - **Workbuddy**: user-side. No direct DB access — MCP only.
 - **Frontend**: lists sessions, tree viz, node/benchmark detail. Optional "create session".
 
@@ -51,7 +51,7 @@ Guide for AI coding agents (+ humans). **24h hackathon**: end-to-end > polish, s
 - **Backend:** Python, FastAPI, official MCP Python SDK (`mcp`) mounted alongside FastAPI.
 - **Database:** SQLAlchemy models + repository helpers, Neon Postgres local + Vercel. Harnesses/scenarios/results in JSON fields; DB access behind `app/db/repository.py`.
 - **Frontend:** Vercel. Tree viz (React Flow / d3 / plain SVG). Prefer already-scaffolded.
-- **Eval runtime:** PI via GraffiLab AI API.
+- **Eval runtime:** judge model via GraffiLab AI API.
 
 > Repo choice beats this file on conflict — then update this section.
 
@@ -69,7 +69,7 @@ Don't restructure without reason.
 │   ├── db/                  # Engine, models, repository (SQLAlchemy + Neon Postgres)
 │   ├── harness/             # Harness import helpers
 │   ├── schemas/             # Shared Pydantic models (MCP + REST)
-│   ├── services/            # PI clients, digest helpers, tool runtime (agent loop)
+│   ├── services/            # Model clients, digest helpers, tool runtime (agent loop)
 │   ├── mcp_server.py        # MCP tool definitions
 │   └── web/                 # Everything browser sees
 │       ├── templates/       # Live pages: base.html, gallery.html (/),
@@ -108,12 +108,18 @@ Each scenario:
 - **Expected final action** (refund demand → `issue_refund`; policy violation → `deny_with_explanation`).
 - Optional **forbidden actions** (e.g. refund outside policy).
 
-Scoring:
-- **Programmatic checks** (tool called? correct args? correct final action?) > LLM-as-judge.
-- LLM judge unavoidable → fixed rubric, binary pass/fail, temperature 0.
+Scoring (implemented in `app/services/evaluator.py`, LLM-judge only):
+- Direct GraffiLab API call per scenario (no harness rollout, no tool loop).
+- Fixed rubric, binary pass/fail plus a 0-100 score, temperature 0, strict
+  JSON verdict `{"passed": boolean, "score": number, "reason": string}`
+  (fence-tolerant parse; missing fields derive from each other, pass = 60+).
+- Judge model = `JUDGE_MODEL` override, else the provider model.
+- Score = mean of the per-scenario 0-100 scores (float, rounded to 2dp).
+- Scenarios are **optional**: an empty benchmark falls back to one generic
+  harness review (persona, escalation, no guaranteed outcomes), marked
+  `"generic": true` on the result so Workbuddy knows it is not scenario-backed.
 - Report: overall score, per-scenario pass/fail, failure reasons. Per-scenario detail = what Workbuddy learns from.
 - **Immutable once tree has nodes** — changes invalidate comparisons.
-- Mocked/sandboxed scenarios: benchmark tools never touch real systems.
 
 ## 8. MCP Interface
 
@@ -128,28 +134,34 @@ Workbuddy flow: user gives `tree_id` + `node_id`, prompts **"Improve this node"*
 | `get_benchmark(tree_id)`                                              | Benchmark description → what gets measured.                                                    |
 | `create_child_node(tree_id, parent_id, suggested_changes, rationale)` | Create child from bounded parent-relative changes; preserve unmentioned parent harness fields. |
 | `get_node_status(tree_id, node_id)`                                   | Poll eval status/result.                                                                       |
+| Tool                                                        | Purpose                                                                   |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `list_trees()`                                              | Sessions (id, name, best score, node count).                              |
+| `checkout_tree(tree_id)`                                    | Tree digest: benchmark, structure, harnesses, scores, failure summaries.  |
+| `get_node(tree_id, node_id)`                                | Harness, benchmark results (incl. per-scenario failures), rationale.      |
+| `create_child_node(tree_id, parent_id, parent_revision, suggested_changes, rationale)` | Create child from bounded parent-relative changes; block while the judge scores it. |
 
 Rules:
 - **Concise structured JSON**. Truncate big payloads; offer drill-down.
-- `get_node` / `get_children` must carry enough context → **avoid repeating failed approaches**.
+- `checkout_tree` / `get_node` must carry enough context → **avoid repeating failed approaches**.
 - `get_node` is the required parent-read step before creating a child; pass its `parent_revision` unchanged to `create_child_node`.
 - `create_child_node` verifies the derived parent revision against the current database harness; no schema field is required.
 - `suggested_changes` is parent-relative, not a full harness file; unmentioned fields are preserved and the server caps the payload at 120 lines.
-- `create_child_node` validates parent exists, belongs to the tree, and has status `complete`; pending, running, and failed nodes cannot receive children.
-- Eval slow → async + poll, or block with sane timeout. No stuck `running`; mark `failed` on error/timeout.
+- `create_child_node` validates parent exists and belongs to the tree. Eval is
+  synchronous (blocks with per-scenario + total timeouts); no poll tool.
+- No stuck `running`; mark `failed` on error/timeout.
 - Errors clear + actionable (what wrong, what next).
 
 ## 9. Evaluation Flow (server-side)
 
-1. `create_child_node` inserts node `status=pending`.
-2. Evaluator sets `running`, runs PI + node harness vs every scenario.
-3. Applies checks, writes `score` + `result`, sets `complete` (or `failed` + error).
+1. `create_child_node` inserts node `status=pending` (root nodes: `POST /api/v1/trees`).
+2. Evaluator sets `running`, judges the harness via direct GraffiLab API calls
+   (one JSON verdict per scenario; generic review when scenarios are empty).
+3. Writes `score` + `result`, sets `complete` (or `failed` + error).
 4. Frontend + MCP read updated node.
 
-- Cap concurrency + per-scenario timeouts → protects API quota (hackathon budget!).
-- Cache only keyed by harness hash + benchmark version.
-- Log raw PI transcripts per scenario (reference or truncated text in DB) → debuggable failures.
-- Deterministic where possible (fixed seeds/temperature 0).
+- Per-scenario + total timeouts (`JUDGE_TIMEOUT_S`, `EVAL_TOTAL_TIMEOUT_S`) → protects API quota (hackathon budget!).
+- Deterministic where possible (temperature 0, fixed rubric).
 
 ## 10. Frontend Requirements
 
@@ -258,13 +270,15 @@ Local + Vercel both use Neon Postgres. Local pooled string in `.env.development.
 Vercel provides own `DATABASE_URL`. Same DB code both envs, only credentials differ.
 
 Env vars (never commit secrets; provide `.env.example`):
-- `GRAFFILAB_API_KEY` (confirm name) — PI eval API
+- `GRAFFILAB_API_KEY` — judge model API (expected credential; `GRAFFILAB_BASE_URL` /
+  `GRAFFILAB_MODEL` default to the deployed endpoint/model, `JUDGE_MODEL` overrides the judge)
+- `DEEPSEEK_API_KEY` (+ `DEEPSEEK_BASE_URL` / `DEEPSEEK_MODEL`) — override path, wins when set
 - `DATABASE_URL` — Neon Postgres URL; local via `.env.development.local`
 - `NEXT_PUBLIC_API_URL` / equivalent — frontend → server base URL
 
 ## 12. Coding Conventions
 
-- **Python:** type hints, Pydantic models for all req/resp bodies, small fns, `async` where helps (PI calls, MCP).
+- **Python:** type hints, Pydantic models for all req/resp bodies, small fns, `async` where helps (model calls, MCP).
 - **Frontend:** TypeScript preferred if already used; follow existing lint/format.
 - MCP + REST schemas in sync — share Pydantic models.
 - Names match §2 terms (`tree`, `node`, `harness`, `benchmark`).
@@ -289,8 +303,8 @@ Env vars (never commit secrets; provide `.env.example`):
 ## 14. Definition of Done (hackathon demo)
 
 - [ ] Create/seed tree with benchmark + evaluated root node.
-- [ ] MCP tools read node, children, benchmark.
-- [ ] `create_child_node` stores node + auto-runs PI vs benchmark.
+- [ ] MCP tools read tree digest with benchmark context.
+- [ ] `create_child_node` stores node + auto-runs the Grafilab judge vs benchmark.
 - [ ] Workbuddy given `tree_id` + `node_id` + "Improve this node" → new child end-to-end.
 - [ ] Frontend lists sessions, visualizes tree with scores + per-scenario results.
 - [ ] Server reachable by Workbuddy; frontend on Vercel.
@@ -360,7 +374,7 @@ Relationships/constraints:
 - `ix_nodes_tree_score` (`tree_id`, `score`) → ranking.
 
 
-- Exact GraffiLab AI / PI API shape, auth, rate limits.
+- Exact GraffiLab AI API shape, auth, rate limits.
 - Eval sync vs async-with-polling for MCP.
 - "Create session" in MVP?
 - MCP transport (streamable HTTP vs SSE) for hosted deploy — Vercel serverless limits may push long evals elsewhere (small VM/Fly/Railway), Vercel serving frontend only.

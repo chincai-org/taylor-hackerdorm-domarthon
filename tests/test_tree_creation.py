@@ -41,6 +41,33 @@ def test_create_tree_persists_default_harness_and_root(monkeypatch) -> None:
 
     monkeypatch.setattr(trees, "session_scope", scope)
 
+    import app.services.evaluator as evaluator
+
+    seen: dict[str, object] = {}
+
+    def fake_evaluate(patch_yml: str, scenarios: list) -> tuple[float, dict]:
+        seen["scenarios"] = scenarios
+        result = {
+            "score": 100.0,
+            "passed": 1,
+            "total": 1,
+            "judge": "llm",
+            "generic": True,
+            "judge_model": "test-judge",
+            "scenarios": [
+                {
+                    "scenario_id": "generic-harness-review",
+                    "id": "generic-harness-review",
+                    "passed": True,
+                    "score": 100.0,
+                    "reason": "solid",
+                },
+            ],
+        }
+        return 100.0, result
+
+    monkeypatch.setattr(evaluator, "evaluate_harness_sync", fake_evaluate)
+
     result = trees.create_tree_endpoint(
         trees.CreateTreeRequest(name="  Refund support  ", description="  First experiment  ")
     )
@@ -61,7 +88,11 @@ def test_create_tree_persists_default_harness_and_root(monkeypatch) -> None:
     root = result["nodes"][0]
     assert root["id"] == result["root_node_id"]
     assert root["parent_id"] is None
-    assert root["status"] == "pending"
+    assert seen["scenarios"] == []
+    assert root["status"] == "complete"
+    assert root["score"] == 100.0
+    assert root["benchmark_result"] is not None
+    assert root["benchmark_result"]["generic"] is True
     assert isinstance(root["harness"], str)
     assert "model: \"grafilab/deepseek-v4-flash\"" in root["harness"]
     assert all(
@@ -83,3 +114,36 @@ def test_create_tree_request_rejects_blank_name() -> None:
         assert "Name cannot be blank" in str(exc)
     else:
         raise AssertionError("blank tree name was accepted")
+
+
+def test_create_tree_root_judge_error_marks_failed(monkeypatch) -> None:
+    factory, _ = _session_factory()
+
+    @contextmanager
+    def scope() -> Iterator[Session]:
+        session = factory()
+        try:
+            yield session
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    monkeypatch.setattr(trees, "session_scope", scope)
+
+    import app.services.evaluator as evaluator
+
+    def _fail(_patch_yml: str, _scenarios: list) -> tuple[float, dict]:
+        raise RuntimeError("judge exploded")
+
+    monkeypatch.setattr(evaluator, "evaluate_harness_sync", _fail)
+
+    result = trees.create_tree_endpoint(trees.CreateTreeRequest(name="Failing root"))
+
+    root = result["nodes"][0]
+    assert root["status"] == "failed"
+    assert root["score"] is None
+    assert root["error"] is not None
+    assert root["error"]["code"] == "RuntimeError"

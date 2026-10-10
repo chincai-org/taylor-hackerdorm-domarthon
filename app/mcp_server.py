@@ -66,7 +66,11 @@ fields such as version, kind, profile, or dsh_plugins. Send only a JSON object
 with the changes to apply: existing plugin config updates go in `plugins`, new
 rows in `add_plugins`, removals in `remove_plugins`, and top-level prompt/model
 updates in `system_prompt` / `model`. The server preserves every unmentioned
-parent field and rejects suggestions longer than 120 lines.
+parent field, rejects suggestions longer than 120 lines, then judges the child
+synchronously against every benchmark scenario with direct Grafilab API calls
+(temperature 0, JSON verdict per scenario; empty benchmark falls back to one
+generic harness review). The returned node is `complete` with a score, or
+`failed` with an error.
 """
 
 mcp_server = MCPServer(
@@ -147,15 +151,14 @@ def _load_tree_digest(tree_id: str) -> dict[str, Any]:
                 "parent_id": "<get_node().node_id>",
                 "parent_revision": "<get_node().parent_revision>",
                 "suggested_changes": {
-                    "plugins": [
-                        {"id": "persona", "config": {"prefix": "<new prefix>"}}
-                    ]
+                    "plugins": [{"id": "persona", "config": {"prefix": "<new prefix>"}}]
                 },
                 "rationale": "<why these parent-relative changes are better>",
             },
             "change_line_limit": 120,
             "harness_input": "parent-relative changes only; never a full harness",
             "parent_revision": "required from get_node(); no database field is needed",
+            "evaluation": "scored synchronously; new nodes return complete|failed",
         }
         return digest
 
@@ -222,7 +225,7 @@ def create_child_node(
     suggested_changes: dict[str, Any],
     rationale: str | None = None,
 ) -> dict[str, Any]:
-    """Create a pending child from bounded, parent-relative changes.
+    """Create a child from bounded, parent-relative changes, then score it.
 
     Call ``get_node`` first and pass its ``parent_revision`` unchanged.
     ``suggested_changes`` is not a full harness and cannot contain ``version``,
@@ -230,8 +233,11 @@ def create_child_node(
     Existing plugin rows are partially updated through ``plugins``; use
     ``add_plugins`` and ``remove_plugins`` for row additions/removals. All
     unmentioned parent data is retained and the suggestion payload must stay
-    within 120 lines. The parent node must have status ``complete``; nodes that
-    are pending, running, or failed cannot receive children.
+    within 120 lines. The server materializes the child patch, then judges it
+    against every benchmark scenario with direct Grafilab API calls
+    (temperature 0, JSON verdict per scenario). The call blocks until judging
+    finishes; the returned node is ``complete`` with a score, or ``failed``
+    with an error.
     """
     if not isinstance(parent_revision, str) or not parent_revision.strip():
         raise ValueError(
@@ -282,12 +288,42 @@ def create_child_node(
             harness=patch_yml,
             rationale=rationale,
         )
+        node_id = node.id
+        node_tree_id = node.tree_id
+        node_parent_id = node.parent_id
+        node_rationale = node.rationale
+        benchmark = repository.get_benchmark(session, tree_id=tree_id)
+        scenarios: list[dict[str, Any]] = []
+        if benchmark is not None and isinstance(benchmark.scenarios, list):
+            scenarios = [s for s in benchmark.scenarios if isinstance(s, dict)]
+
+    # Scenarios are optional: an empty benchmark falls back to one generic
+    # harness review inside the evaluator, so the node still gets a score.
+
+    # Pending -> running before the blocking judge calls, so concurrent
+    # readers never see a stale pending node mid-evaluation.
+    with session_scope() as session:
+        repository.update_node_evaluation(
+            session, tree_id=tree_id, node_id=node_id, status="running"
+        )
+
+    try:
+        from app.services.evaluator import evaluate_harness_sync
+
+        score, benchmark_result = evaluate_harness_sync(patch_yml, scenarios)
+    except Exception as exc:  # noqa: BLE001 - node must land failed, never stuck running
+        error = {"code": type(exc).__name__, "message": str(exc)[:500]}
+        with session_scope() as session:
+            repository.update_node_evaluation(
+                session, tree_id=tree_id, node_id=node_id, status="failed", error=error
+            )
         return {
-            "node_id": node.id,
-            "tree_id": node.tree_id,
-            "parent_id": node.parent_id,
+            "node_id": node_id,
+            "tree_id": node_tree_id,
+            "parent_id": node_parent_id,
             "parent_revision": current_revision,
-            "status": node.status,
+            "status": "failed",
+            "score": None,
             "harness": patch_yml,
             "patch_yml": patch_yml,
             "suggested_changes": suggested_changes,
@@ -297,17 +333,66 @@ def create_child_node(
             "harness_source": parent_meta.get("source", "none"),
             "warnings": parent_meta.get("warnings", []),
             "dropped": parent_meta.get("dropped", []),
-            "rationale": node.rationale,
+            "rationale": node_rationale,
             "evaluation": {
-                "status": "skipped",
-                "scheduled": False,
-                "reason": "The benchmark runner is not implemented yet.",
+                "status": "failed",
+                "scheduled": True,
+                "score": None,
+                "reason": str(exc)[:500],
+                "error": error,
             },
             "next_step": (
-                "Call checkout_tree(tree_id) or get_node(tree_id, node_id) to inspect "
-                "the new child."
+                "Judging failed; call checkout_tree(tree_id) to inspect the error. "
+                "Use this node's id for any further child."
             ),
         }
+
+    failed_ids = [
+        item.get("scenario_id", item.get("id", "?"))
+        for item in benchmark_result.get("scenarios", [])
+        if isinstance(item, dict) and item.get("passed") is False
+    ]
+    with session_scope() as session:
+        repository.update_node_evaluation(
+            session,
+            tree_id=tree_id,
+            node_id=node_id,
+            status="complete",
+            score=score,
+            benchmark_result=benchmark_result,
+        )
+    return {
+        "node_id": node_id,
+        "tree_id": node_tree_id,
+        "parent_id": node_parent_id,
+        "parent_revision": current_revision,
+        "status": "complete",
+        "score": score,
+        "harness": patch_yml,
+        "patch_yml": patch_yml,
+        "suggested_changes": suggested_changes,
+        "change_lines": change_lines,
+        "parent_harness": parent.harness,
+        "diff": harness_diff(parent_harness, child_harness),
+        "harness_source": parent_meta.get("source", "none"),
+        "warnings": parent_meta.get("warnings", []),
+        "dropped": parent_meta.get("dropped", []),
+        "rationale": node_rationale,
+        "evaluation": {
+            "status": "complete",
+            "scheduled": True,
+            "score": score,
+            "passed": benchmark_result.get("passed"),
+            "total": benchmark_result.get("total"),
+            "failed_scenarios": failed_ids,
+            "judge_model": benchmark_result.get("judge_model"),
+            "generic": benchmark_result.get("generic", False),
+        },
+        "next_step": (
+            "Call checkout_tree(tree_id) to inspect the scored node. "
+            "Use this node's id for any further child."
+        ),
+    }
 
 
 mcp_app = mcp_server.streamable_http_app(

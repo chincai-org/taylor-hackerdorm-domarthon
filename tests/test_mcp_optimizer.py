@@ -159,13 +159,41 @@ def test_get_node_returns_exact_parent_content(monkeypatch) -> None:
     assert "suggested_changes" in result["next_step"]
 
 
-def test_create_child_applies_only_suggested_changes(monkeypatch) -> None:
+def test_create_child_scores_via_llm_judge(monkeypatch) -> None:
+    import app.services.evaluator as evaluator
+
     factory, _ = _session_factory()
     with factory() as session:
         _seed(session)
     _patch_mcp_scope(monkeypatch, factory)
 
     parent = mcp_server.get_node("tree-1", "root-1")
+    seen: dict[str, object] = {}
+
+    def fake_evaluate(patch_yml: str, scenarios: list) -> tuple[float, dict]:
+        seen["patch_yml"] = patch_yml
+        seen["scenarios"] = scenarios
+        result = {
+            "score": 62.5,
+            "passed": 1,
+            "total": 2,
+            "judge": "llm",
+            "judge_model": "test-judge",
+            "scenarios": [
+                {"scenario_id": "a", "id": "a", "passed": True, "score": 85.0, "reason": "ok"},
+                {
+                    "scenario_id": "b",
+                    "id": "b",
+                    "passed": False,
+                    "score": 40.0,
+                    "reason": "missing refund",
+                },
+            ],
+        }
+        return 62.5, result
+
+    monkeypatch.setattr(evaluator, "evaluate_harness_sync", fake_evaluate)
+
     result = mcp_server.create_child_node(
         tree_id="tree-1",
         parent_id="root-1",
@@ -178,26 +206,253 @@ def test_create_child_applies_only_suggested_changes(monkeypatch) -> None:
         rationale="Adds an empathetic persona prefix.",
     )
 
-    assert result["status"] == "pending"
-    assert result["evaluation"] == {
-        "status": "skipped",
-        "scheduled": False,
-        "reason": "The benchmark runner is not implemented yet.",
-    }
+    assert result["status"] == "complete"
+    assert result["score"] == 62.5
+    assert result["evaluation"]["status"] == "complete"
+    assert result["evaluation"]["score"] == 62.5
+    assert result["evaluation"]["passed"] == 1
+    assert result["evaluation"]["total"] == 2
+    assert result["evaluation"]["failed_scenarios"] == ["b"]
     assert 1 <= result["change_lines"] <= 120
     assert result["harness_source"] == "yml"
     assert "empathetic support agent" in result["patch_yml"]
     assert result["diff"]["changed"]["persona"]["prefix"]["from"] == (
         "You are a careful customer support agent."
     )
+    assert "empathetic support agent" in seen.get("patch_yml", "")
+    assert isinstance(seen.get("scenarios"), list)
     with factory() as session:
         child = session.get(Node, result["node_id"])
         assert child is not None
         assert child.parent_id == "root-1"
         assert child.harness == result["patch_yml"]
-        assert child.score is None
-        assert child.benchmark_result is None
+        assert child.status == "complete"
+        assert child.score == 62.5
+        assert child.benchmark_result is not None
+        assert child.benchmark_result["passed"] == 1
 
+
+def test_create_child_empty_benchmark_still_scores_via_generic_review(monkeypatch) -> None:
+    import app.services.evaluator as evaluator
+
+    factory, _ = _session_factory()
+    with factory() as session:
+        _seed(session)
+        benchmark = session.get(Benchmark, "benchmark-1")
+        assert benchmark is not None
+        benchmark.scenarios = []
+        session.commit()
+    _patch_mcp_scope(monkeypatch, factory)
+
+    seen: dict[str, object] = {}
+
+    def fake_evaluate(patch_yml: str, scenarios: list) -> tuple[float, dict]:
+        seen["scenarios"] = scenarios
+        result = {
+            "score": 100.0,
+            "passed": 1,
+            "total": 1,
+            "judge": "llm",
+            "generic": True,
+            "judge_model": "test-judge",
+            "scenarios": [
+                {
+                    "scenario_id": "generic-harness-review",
+                    "id": "generic-harness-review",
+                    "passed": True,
+                    "score": 100.0,
+                    "reason": "solid persona",
+                },
+            ],
+        }
+        return 100.0, result
+
+    monkeypatch.setattr(evaluator, "evaluate_harness_sync", fake_evaluate)
+
+    parent = mcp_server.get_node("tree-1", "root-1")
+    result = mcp_server.create_child_node(
+        tree_id="tree-1",
+        parent_id="root-1",
+        parent_revision=parent["parent_revision"],
+        suggested_changes={
+            "plugins": [{"id": "persona", "config": {"prefix": "You are a kind support agent."}}]
+        },
+        rationale="No benchmark configured.",
+    )
+
+    assert seen["scenarios"] == []
+    assert result["status"] == "complete"
+    assert result["score"] == 100.0
+    assert result["evaluation"]["status"] == "complete"
+    assert result["evaluation"]["generic"] is True
+    with factory() as session:
+        child = session.get(Node, result["node_id"])
+        assert child is not None
+        assert child.status == "complete"
+        assert child.score == 100.0
+        assert child.benchmark_result is not None
+        assert child.benchmark_result["generic"] is True
+
+
+def test_create_child_judge_error_marks_failed(monkeypatch) -> None:
+    import app.services.evaluator as evaluator
+
+    factory, _ = _session_factory()
+    with factory() as session:
+        _seed(session)
+    _patch_mcp_scope(monkeypatch, factory)
+
+    def _fail(_patch_yml: str, _scenarios: list) -> tuple[float, dict]:
+        raise RuntimeError("judge exploded")
+
+    monkeypatch.setattr(evaluator, "evaluate_harness_sync", _fail)
+
+    parent = mcp_server.get_node("tree-1", "root-1")
+    result = mcp_server.create_child_node(
+        tree_id="tree-1",
+        parent_id="root-1",
+        parent_revision=parent["parent_revision"],
+        suggested_changes={
+            "plugins": [{"id": "persona", "config": {"prefix": "You are a kind support agent."}}]
+        },
+    )
+
+    assert result["status"] == "failed"
+    assert result["evaluation"]["status"] == "failed"
+    assert "judge exploded" in result["evaluation"]["reason"]
+    with factory() as session:
+        child = session.get(Node, result["node_id"])
+        assert child is not None
+        assert child.status == "failed"
+        assert child.score is None
+        assert child.error is not None
+        assert child.error["code"] == "RuntimeError"
+
+
+def test_judge_reply_parsing() -> None:
+    from app.services.evaluator import _parse_judge_reply
+
+    passed, score, reason = _parse_judge_reply(
+        '{"passed": true, "score": 85, "reason": "polite refund"}'
+    )
+    assert passed is True
+    assert score == 85.0
+    assert reason == "polite refund"
+
+    passed, score, _ = _parse_judge_reply(
+        '```json\n{"passed": false, "score": 30, "reason": "nope"}\n```'
+    )
+    assert passed is False
+    assert score == 30.0
+
+    # Scores clamp into 0-100.
+    _, high, _ = _parse_judge_reply('{"passed": true, "score": 150, "reason": "x"}')
+    assert high == 100.0
+    _, low, _ = _parse_judge_reply('{"passed": false, "score": -5, "reason": "x"}')
+    assert low == 0.0
+
+    # Missing fields derive from each other (pass threshold 60).
+    derived_pass, derived_score, _ = _parse_judge_reply('{"score": 70, "reason": "x"}')
+    assert derived_pass is True
+    assert derived_score == 70.0
+    _, fallback_score, _ = _parse_judge_reply('{"passed": false, "reason": "x"}')
+    assert fallback_score == 0.0
+
+    passed, score, reason = _parse_judge_reply("not json at all")
+    assert passed is False
+    assert score == 0.0
+    assert reason
+
+
+def test_evaluator_calls_grafilab_directly_with_harness_text(monkeypatch) -> None:
+    import app.services.evaluator as evaluator
+    from app.core import config
+
+    monkeypatch.setattr(config.settings, "GRAFFILAB_API_KEY", "grafilab-key")
+    monkeypatch.setattr(config.settings, "JUDGE_MODEL", None)
+
+    calls: dict[str, object] = {}
+
+    class FakeClient:
+        def __init__(
+            self,
+            api_key: str | None = None,
+            base_url: str = "",
+            model: str = "",
+            default_timeout: float = 0,
+        ) -> None:
+            calls["api_key"] = api_key
+            calls["base_url"] = base_url
+            calls["model"] = model
+
+        async def run_prompt_single(self, prompt: str, **kwargs: object) -> dict:
+            prompts = calls.setdefault("prompts", [])
+            assert isinstance(prompts, list)
+            prompts.append(prompt)
+            calls["temperature"] = kwargs.get("temperature")
+            calls["system_text"] = kwargs.get("system_text")
+            if len(prompts) == 1:
+                return {"reply": '{"passed": true, "score": 80, "reason": "judged"}'}
+            return {"reply": '{"passed": false, "score": 40, "reason": "judged"}'}
+
+        async def run_prompt_agent(self, *args: object, **kwargs: object) -> dict:
+            raise AssertionError("evaluator must not run an agent loop")
+
+    monkeypatch.setattr(evaluator, "DeepSeekClient", FakeClient)
+
+    scenarios = [
+        {"id": "a", "customer_message": "I want a refund."},
+        {"id": "b", "customer_message": "I cannot log in."},
+    ]
+    score, result = evaluator.evaluate_harness_sync(VALID_PATCH_YML, scenarios)
+
+    assert calls["api_key"] == "grafilab-key"
+    assert calls["base_url"] == config.settings.GRAFFILAB_BASE_URL
+    assert calls["temperature"] == 0
+    assert calls["system_text"]
+    assert "0 to 100" in str(calls["system_text"])
+    prompts = calls["prompts"]
+    assert isinstance(prompts, list) and len(prompts) == 2
+    assert all(VALID_PATCH_YML.strip() in prompt for prompt in prompts)
+    assert all("0-100" in prompt for prompt in prompts)
+    assert score == 60.0
+    assert result["passed"] == 1
+    assert result["total"] == 2
+    assert result["scenarios"][0]["score"] == 80.0
+    assert result["scenarios"][1]["score"] == 40.0
+    assert result["judge_model"] == config.settings.GRAFFILAB_MODEL
+
+
+def test_evaluator_empty_scenarios_falls_back_to_generic_review(monkeypatch) -> None:
+    import app.services.evaluator as evaluator
+    from app.core import config
+
+    monkeypatch.setattr(config.settings, "GRAFFILAB_API_KEY", "grafilab-key")
+    monkeypatch.setattr(config.settings, "JUDGE_MODEL", None)
+
+    calls: dict[str, object] = {}
+
+    class FakeClient:
+        def __init__(self, **kwargs: object) -> None:
+            calls["init"] = kwargs
+
+        async def run_prompt_single(self, prompt: str, **kwargs: object) -> dict:
+            calls["prompt"] = prompt
+            return {"reply": '{"passed": true, "score": 90, "reason": "clear persona"}'}
+
+    monkeypatch.setattr(evaluator, "DeepSeekClient", FakeClient)
+
+    score, result = evaluator.evaluate_harness_sync(VALID_PATCH_YML, [])
+
+    prompt = calls["prompt"]
+    assert isinstance(prompt, str)
+    assert VALID_PATCH_YML.strip() in prompt
+    assert "generic" in prompt.lower()
+    assert score == 90.0
+    assert result["generic"] is True
+    assert result["total"] == 1
+    assert result["scenarios"][0]["scenario_id"] == "generic-harness-review"
+    assert result["scenarios"][0]["score"] == 90.0
 
 def test_create_child_rejects_non_complete_parents(monkeypatch) -> None:
     for status in ("pending", "running", "failed"):
@@ -224,7 +479,6 @@ def test_create_child_rejects_non_complete_parents(monkeypatch) -> None:
         with factory() as session:
             children = session.query(Node).filter(Node.parent_id == "root-1").all()
             assert children == []
-
 
 def test_create_child_rejects_full_harness_payload(monkeypatch) -> None:
     factory, _ = _session_factory()
@@ -337,10 +591,47 @@ def test_deepseek_resolve_rejects_both_forms() -> None:
     from fastapi import HTTPException
 
     try:
-        _resolve(
-            ChatRequest(prompt="hi", harness=VALID_PATCH_YML, harness_yml=VALID_PATCH_YML)
-        )
+        _resolve(ChatRequest(prompt="hi", harness=VALID_PATCH_YML, harness_yml=VALID_PATCH_YML))
     except HTTPException as exc:
         assert exc.status_code == 422
     else:
         raise AssertionError("both harness forms were accepted")
+
+
+def test_llm_provider_resolution_prefers_deepseek_key(monkeypatch) -> None:
+    from app.core import config
+
+    monkeypatch.setattr(config.settings, "DEEPSEEK_API_KEY", "deepseek-key")
+    monkeypatch.setattr(config.settings, "GRAFFILAB_API_KEY", "grafilab-key")
+    assert config.llm_provider() == "deepseek"
+    assert config.llm_api_key() == "deepseek-key"
+    assert config.llm_base_url() == config.settings.DEEPSEEK_BASE_URL
+    assert config.llm_model() == config.settings.DEEPSEEK_MODEL
+
+    monkeypatch.setattr(config.settings, "DEEPSEEK_API_KEY", None)
+    assert config.llm_provider() == "grafilab"
+    assert config.llm_api_key() == "grafilab-key"
+    assert config.llm_base_url() == config.settings.GRAFFILAB_BASE_URL
+    assert config.llm_model() == config.settings.GRAFFILAB_MODEL
+
+    monkeypatch.setattr(config.settings, "GRAFFILAB_API_KEY", None)
+    assert config.llm_provider() is None
+
+
+def test_llm_client_and_health_use_grafilab_when_only_grafilab_key(monkeypatch) -> None:
+    from app.api.routes.deepseek import deepseek_health
+    from app.core import config
+    from app.services.deepseek_client import build_llm_client
+
+    monkeypatch.setattr(config.settings, "DEEPSEEK_API_KEY", None)
+    monkeypatch.setattr(config.settings, "GRAFFILAB_API_KEY", "grafilab-key")
+
+    client = build_llm_client()
+    assert client.api_key == "grafilab-key"
+    assert client.base_url == config.settings.GRAFFILAB_BASE_URL
+    assert client.model == config.settings.GRAFFILAB_MODEL
+
+    health = deepseek_health()
+    assert health["available"] is True
+    assert health["provider"] == "grafilab"
+    assert health["model"] == config.settings.GRAFFILAB_MODEL

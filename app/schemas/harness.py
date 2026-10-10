@@ -33,10 +33,10 @@ class DeepSeekToolSpec(BaseModel):
 
 
 class DeepSeekHarness(BaseModel):
-    """The only harness shape accepted by the optimizer MCP.
+    """Legacy harness shape (pre-dsh, JSON-native for SQLAlchemy).
 
-    This mirrors ``pi_harness.models.HarnessConfig`` while keeping the persisted
-    value JSON-native for SQLAlchemy and the DeepSeek client.
+    Kept for back-compat only; the optimizer MCP and ``/deepseek/*`` routes
+    use raw dsh ``cordis.patch.yml`` text instead.
     """
 
     model_config = ConfigDict(extra="forbid")

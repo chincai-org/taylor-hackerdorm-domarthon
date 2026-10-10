@@ -38,6 +38,31 @@
   let pollTimer = 0;
   let pollInflight = false;
 
+  // Skeleton placeholders for the gallery. One markup helper so the create
+  // flow and the initial load share the same structure/classes.
+  const skeletonCard = () =>
+    `<li class="skeleton-card" data-creating-skeleton aria-hidden="true">` +
+    `<span class="skeleton-line skeleton-title"></span>` +
+    `<span class="skeleton-line skeleton-sub"></span>` +
+    `<span class="skeleton-block"></span>` +
+    `<span class="skeleton-stats"><span></span><span></span><span></span><span></span></span>` +
+    `</li>`;
+  const showGallerySkeletons = (count = 3) => {
+    if (cards && cards.childElementCount === 0)
+      cards.innerHTML = Array.from({ length: count }, skeletonCard).join("");
+  };
+  const prependCreatingSkeleton = () => {
+    if (!cards) return;
+    // Clear the empty-state row so the skeleton reads as incoming content.
+    if (cards.querySelector(".empty-state")) cards.innerHTML = "";
+    cards.insertAdjacentHTML("afterbegin", skeletonCard());
+  };
+  const clearCreatingSkeletons = () => {
+    for (const node of document.querySelectorAll(
+      "[data-creating-skeleton]",
+    ))
+      node.remove();
+  };
   // Gallery create form posts JSON and refreshes the card list in place.
   // Without this the button falls back to a plain GET reload that creates nothing.
   const createForm = document.getElementById("tree-create-form");
@@ -46,6 +71,7 @@
     const descInput = document.getElementById("tree-description");
     const submit = document.getElementById("tree-create-submit");
     const formStatus = document.getElementById("tree-create-status");
+    const submitLabel = submit.textContent;
     const setFormStatus = (text, kind) => {
       formStatus.textContent = text;
       formStatus.classList.toggle("notice-error", kind === "error");
@@ -54,9 +80,13 @@
     createForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (createForm.getAttribute("aria-busy") === "true") return;
-      setFormStatus("", null);
+      setFormStatus("Creating tree…", null);
       submit.disabled = true;
+      submit.textContent = "Creating…";
       createForm.setAttribute("aria-busy", "true");
+      // Show the incoming card immediately: the POST evaluates the root
+      // node, so the round-trip is slow and needs a placeholder.
+      prependCreatingSkeleton();
       try {
         const response = await fetch(
           createForm.dataset.createUrl ?? "/api/v1/trees",
@@ -87,9 +117,11 @@
         setFormStatus(`Tree "${tree.name}" created.`, "success");
         await loadTrees();
       } catch (error) {
+        clearCreatingSkeletons();
         setFormStatus(`Could not create tree. ${error.message}`, "error");
       } finally {
         submit.disabled = false;
+        submit.textContent = submitLabel;
         createForm.removeAttribute("aria-busy");
       }
     });
@@ -636,6 +668,9 @@
     status.hidden = false;
     status.classList.remove("notice-error");
     status.textContent = "Loading tree data…";
+    // First paint and empty gallery: render placeholders so the layout
+    // does not jump when the fetch resolves.
+    showGallerySkeletons();
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 15000);
     content.setAttribute("aria-busy", "true");
@@ -675,6 +710,8 @@
       }
       status.hidden = true;
     } catch (error) {
+      // Drop placeholders on failure so a ghost card never outlives the error.
+      if (cards) clearCreatingSkeletons();
       if (count) count.textContent = "Unable to load trees";
       status.hidden = false;
       status.classList.add("notice-error");

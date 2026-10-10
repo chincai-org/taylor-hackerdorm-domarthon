@@ -13,6 +13,7 @@ from app.db.repository import (
     get_benchmark,
     get_tree,
     list_trees,
+    update_node_evaluation,
 )
 from app.db.repository import create_tree as persist_tree
 from app.harness.dsh import to_cordis_patch_yml
@@ -127,16 +128,48 @@ def create_tree_endpoint(request: CreateTreeRequest) -> dict[str, Any]:
                 "benchmark_status": "unconfigured",
             },
         )
-        create_root_node(
+        root = create_root_node(
             session,
             tree_id=tree.id,
             harness=to_cordis_patch_yml(imported["harness"]),
             rationale="Initial DeepSeek harness loaded from cordis.patch.yml.",
         )
-        nodes = list(
-            session.query(Node).filter(Node.tree_id == tree.id).order_by(Node.created_at)
-        )
-        return _tree(tree, nodes, benchmark)
+        tree_id = tree.id
+        root_id = root.id
+        root_harness = root.harness
+
+    # Score the root node right away (generic review: new trees have no
+    # scenarios yet) so it never gets stuck in pending.
+    with session_scope() as session:
+        update_node_evaluation(session, tree_id=tree_id, node_id=root_id, status="running")
+
+    try:
+        from app.services.evaluator import evaluate_harness_sync
+
+        score, benchmark_result = evaluate_harness_sync(root_harness, [])
+    except Exception as exc:  # noqa: BLE001 - root must land failed, never stuck running
+        error: dict[str, Any] = {"code": type(exc).__name__, "message": str(exc)[:500]}
+        with session_scope() as session:
+            update_node_evaluation(
+                session, tree_id=tree_id, node_id=root_id, status="failed", error=error
+            )
+    else:
+        with session_scope() as session:
+            update_node_evaluation(
+                session,
+                tree_id=tree_id,
+                node_id=root_id,
+                status="complete",
+                score=score,
+                benchmark_result=benchmark_result,
+            )
+
+    with session_scope() as session:
+        tree = get_tree(session, tree_id)
+        if tree is None:  # pragma: no cover - just created above
+            raise HTTPException(status_code=500, detail="Tree was lost after creation.")
+        nodes = list(session.query(Node).filter(Node.tree_id == tree.id).order_by(Node.created_at))
+        return _tree(tree, nodes, get_benchmark(session, tree_id=tree.id))
 
 
 @router.get("")

@@ -1,7 +1,9 @@
 """DeepSeek chat client (OpenAI-compatible).
 
 Uses the ``openai`` SDK against ``https://api.deepseek.com/v1`` by default.
-API key comes from ``DEEPSEEK_API_KEY`` (see ``app/core/config.py``).
+API key comes from ``DEEPSEEK_API_KEY`` or ``GRAFFILAB_API_KEY``
+(see ``app/core/config.py``; DeepSeek wins when both are set, otherwise the
+GraffiLab model endpoint ``https://llm.grafilab.ai/v1`` is used).
 
 Each call spawns one "harness instance": the caller may pass per-request
 plugins via ``harness`` (validated dsh patch-layer text, see
@@ -37,6 +39,22 @@ class DeepSeekEmptyReplyError(RuntimeError):
     """Raised when DeepSeek returns no assistant text."""
 
 
+def build_llm_client(*, default_timeout: float | None = None) -> DeepSeekClient:
+    """Build a client from resolved settings (DeepSeek wins, else Grafilab).
+
+    Import here (not in ``app/core/config.py``) so settings stay free of
+    client imports.
+    """
+    from app.core.config import llm_api_key, llm_base_url, llm_model, settings
+
+    return DeepSeekClient(
+        api_key=llm_api_key(),
+        base_url=llm_base_url(),
+        model=llm_model(),
+        default_timeout=default_timeout or settings.DEEPSEEK_TIMEOUT_S,
+    )
+
+
 class DeepSeekClient:
     """Thin async wrapper around DeepSeek chat completions."""
 
@@ -55,7 +73,9 @@ class DeepSeekClient:
     def check_configured(self) -> None:
         if not self.api_key:
             raise DeepSeekNotAvailableError(
-                "DEEPSEEK_API_KEY is not set. Export it locally or set it on Railway/Vercel."
+                "No model API key is set. Export DEEPSEEK_API_KEY or "
+                "GRAFFILAB_API_KEY locally (`.env.development.local`) or set it "
+                "on Railway/Vercel."
             )
 
     def _client(self, timeout: float | None):
@@ -106,6 +126,7 @@ class DeepSeekClient:
         system_text: str | None = None,
         model: str | None = None,
         tools: list[dict[str, Any]] | None = None,
+        temperature: float | None = None,
     ) -> dict[str, Any]:
         """Send one prompt, return ``{"reply": str, "tool_calls": [...]}``.
 
@@ -119,6 +140,8 @@ class DeepSeekClient:
         create_kwargs: dict[str, Any] = {"model": model or self.model, "messages": messages}
         if tools:
             create_kwargs["tools"] = tools
+        if temperature is not None:
+            create_kwargs["temperature"] = temperature
         client = self._client(timeout)
         try:
             resp = await client.chat.completions.create(stream=False, **create_kwargs)
@@ -142,6 +165,7 @@ class DeepSeekClient:
         model: str | None = None,
         tools: list[dict[str, Any]] | None = None,
         max_steps: int = 5,
+        temperature: float | None = None,
     ) -> dict[str, Any]:
         """Run an autonomous tool loop: model -> execute -> feed back, up to max_steps.
 
@@ -167,6 +191,8 @@ class DeepSeekClient:
         if tools:
             create_kwargs_base["tools"] = tools
             create_kwargs_base["tool_choice"] = "auto"
+        if temperature is not None:
+            create_kwargs_base["temperature"] = temperature
         client = self._client(timeout)
         all_calls: list[dict[str, Any]] = []
         steps: list[dict[str, Any]] = []
@@ -220,9 +246,13 @@ class DeepSeekClient:
                         }
                     )
             # Out of steps: ask once more for a final text-only summary.
-            resp = await client.chat.completions.create(
-                model=create_kwargs_base["model"], messages=messages
-            )
+            _final_kwargs: dict[str, Any] = {
+                "model": create_kwargs_base["model"],
+                "messages": messages,
+            }
+            if temperature is not None:
+                _final_kwargs["temperature"] = temperature
+            resp = await client.chat.completions.create(**_final_kwargs)
             message = resp.choices[0].message if resp.choices else None
             text = (message.content or "").strip() if message and message.content else ""
             return {"reply": text, "tool_calls": all_calls, "steps": steps}

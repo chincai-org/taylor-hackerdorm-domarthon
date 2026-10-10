@@ -1,4 +1,5 @@
 from mcp.server.mcpserver import MCPServer
+from mcp.server.transport_security import TransportSecuritySettings
 
 from app.core.config import settings
 
@@ -22,4 +23,11 @@ def get_support_item(item_id: int) -> dict[str, int | str]:
 mcp_app = mcp_server.streamable_http_app(
     streamable_http_path="/",
     stateless_http=True,
+    # Vercel serves this app under rotating hostnames (per-deployment URLs
+    # plus the production alias), which cannot be statically allowlisted.
+    # The SDK's DNS-rebinding protection rejects non-localhost Host headers
+    # with 421 "Invalid Host header" otherwise.
+    transport_security=TransportSecuritySettings(
+        enable_dns_rebinding_protection=False,
+    ),
 )

@@ -25,6 +25,12 @@
   const score = (value) =>
     value === null || value === undefined ? "—" : value.toFixed(1);
   const labelOf = (node) => node.rationale || node.id;
+  // Cut at a word boundary + ellipsis; full text stays in <title>/aria-label.
+  const shortLabel = (label) => {
+    if (label.length <= 30) return label;
+    const cut = label.slice(0, 29).lastIndexOf(" ");
+    return `${label.slice(0, cut > 12 ? cut : 29)}…`;
+  };
   const statuses = new Set(["pending", "running", "complete", "failed"]);
   let trees = new Map();
   let selectedTree = null;
@@ -161,7 +167,7 @@
         if (compact) return drawing;
         const label = labelOf(node);
         // Truncate the raw text before escaping so entities cannot be cut in half.
-        return `<a class="live-node" href="#live-node" data-node-id="${escape(node.id)}" aria-label="${escape(`${label}: ${node.status}, score ${score(node.score)}`)}">${drawing}<text class="h-hyp" x="${x + 14}" y="${y - 3}">${escape(label.slice(0, 30))}</text><text class="h-num" x="${x + 14}" y="${y + 14}">${escape(node.status)} · ${score(node.score)}</text></a>`;
+        return `<a class="live-node" href="#live-node" data-node-id="${escape(node.id)}" aria-label="${escape(`${label}: ${node.status}, score ${score(node.score)}`)}"><title>${escape(label)}</title>${drawing}<text class="h-hyp" x="${x + 14}" y="${y - 3}">${escape(shortLabel(label))}</text><text class="h-num" x="${x + 14}" y="${y + 14}">${escape(node.status)} · ${score(node.score)}</text></a>`;
       })
       .join("");
     return `<svg class="${compact ? "mini" : "tree-svg"}" viewBox="0 0 ${width} ${height}" ${compact ? 'aria-hidden="true"' : 'role="group" aria-label="Harness version lineage"'}>${edges}${nodes}</svg>`;
@@ -259,6 +265,21 @@
         link.setAttribute("aria-current", "true");
       else link.removeAttribute("aria-current");
     }
+    ensureVisible();
+  }
+
+  // Keep the selected node inside the scrollable plate (vertical + horizontal).
+  // Only scrolls when out of view; never moves the page itself.
+  function ensureVisible() {
+    const plate = detail.querySelector(".tree-plate");
+    const current = detail.querySelector('.live-node[aria-current="true"]');
+    if (!plate || !current) return;
+    const plateRect = plate.getBoundingClientRect();
+    const nodeRect = current.getBoundingClientRect();
+    if (nodeRect.top < plateRect.top || nodeRect.bottom > plateRect.bottom)
+      plate.scrollTop += nodeRect.top - plateRect.top - plate.clientHeight / 2;
+    if (nodeRect.left < plateRect.left || nodeRect.right > plateRect.right)
+      plate.scrollLeft += nodeRect.left - plateRect.left - plate.clientWidth / 3;
   }
 
   function renderDetail(tree) {

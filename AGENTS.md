@@ -332,7 +332,9 @@ Relationships/constraints:
   focus on selected link; live region announces changes.
 - `app/web/static/live-viewer.js` drives both pages (fetch, lineage SVG, node panel, copy
   controls). Sets `has-js` itself + clipboard `execCommand` fallback + below-fold card
-  reveal (IO-guarded, reduced-motion respected). No Node build needed in Python container.
+  reveal (IO-guarded, reduced-motion respected). Lineage labels cut at word boundary +
+  `…`, full text in SVG `<title>` tooltip + `aria-label`; selected node auto-scrolls
+  inside plate (plate only, never page). No Node build needed in Python container.
 - Live nodes: `pending`, `running`, `complete`, `failed`; nullable raw scores, harness text,
   rationale, results, errors. Harness payload has copy control (payload verbatim).
   Scenario-array results → passed/failed/unscored cards; summary-only → labeled facts. No raw

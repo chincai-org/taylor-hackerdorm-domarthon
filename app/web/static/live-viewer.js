@@ -239,7 +239,8 @@
     // root column pins to the plate edge and can never scroll left.
     const leftPad = compact ? 0 : 120;
     const width =
-      Math.max(520, 25 + tree.bounds.depth * columnGap + labelReserve + 25) + leftPad;
+      Math.max(520, 25 + tree.bounds.depth * columnGap + labelReserve + 25) +
+      leftPad;
     const naturalHeight = (tree.bounds.lastRow + 1) * rowGap + 40;
     const height = Math.max(compact ? 140 : 300, naturalHeight);
     const rowCenter =
@@ -583,7 +584,8 @@
     const node = selectedNodeId
       ? selectedTree.nodeMap.get(selectedNodeId)
       : null;
-    const live = node && (node.status === "pending" || node.status === "running");
+    const live =
+      node && (node.status === "pending" || node.status === "running");
     pollTimer = window.setTimeout(refreshSelected, live ? 3000 : 5000);
   }
 
@@ -647,7 +649,7 @@
     lastTreeSignature = treeSignature(tree);
     detail.dataset.activeTab = activeTab;
     document.getElementById("detail-heading").textContent = tree.name;
-    document.title = `${tree.name} · Harness trees`;
+    document.title = `${tree.name} · Sharpmon`;
     detail.hidden = false;
     detail.innerHTML = `<p class="muted">${escape(tree.description || "No description provided.")}</p><div class="detail-tabs" role="tablist" aria-label="Tree views"><button type="button" role="tab" aria-selected="${activeTab === "nodes"}" data-detail-tab="nodes">Nodes</button><button type="button" role="tab" aria-selected="${activeTab === "benchmark"}" data-detail-tab="benchmark">Benchmark</button></div><section data-detail-panel="nodes"${activeTab === "nodes" ? "" : " hidden"}><div class="stage plate"><section class="tree-plate" tabindex="0" aria-label="Scrollable harness tree">${nodeTree(tree)}</section><div class="legend" role="group" aria-label="Node status"><span><i class="legend-dot pass" aria-hidden="true"></i>Complete</span><span><i class="legend-dot wait" aria-hidden="true"></i>Pending / running</span><span><i class="legend-dot fail" aria-hidden="true"></i>Failed</span></div></div><article id="live-node" class="node-panel" aria-live="polite"></article></section><section data-detail-panel="benchmark"${activeTab === "benchmark" ? "" : " hidden"}>${benchmarkEditor(tree)}</section>`;
     // Fresh render starts at top-left: stale offsets (or early measurements

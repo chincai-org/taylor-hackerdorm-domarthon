@@ -1,0 +1,52 @@
+<Slide style={{ width: 1280, height: 720, background: "#0F172A", padding: 72, color: "#F7F4EC", fontFamily: "Aptos, Arial" }}>
+  <Box style={{ position: "absolute", top: 0, left: 0, width: 1280, height: 8, background: "linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%)" }} />
+  <Box style={{ position: "absolute", top: 24, left: 72, width: 1136, height: 96, flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}>
+    <Box>
+      <Text style={{ fontSize: 15, fontWeight: "bold", letterSpacing: 2, color: "#06B6D4", marginBottom: 10 }}>THE OPTIMIZATION LOOP</Text>
+      <Text style={{ fontSize: 36, fontWeight: "bold", color: "#F7F4EC" }}>A closed loop for better behavior.</Text>
+    </Box>
+    <Text style={{ fontSize: 18, fontFamily: "Consolas, Courier New", color: "#F7F4EC", opacity: 0.55, marginTop: 12 }}>03 / 04</Text>
+  </Box>
+  <Box style={{ position: "absolute", top: 138, left: 72, width: 1136, height: 488, flexDirection: "row", alignItems: "center" }}>
+    <Box style={{ width: 690, height: 470, alignItems: "center", justifyContent: "center" }}>
+      <svg width={660} height={440} viewBox="0 0 660 440">
+        <path d="M330 55 C500 55 590 130 590 220 C590 315 505 385 330 385 C155 385 70 315 70 220 C70 130 160 55 330 55" fill="none" stroke="#3B82F6" strokeWidth="4" opacity="0.8" />
+        <path d="M330 55 C500 55 590 130 590 220" fill="none" stroke="#06B6D4" strokeWidth="7" strokeLinecap="round" />
+        <path d="M590 220 L570 208 M590 220 L570 233" fill="none" stroke="#06B6D4" strokeWidth="7" strokeLinecap="round" />
+        <circle cx="330" cy="55" r="36" fill="#3B82F6" />
+        <circle cx="540" cy="128" r="36" fill="#06B6D4" />
+        <circle cx="560" cy="310" r="36" fill="#3B82F6" />
+        <circle cx="330" cy="385" r="36" fill="#06B6D4" />
+        <circle cx="100" cy="310" r="36" fill="#3B82F6" />
+        <circle cx="120" cy="128" r="36" fill="#06B6D4" />
+        <text x="330" y="50" text-anchor="middle" fill="#F7F4EC" font-size="13" font-family="Arial" font-weight="700">CHECK</text>
+        <text x="330" y="67" text-anchor="middle" fill="#F7F4EC" font-size="13" font-family="Arial" font-weight="700">OUT</text>
+        <text x="540" y="123" text-anchor="middle" fill="#0F172A" font-size="13" font-family="Arial" font-weight="700">READ</text>
+        <text x="540" y="140" text-anchor="middle" fill="#0F172A" font-size="13" font-family="Arial" font-weight="700">NODE</text>
+        <text x="560" y="305" text-anchor="middle" fill="#F7F4EC" font-size="12" font-family="Arial" font-weight="700">PROPOSE</text>
+        <text x="560" y="322" text-anchor="middle" fill="#F7F4EC" font-size="12" font-family="Arial" font-weight="700">CHILD</text>
+        <text x="330" y="380" text-anchor="middle" fill="#0F172A" font-size="13" font-family="Arial" font-weight="700">JUDGE</text>
+        <text x="330" y="397" text-anchor="middle" fill="#0F172A" font-size="13" font-family="Arial" font-weight="700">SCORE</text>
+        <text x="100" y="305" text-anchor="middle" fill="#F7F4EC" font-size="12" font-family="Arial" font-weight="700">KEEP</text>
+        <text x="100" y="322" text-anchor="middle" fill="#F7F4EC" font-size="12" font-family="Arial" font-weight="700">FAILURES</text>
+        <text x="120" y="123" text-anchor="middle" fill="#0F172A" font-size="13" font-family="Arial" font-weight="700">LEARN</text>
+        <text x="120" y="140" text-anchor="middle" fill="#0F172A" font-size="13" font-family="Arial" font-weight="700">NEXT</text>
+        <text x="330" y="220" text-anchor="middle" fill="#F7F4EC" font-size="23" font-family="Arial" font-weight="700">Workbuddy + MCP</text>
+        <text x="330" y="248" text-anchor="middle" fill="#F7F4EC" font-size="15" font-family="Arial" opacity="0.7">bounded changes, exact parent revision</text>
+      </svg>
+    </Box>
+    <Box style={{ width: 410, height: 420, background: "rgba(6,182,212,0.12)", border: "1px solid rgba(6,182,212,0.55)", padding: 30, justifyContent: "space-between" }}>
+      <Box>
+        <Text style={{ fontSize: 25, fontWeight: "bold", color: "#06B6D4", marginBottom: 18 }}>The guardrails matter.</Text>
+        <Text style={{ fontSize: 20, lineHeight: 1.45, color: "#F7F4EC" }}>The optimizer never rewrites blindly. It reads the parent, sends only parent-relative changes, and keeps the full lineage.</Text>
+      </Box>
+      <Box style={{ borderTop: "1px solid rgba(6,182,212,0.55)", paddingTop: 20 }}>
+        <Text style={{ fontSize: 17, lineHeight: 1.4, color: "#F7F4EC", opacity: 0.85 }}>The server rolls out each benchmark scenario, then applies one fixed rubric so scores stay comparable.</Text>
+      </Box>
+    </Box>
+  </Box>
+  <Box style={{ position: "absolute", left: 72, bottom: 24, width: 1136, height: 28, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+    <Text style={{ fontSize: 14, color: "#F7F4EC", opacity: 0.55 }}>MCP in · scored child out</Text>
+    <Text style={{ fontSize: 14, color: "#F7F4EC", opacity: 0.55 }}>From prompt tweaking to an experiment loop.</Text>
+  </Box>
+</Slide>

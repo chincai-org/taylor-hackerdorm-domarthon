@@ -383,6 +383,66 @@ def create_child_node(
         for item in benchmark_result.get("scenarios", [])
         if isinstance(item, dict) and item.get("passed") is False
     ]
+    # Evolution rule: a child scoring below its parent is a regression — mark
+    # it failed (score + result kept for learning) so future branching skips
+    # failed branches instead of building on worse harnesses.
+    with session_scope() as session:
+        fresh_parent = repository.get_node(session, tree_id=tree_id, node_id=node_parent_id)
+        parent_score = fresh_parent.score if fresh_parent is not None else None
+    regressed = parent_score is not None and score is not None and score < parent_score
+    if regressed:
+        regression = {
+            "code": "regression",
+            "message": (
+                f"Score {score} below parent score {parent_score}; "
+                "branch from the parent or a better node instead."
+            ),
+        }
+        with session_scope() as session:
+            repository.update_node_evaluation(
+                session,
+                tree_id=tree_id,
+                node_id=node_id,
+                status="failed",
+                score=score,
+                benchmark_result=benchmark_result,
+                error=regression,
+            )
+        return {
+            "node_id": node_id,
+            "tree_id": node_tree_id,
+            "parent_id": node_parent_id,
+            "parent_revision": current_revision,
+            "status": "failed",
+            "score": score,
+            "harness": patch_yml,
+            "patch_yml": patch_yml,
+            "suggested_changes": suggested_changes,
+            "change_lines": change_lines,
+            "parent_harness": parent.harness,
+            "diff": harness_diff(parent_harness, child_harness),
+            "harness_source": parent_meta.get("source", "none"),
+            "warnings": parent_meta.get("warnings", []),
+            "dropped": parent_meta.get("dropped", []),
+            "rationale": node_rationale,
+            "evaluation": {
+                "status": "failed",
+                "scheduled": True,
+                "score": score,
+                "passed": benchmark_result.get("passed"),
+                "total": benchmark_result.get("total"),
+                "failed_scenarios": failed_ids,
+                "judge_model": benchmark_result.get("judge_model"),
+                "generic": benchmark_result.get("generic", False),
+                "reason": regression["message"],
+                "error": regression,
+            },
+            "next_step": (
+                "Regression: score below parent. Call checkout_tree(tree_id) "
+                "to inspect it. Branch further children from the parent or a "
+                "better node, never from this failed node."
+            ),
+        }
     with session_scope() as session:
         repository.update_node_evaluation(
             session,

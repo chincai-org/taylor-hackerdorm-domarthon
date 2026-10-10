@@ -148,6 +148,7 @@ def test_create_tree_tool_matches_website_initialization(monkeypatch) -> None:
     assert root["id"] == result["root_node_id"]
     assert root["status"] == "complete"
     assert root["score"] == 0.0
+    assert root["benchmark_result"].get("baseline") is True
     assert root["rationale"] == "Initial DeepSeek harness loaded from cordis.patch.yml."
     assert 'model: "grafilab/deepseek-v4-flash"' in root["harness"]
 
@@ -380,6 +381,57 @@ def test_create_child_judge_error_marks_failed(monkeypatch) -> None:
         assert child.score is None
         assert child.error is not None
         assert child.error["code"] == "RuntimeError"
+
+
+def test_create_child_below_parent_score_marks_regression_failed(monkeypatch) -> None:
+    import app.services.evaluator as evaluator
+
+    factory, _ = _session_factory()
+    with factory() as session:
+        _seed(session)
+    _patch_mcp_scope(monkeypatch, factory)
+
+    def fake_evaluate(_tree_id: str, _patch_yml: str) -> tuple[float, dict]:
+        result = {
+            "score": 10.0,
+            "passed": 0,
+            "total": 1,
+            "judge": "llm",
+            "judge_model": "test-judge",
+            "scenarios": [
+                {"scenario_id": "a", "id": "a", "passed": False, "score": 10.0, "reason": "rude"},
+            ],
+        }
+        return 10.0, result
+
+    monkeypatch.setattr(evaluator, "evaluate_tree_harness_sync", fake_evaluate)
+
+    parent = mcp_server.get_node("tree-1", "root-1")
+    assert parent["score"] == 42.0
+    result = mcp_server.create_child_node(
+        tree_id="tree-1",
+        parent_id="root-1",
+        parent_revision=parent["parent_revision"],
+        suggested_changes={
+            "plugins": [{"id": "persona", "config": {"prefix": "You are a rude agent."}}]
+        },
+        rationale="Deliberate regression.",
+    )
+
+    assert result["status"] == "failed"
+    assert result["score"] == 10.0
+    assert result["evaluation"]["status"] == "failed"
+    assert result["evaluation"]["error"]["code"] == "regression"
+    assert "42.0" in result["evaluation"]["reason"]
+    assert "never from this failed node" in result["next_step"]
+    with factory() as session:
+        child = session.get(Node, result["node_id"])
+        assert child is not None
+        assert child.status == "failed"
+        assert child.score == 10.0
+        assert child.benchmark_result is not None
+        assert child.error is not None
+        assert child.error["code"] == "regression"
 
 
 def test_judge_reply_parsing() -> None:

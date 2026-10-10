@@ -170,6 +170,8 @@ Rules:
 - `suggested_changes` is parent-relative, not a full harness file; unmentioned fields are preserved and the server caps the payload at 120 lines.
 - `create_child_node` validates parent exists and belongs to the tree. Eval is
   synchronous (blocks with batch + total timeouts); no poll tool.
+- Child scoring below parent = regression → `failed` (`regression` error, score +
+  result kept for learning). Branch from parent/better nodes, never failed ones.
 - No stuck `running`; mark `failed` on error/timeout.
 - Errors clear + actionable (what wrong, what next).
 
@@ -413,6 +415,14 @@ Relationships/constraints:
   favicon/live assets). Detail fetches only `/api/v1/trees/{tree_id}` + native Back to trees
   link. FastAPI serves live assets at `/trees` (`html=True`); `/favicon.ico` from `public/`
   via explicit route. REST contracts unchanged.
+- Harness block pairs Try-harness beside Copy: Try POSTs that node's harness to
+  `/api/v1/dsh/launch` and opens the literal dsh web UI straight away.
+- `POST /api/v1/dsh/launch` boots the literal dsh web UI on a node's harness
+  (exports yml to temp workspace, returns local URL). Launch also passes a
+  `--patch` overlay registering Grafilab (`openai-completions`,
+  `grafilab/deepseek-v4-flash`) as default provider — without it dsh sends
+  catalog id `deepseek-flash`, which Grafilab 404s as "invalid key".
+  `ALLOW_DSH_SPAWN` in settings (`.env.development.local`, never hosted).
 - Keep loading/failure/retry handling on both live pages. Node selection keeps keyboard
   focus on selected link; live region announces changes.
 - `app/web/static/live-viewer.js` drives both pages (fetch, lineage SVG, node panel, copy

@@ -489,7 +489,7 @@
     const harness = harnessText(node.harness);
     const hasResult =
       node.benchmark_result !== null && node.benchmark_result !== undefined;
-    return `<div class="node-panel-head"><div><p class="eyebrow">Selected node</p><h3 id="live-node-heading" tabindex="-1">${escape(labelOf(node))}</h3></div><span class="tag status-${node.status}">${escape(node.status)}</span></div><dl class="node-facts"><div><dt>Node ID</dt><dd><code>${escape(node.id)}</code></dd></div><div><dt>Score</dt><dd>${score(node.score)}</dd></div><div><dt>Parent</dt><dd><code>${escape(node.parent_id || "Root")}</code></dd></div></dl>${node.error !== null && node.error !== undefined ? `<p class="error-copy">${escape(typeof node.error === "string" ? node.error : (node.error.message ?? "Evaluation failed"))}</p>` : ""}${harnessDiff(node)}<details class="config-details"><summary>Harness configuration</summary><div class="copyable-panel"><pre><code>${escape(harness)}</code></pre>${copyControl(node.id, "harness configuration")}</div></details>${hasResult ? benchmarkResult(node) : ""}`;
+    return `<div class="node-panel-head"><div><p class="eyebrow">Selected node</p><h3 id="live-node-heading" tabindex="-1">${escape(labelOf(node))}</h3></div><span class="tag status-${node.status}">${escape(node.status)}</span></div><dl class="node-facts"><div><dt>Node ID</dt><dd><code>${escape(node.id)}</code></dd></div><div><dt>Score</dt><dd>${score(node.score)}</dd></div><div><dt>Parent</dt><dd><code>${escape(node.parent_id || "Root")}</code></dd></div></dl>${node.error !== null && node.error !== undefined ? `<p class="error-copy">${escape(typeof node.error === "string" ? node.error : (node.error.message ?? "Evaluation failed"))}</p>` : ""}${harnessDiff(node)}<details class="config-details"><summary>Harness configuration</summary><div class="copyable-panel"><pre><code>${escape(harness)}</code></pre><div class="panel-actions"><button class="try-link" type="button" data-try-tree="${escape(node.tree_id)}" data-try-node="${escape(node.id)}">Try harness</button>${copyControl(node.id, "harness configuration")}</div></div></details>${hasResult ? benchmarkResult(node) : ""}`;
   }
 
   function benchmarkEditor(tree) {
@@ -724,6 +724,36 @@
   }
 
   detail?.addEventListener("click", async (event) => {
+    const tryButton = event.target.closest("button.try-link");
+    if (tryButton) {
+      const label = tryButton.textContent;
+      tryButton.disabled = true;
+      tryButton.textContent = "Opening…";
+      try {
+        const response = await fetch("/api/v1/dsh/launch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tree_id: tryButton.dataset.tryTree,
+            node_id: tryButton.dataset.tryNode,
+          }),
+        });
+        const body = await response.json().catch(() => ({}));
+        if (!response.ok)
+          throw new Error(body.detail || `Launch returned ${response.status}`);
+        window.open(body.url, "_blank", "noopener");
+      } catch (error) {
+        tryButton.textContent = "Launch failed — retry";
+        setTimeout(() => {
+          tryButton.textContent = label;
+        }, 2500);
+        return;
+      } finally {
+        if (tryButton.isConnected) tryButton.disabled = false;
+      }
+      tryButton.textContent = label;
+      return;
+    }
     const tab = event.target.closest("button[data-detail-tab]");
     if (tab) {
       const activeTab = tab.dataset.detailTab;

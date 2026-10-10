@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     CANDIDATE_BASE_URL: str = "https://taylor-hackerdorm-domarthon-production.up.railway.app"
     CANDIDATE_MAX_STEPS: int = 5
 
+    # Local dsh web spawn (POST /api/v1/dsh/launch). Only where the server
+    # runs on your own machine — never enable on hosted deployments.
+    ALLOW_DSH_SPAWN: bool = False
+
 
 settings = Settings()
 

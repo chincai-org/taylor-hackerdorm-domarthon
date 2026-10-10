@@ -5,7 +5,7 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from app.db.models import Benchmark, Node, Tree
-from app.db.repository import create_benchmark, create_root_node
+from app.db.repository import create_benchmark, create_root_node, update_node_evaluation
 from app.db.repository import create_tree as persist_tree
 from app.harness.dsh import to_cordis_patch_yml
 from app.harness.importer import import_harness
@@ -95,11 +95,30 @@ def create_tree_with_default_harness(
             "benchmark_status": "unconfigured",
         },
     )
-    create_root_node(
+    root = create_root_node(
         session,
         tree_id=tree.id,
         harness=to_cordis_patch_yml(imported["harness"]),
         rationale="Initial DeepSeek harness loaded from cordis.patch.yml.",
+    )
+
+    # Root starts at a deterministic baseline (generic review comes later via
+    # child evals): never call the judge here, never leave it pending/failed.
+    root_id = root.id
+    update_node_evaluation(
+        session,
+        tree_id=tree.id,
+        node_id=root_id,
+        status="complete",
+        score=0.0,
+        benchmark_result={
+            "score": 0.0,
+            "passed": 0,
+            "total": 0,
+            "generic": True,
+            "baseline": True,
+            "scenarios": [],
+        },
     )
     nodes = list(session.query(Node).filter(Node.tree_id == tree.id).order_by(Node.created_at))
     return serialize_tree(tree, nodes, benchmark)

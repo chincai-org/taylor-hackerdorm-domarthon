@@ -473,20 +473,43 @@
 	.live-trees .tree-plate {
 		display: grid;
 		grid-template-rows: minmax(0, 1fr);
-		align-items: center;
-		justify-items: start;
+		/* Start-aligned: centering + overflow hides the top of tall trees
+		   (unscrollable clipping). Stretch lets the wide SVG fill the plate. */
+		align-items: start;
+		justify-items: stretch;
 		/* Grow with the SVG; scroll only past viewport budget. A fixed
 		   block-size clipped small trees for no reason (top/bottom cut). */
 		block-size: auto;
 		min-block-size: min(280px, 40vh);
 		max-block-size: min(70vh, 640px);
+		overflow: auto;
 	}
 
 	.live-trees .tree-svg {
 		display: block;
-		min-inline-size: 700px;
-		inline-size: 100%;
+		/* Intrinsic width/height attrs carry the layout size, so wide trees
+		   overflow into horizontal scroll at 1:1 scale instead of shrinking
+		   text. min 100% keeps narrow trees filling the plate. */
+		inline-size: auto;
+		min-inline-size: 100%;
+		max-inline-size: none;
 		block-size: auto;
+	}
+
+	/* Halo behind SVG labels so edges pass under text without showing through. */
+	.live-trees :is(.h-hyp, .h-num) {
+		paint-order: stroke;
+		stroke: var(--md-sys-color-surface-container);
+		stroke-width: 4px;
+		stroke-linejoin: round;
+	}
+
+	.live-trees .live-node {
+		cursor: pointer;
+	}
+
+	.live-trees .h-edge {
+		opacity: 0.85;
 	}
 
 	.live-trees select,

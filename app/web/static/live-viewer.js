@@ -26,10 +26,12 @@
     value === null || value === undefined ? "—" : value.toFixed(1);
   const labelOf = (node) => node.rationale || node.id;
   // Cut at a word boundary + ellipsis; full text stays in <title>/aria-label.
+  // 38 chars so siblings sharing a prefix (e.g. "BREADTH #4 - inventory/…")
+  // stay distinguishable further into the string.
   const shortLabel = (label) => {
-    if (label.length <= 30) return label;
-    const cut = label.slice(0, 29).lastIndexOf(" ");
-    return `${label.slice(0, cut > 12 ? cut : 29)}…`;
+    if (label.length <= 38) return label;
+    const cut = label.slice(0, 37).lastIndexOf(" ");
+    return `${label.slice(0, cut > 18 ? cut : 37)}…`;
   };
   const statuses = new Set(["pending", "running", "complete", "failed"]);
   let trees = new Map();
@@ -226,9 +228,14 @@
   }
 
   function nodeTree(tree, compact = false) {
-    const columnGap = compact ? 95 : 220;
-    const rowGap = compact ? 25 : 64;
-    const width = Math.max(520, (tree.bounds.depth + 1) * columnGap + 50);
+    // Wide columns so a ~38-char label (≈250px) never reaches the next dot;
+    // taller rows so a high fan-out parent doesn't pack siblings together.
+    const columnGap = compact ? 95 : 300;
+    const rowGap = compact ? 25 : 76;
+    // Reserve room for the label block to the right of the deepest nodes,
+    // otherwise the SVG clips the text and horizontal scroll never appears.
+    const labelReserve = compact ? 0 : 270;
+    const width = Math.max(520, 25 + tree.bounds.depth * columnGap + labelReserve + 25);
     const naturalHeight = (tree.bounds.lastRow + 1) * rowGap + 40;
     const height = Math.max(compact ? 140 : 300, naturalHeight);
     const rowCenter =
@@ -257,10 +264,16 @@
         if (compact) return drawing;
         const label = labelOf(node);
         // Truncate the raw text before escaping so entities cannot be cut in half.
-        return `<a class="live-node" href="#live-node" data-node-id="${escape(node.id)}" aria-label="${escape(`${label}: ${node.status}, score ${score(node.score)}`)}"><title>${escape(label)}</title>${drawing}<text class="h-hyp" x="${x + 14}" y="${y - 3}">${escape(shortLabel(label))}</text><text class="h-num" x="${x + 14}" y="${y + 14}">${escape(node.status)} · ${score(node.score)}</text></a>`;
+        // Truncated labels get a short id suffix so siblings sharing a prefix
+        // (same rationale retried) stay visually distinct; full text is in <title>.
+        const visibleLabel =
+          label.length > 38
+            ? `${shortLabel(label)} · ${node.id.slice(0, 4)}`
+            : shortLabel(label);
+        return `<a class="live-node" href="#live-node" data-node-id="${escape(node.id)}" aria-label="${escape(`${label}: ${node.status}, score ${score(node.score)}`)}"><title>${escape(label)}</title>${drawing}<text class="h-hyp" x="${x + 14}" y="${y - 3}">${escape(visibleLabel)}</text><text class="h-num" x="${x + 14}" y="${y + 14}">${escape(node.status)} · ${score(node.score)}</text></a>`;
       })
       .join("");
-    return `<svg class="${compact ? "mini" : "tree-svg"}" viewBox="0 0 ${width} ${height}" ${compact ? 'aria-hidden="true"' : 'role="group" aria-label="Harness version lineage"'}>${edges}${nodes}</svg>`;
+    return `<svg class="${compact ? "mini" : "tree-svg"}" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" ${compact ? 'aria-hidden="true"' : 'role="group" aria-label="Harness version lineage"'}>${edges}${nodes}</svg>`;
   }
 
   function card(tree) {

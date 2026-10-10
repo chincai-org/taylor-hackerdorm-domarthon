@@ -38,6 +38,29 @@
   let pollTimer = 0;
   let pollInflight = false;
 
+  // Skeleton placeholders for the gallery. One markup helper so the create
+  // flow and the initial load share the same structure/classes.
+  const skeletonCard = () =>
+    `<li class="skeleton-card" data-creating-skeleton aria-hidden="true">` +
+    `<span class="skeleton-line skeleton-title"></span>` +
+    `<span class="skeleton-line skeleton-sub"></span>` +
+    `<span class="skeleton-block"></span>` +
+    `<span class="skeleton-stats"><span></span><span></span><span></span><span></span></span>` +
+    `</li>`;
+  const showGallerySkeletons = (count = 3) => {
+    if (cards && cards.childElementCount === 0)
+      cards.innerHTML = Array.from({ length: count }, skeletonCard).join("");
+  };
+  const prependCreatingSkeleton = () => {
+    if (!cards) return;
+    // Clear the empty-state row so the skeleton reads as incoming content.
+    if (cards.querySelector(".empty-state")) cards.innerHTML = "";
+    cards.insertAdjacentHTML("afterbegin", skeletonCard());
+  };
+  const clearCreatingSkeletons = () => {
+    for (const node of document.querySelectorAll("[data-creating-skeleton]"))
+      node.remove();
+  };
   // Gallery create form posts JSON and refreshes the card list in place.
   // Without this the button falls back to a plain GET reload that creates nothing.
   const createForm = document.getElementById("tree-create-form");
@@ -46,6 +69,7 @@
     const descInput = document.getElementById("tree-description");
     const submit = document.getElementById("tree-create-submit");
     const formStatus = document.getElementById("tree-create-status");
+    const submitLabel = submit.textContent;
     const setFormStatus = (text, kind) => {
       formStatus.textContent = text;
       formStatus.classList.toggle("notice-error", kind === "error");
@@ -54,9 +78,13 @@
     createForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (createForm.getAttribute("aria-busy") === "true") return;
-      setFormStatus("", null);
+      setFormStatus("Creating tree…", null);
       submit.disabled = true;
+      submit.textContent = "Creating…";
       createForm.setAttribute("aria-busy", "true");
+      // Show the incoming card immediately: the POST evaluates the root
+      // node, so the round-trip is slow and needs a placeholder.
+      prependCreatingSkeleton();
       try {
         const response = await fetch(
           createForm.dataset.createUrl ?? "/api/v1/trees",
@@ -87,9 +115,11 @@
         setFormStatus(`Tree "${tree.name}" created.`, "success");
         await loadTrees();
       } catch (error) {
+        clearCreatingSkeletons();
         setFormStatus(`Could not create tree. ${error.message}`, "error");
       } finally {
         submit.disabled = false;
+        submit.textContent = submitLabel;
         createForm.removeAttribute("aria-busy");
       }
     });
@@ -309,13 +339,18 @@
     let added = 0;
     let deleted = 0;
     while (row < before.length || column < after.length) {
-      if (row < before.length && column < after.length && before[row] === after[column]) {
+      if (
+        row < before.length &&
+        column < after.length &&
+        before[row] === after[column]
+      ) {
         ops.push({ type: "context", text: before[row] });
         row += 1;
         column += 1;
       } else if (
         row < before.length &&
-        (column === after.length || lcs[row + 1][column] >= lcs[row][column + 1])
+        (column === after.length ||
+          lcs[row + 1][column] >= lcs[row][column + 1])
       ) {
         ops.push({ type: "delete", text: before[row] });
         deleted += 1;
@@ -338,26 +373,40 @@
       return `<section class="harness-diff" aria-labelledby="harness-diff-heading"><header class="diff-header"><div><p class="eyebrow">Line comparison</p><h4 id="harness-diff-heading">Changes from parent</h4></div></header><p class="muted">The parent node is not included in this tree response, so the comparison is unavailable.</p></section>`;
     }
 
-    const result = diffLines(harnessText(parent.harness), harnessText(node.harness));
-    const summary = result.added || result.deleted
-      ? `<span class="diff-count-add">+${result.added} added</span><span class="diff-count-delete">-${result.deleted} deleted</span>`
-      : "No line changes";
+    const result = diffLines(
+      harnessText(parent.harness),
+      harnessText(node.harness),
+    );
+    const summary =
+      result.added || result.deleted
+        ? `<span class="diff-count-add">+${result.added} added</span><span class="diff-count-delete">-${result.deleted} deleted</span>`
+        : "No line changes";
     let oldNumber = 0;
     let newNumber = 0;
-    const lines = result.added || result.deleted
-      ? result.ops
-          .map((operation) => {
-            const oldLabel = operation.type === "add" ? "" : String(++oldNumber);
-            const newLabel = operation.type === "delete" ? "" : String(++newNumber);
-            const lineLabel = operation.type === "delete" ? oldLabel : newLabel;
-            const marker = operation.type === "add" ? "+" : operation.type === "delete" ? "-" : " ";
-            return `<div class="diff-line diff-${operation.type}"><span class="diff-marker" aria-hidden="true">${marker}</span><span class="diff-number">${lineLabel}</span><code>${escape(operation.text)}</code></div>`;
-          })
-          .join("")
-      : "";
-    const body = result.added || result.deleted
-      ? `<div class="diff-view" role="region" aria-label="Line changes from parent">${lines}</div>`
-      : '<p class="muted">The child harness is identical to its parent.</p>';
+    const lines =
+      result.added || result.deleted
+        ? result.ops
+            .map((operation) => {
+              const oldLabel =
+                operation.type === "add" ? "" : String(++oldNumber);
+              const newLabel =
+                operation.type === "delete" ? "" : String(++newNumber);
+              const lineLabel =
+                operation.type === "delete" ? oldLabel : newLabel;
+              const marker =
+                operation.type === "add"
+                  ? "+"
+                  : operation.type === "delete"
+                    ? "-"
+                    : " ";
+              return `<div class="diff-line diff-${operation.type}"><span class="diff-marker" aria-hidden="true">${marker}</span><span class="diff-number">${lineLabel}</span><code>${escape(operation.text)}</code></div>`;
+            })
+            .join("")
+        : "";
+    const body =
+      result.added || result.deleted
+        ? `<div class="diff-view" role="region" aria-label="Line changes from parent">${lines}</div>`
+        : '<p class="muted">The child harness is identical to its parent.</p>';
     const note = result.limited
       ? '<p class="diff-note">This harness is large, so the comparison lists all parent lines as deleted and child lines as added.</p>'
       : "";
@@ -428,6 +477,55 @@
     const hasResult =
       node.benchmark_result !== null && node.benchmark_result !== undefined;
     return `<div class="node-panel-head"><div><p class="eyebrow">Selected node</p><h3 id="live-node-heading" tabindex="-1">${escape(labelOf(node))}</h3></div><span class="tag status-${node.status}">${escape(node.status)}</span></div><dl class="node-facts"><div><dt>Node ID</dt><dd><code>${escape(node.id)}</code></dd></div><div><dt>Score</dt><dd>${score(node.score)}</dd></div><div><dt>Parent</dt><dd><code>${escape(node.parent_id || "Root")}</code></dd></div></dl>${node.error !== null && node.error !== undefined ? `<p class="error-copy">${escape(typeof node.error === "string" ? node.error : (node.error.message ?? "Evaluation failed"))}</p>` : ""}${harnessDiff(node)}<details class="config-details"><summary>Harness configuration</summary><div class="copyable-panel"><pre><code>${escape(harness)}</code></pre>${copyControl(node.id, "harness configuration")}</div></details>${hasResult ? benchmarkResult(node) : ""}`;
+  }
+
+  function benchmarkEditor(tree) {
+    const benchmark = tree.benchmark;
+    if (!benchmark) return '<p class="muted">This tree has no benchmark.</p>';
+    const scenarios = Array.isArray(benchmark.scenarios)
+      ? benchmark.scenarios
+      : [];
+    const cards = scenarios
+      .map((scenario, index) => {
+        const scenarioId =
+          scenario?.id ?? scenario?.scenario_id ?? `scenario-${index + 1}`;
+        return `<li class="benchmark-scenario"><div class="scenario-heading"><strong>Scenario ${index + 1}</strong><button class="scenario-delete" type="button" data-delete-scenario="${escape(scenarioId)}">Delete</button></div><label>Question<textarea data-scenario-question="${escape(scenarioId)}" required>${escape(scenario?.question ?? scenario?.customer_message ?? "")}</textarea></label><label>Answer<textarea data-scenario-answer="${escape(scenarioId)}" required>${escape(scenario?.answer ?? "")}</textarea></label><button class="scenario-save" type="button" data-save-scenario="${escape(scenarioId)}">Save changes</button><p class="scenario-status" data-scenario-status="${escape(scenarioId)}" role="status"></p></li>`;
+      })
+      .join("");
+    return `<section class="benchmark-editor" aria-labelledby="benchmark-editor-heading"><header class="result-header"><div><p class="eyebrow">Current benchmark · v${escape(benchmark.version)}</p><h3 id="benchmark-editor-heading">${escape(benchmark.name)}</h3></div><span class="result-summary">${scenarios.length} scenario${scenarios.length === 1 ? "" : "s"}</span></header><ul class="benchmark-scenario-list">${cards || '<li class="empty-state">No scenarios yet. Add the first scenario below.</li>'}</ul><form class="scenario-create-form"><label>Question<textarea name="question" required placeholder="What did the customer ask?"></textarea></label><label>Answer<textarea name="answer" required placeholder="How should the support agent respond?"></textarea></label><button class="scenario-save" type="submit">Add scenario</button><p class="scenario-status" data-create-scenario-status role="status"></p></form></section>`;
+  }
+
+  async function reloadTree(activeTab = "benchmark") {
+    const response = await fetch(detail.dataset.treeUrl, {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) throw new Error(`Tree API returned ${response.status}`);
+    const fresh = prepareTree(await response.json());
+    selectedTree = fresh;
+    renderDetail(fresh, activeTab);
+  }
+
+  async function mutateScenario(method, scenarioId, body) {
+    const path = `${detail.dataset.treeUrl}/benchmark/scenarios${scenarioId ? `/${encodeURIComponent(scenarioId)}` : ""}`;
+    const response = await fetch(path, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: body ? JSON.stringify({ scenario: body }) : undefined,
+    });
+    if (!response.ok) {
+      let message = `Scenario API returned ${response.status}`;
+      try {
+        const problem = await response.json();
+        if (typeof problem?.detail === "string") message = problem.detail;
+      } catch {
+        // Keep the HTTP status when the error response is not JSON.
+      }
+      throw new Error(message);
+    }
   }
   function selectNode(node) {
     const panel = detail.querySelector(".node-panel");
@@ -505,17 +603,18 @@
         nodeRect.left - plateRect.left - plate.clientWidth / 3;
   }
 
-  function renderDetail(tree) {
+  function renderDetail(tree, activeTab = detail.dataset.activeTab || "nodes") {
     selectedTree = tree;
+    detail.dataset.activeTab = activeTab;
     document.getElementById("detail-heading").textContent = tree.name;
     document.title = `${tree.name} · Harness trees`;
     detail.hidden = false;
-    detail.innerHTML = `<p class="muted">${escape(tree.description || "No description provided.")}</p><div class="stage plate"><section class="tree-plate" tabindex="0" aria-label="Scrollable harness tree">${nodeTree(tree)}</section><div class="legend" role="group" aria-label="Node status"><span><i class="legend-dot pass" aria-hidden="true"></i>Complete</span><span><i class="legend-dot wait" aria-hidden="true"></i>Pending / running</span><span><i class="legend-dot fail" aria-hidden="true"></i>Failed</span></div></div><article id="live-node" class="node-panel" aria-live="polite"></article>`;
-    selectNode(
+    detail.innerHTML = `<p class="muted">${escape(tree.description || "No description provided.")}</p><div class="detail-tabs" role="tablist" aria-label="Tree views"><button type="button" role="tab" aria-selected="${activeTab === "nodes"}" data-detail-tab="nodes">Nodes</button><button type="button" role="tab" aria-selected="${activeTab === "benchmark"}" data-detail-tab="benchmark">Benchmark</button></div><section data-detail-panel="nodes"${activeTab === "nodes" ? "" : " hidden"}><div class="stage plate"><section class="tree-plate" tabindex="0" aria-label="Scrollable harness tree">${nodeTree(tree)}</section><div class="legend" role="group" aria-label="Node status"><span><i class="legend-dot pass" aria-hidden="true"></i>Complete</span><span><i class="legend-dot wait" aria-hidden="true"></i>Pending / running</span><span><i class="legend-dot fail" aria-hidden="true"></i>Failed</span></div></div><article id="live-node" class="node-panel" aria-live="polite"></article></section><section data-detail-panel="benchmark"${activeTab === "benchmark" ? "" : " hidden"}>${benchmarkEditor(tree)}</section>`;
+    const node =
       (selectedNodeId && tree.nodeMap.get(selectedNodeId)) ??
-        tree.nodeMap.get(tree.root_node_id) ??
-        tree.nodes[0],
-    );
+      tree.nodeMap.get(tree.root_node_id) ??
+      tree.nodes[0];
+    if (activeTab === "nodes") selectNode(node);
   }
 
   /** Clipboard write with legacy fallback: navigator.clipboard is absent or
@@ -585,6 +684,62 @@
   }
 
   detail?.addEventListener("click", async (event) => {
+    const tab = event.target.closest("button[data-detail-tab]");
+    if (tab) {
+      const activeTab = tab.dataset.detailTab;
+      detail.dataset.activeTab = activeTab;
+      for (const button of detail.querySelectorAll("button[data-detail-tab]"))
+        button.setAttribute("aria-selected", String(button === tab));
+      for (const panel of detail.querySelectorAll("[data-detail-panel]"))
+        panel.hidden = panel.dataset.detailPanel !== activeTab;
+      return;
+    }
+    const deleteButton = event.target.closest("button[data-delete-scenario]");
+    if (deleteButton) {
+      if (!window.confirm("Delete this benchmark scenario?")) return;
+      deleteButton.disabled = true;
+      try {
+        await mutateScenario("DELETE", deleteButton.dataset.deleteScenario);
+        await reloadTree("benchmark");
+      } catch (error) {
+        const status = detail.querySelector(
+          `[data-scenario-status="${CSS.escape(deleteButton.dataset.deleteScenario)}"]`,
+        );
+        if (status)
+          status.textContent = `Could not delete scenario. ${error.message}`;
+        deleteButton.disabled = false;
+      }
+      return;
+    }
+    const saveButton = event.target.closest("button[data-save-scenario]");
+    if (saveButton) {
+      const scenarioId = saveButton.dataset.saveScenario;
+      const question = detail.querySelector(
+        `[data-scenario-question="${CSS.escape(scenarioId)}"]`,
+      );
+      const answer = detail.querySelector(
+        `[data-scenario-answer="${CSS.escape(scenarioId)}"]`,
+      );
+      const status = detail.querySelector(
+        `[data-scenario-status="${CSS.escape(scenarioId)}"]`,
+      );
+      try {
+        if (!question.value.trim() || !answer.value.trim())
+          throw new Error("Question and answer are required.");
+        const scenario = {
+          id: scenarioId,
+          question: question.value.trim(),
+          answer: answer.value.trim(),
+        };
+        saveButton.disabled = true;
+        await mutateScenario("PUT", scenarioId, scenario);
+        await reloadTree("benchmark");
+      } catch (error) {
+        status.textContent = `Could not save scenario. ${error.message}`;
+        saveButton.disabled = false;
+      }
+      return;
+    }
     const copyButton = event.target.closest("button[data-copy-node]");
     if (copyButton) {
       const node = selectedTree?.nodeMap.get(copyButton.dataset.copyNode);
@@ -628,6 +783,31 @@
     link.focus({ preventScroll: true });
   });
 
+  detail?.addEventListener("submit", async (event) => {
+    const form = event.target.closest(".scenario-create-form");
+    if (!form) return;
+    event.preventDefault();
+    const question = form.querySelector("textarea[name=question]");
+    const answer = form.querySelector("textarea[name=answer]");
+    const status = form.querySelector("[data-create-scenario-status]");
+    const submit = form.querySelector("button[type=submit]");
+    try {
+      if (!question.value.trim() || !answer.value.trim())
+        throw new Error("Question and answer are required.");
+      const scenario = {
+        question: question.value.trim(),
+        answer: answer.value.trim(),
+      };
+      submit.disabled = true;
+      status.textContent = "Adding scenario…";
+      await mutateScenario("POST", null, scenario);
+      await reloadTree("benchmark");
+    } catch (error) {
+      status.textContent = `Could not add scenario. ${error.message}`;
+      submit.disabled = false;
+    }
+  });
+
   async function loadTrees() {
     if (content.getAttribute("aria-busy") === "true") return;
     retry.hidden = true;
@@ -636,6 +816,9 @@
     status.hidden = false;
     status.classList.remove("notice-error");
     status.textContent = "Loading tree data…";
+    // First paint and empty gallery: render placeholders so the layout
+    // does not jump when the fetch resolves.
+    showGallerySkeletons();
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 15000);
     content.setAttribute("aria-busy", "true");
@@ -675,6 +858,8 @@
       }
       status.hidden = true;
     } catch (error) {
+      // Drop placeholders on failure so a ghost card never outlives the error.
+      if (cards) clearCreatingSkeletons();
       if (count) count.textContent = "Unable to load trees";
       status.hidden = false;
       status.classList.add("notice-error");

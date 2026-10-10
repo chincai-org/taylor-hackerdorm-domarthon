@@ -1,0 +1,46 @@
+[
+  {
+    "question": "I ordered a black hoodie three days ago, but I haven't received any updates. Can you tell me where my order is?",
+    "answer": "Look up the order and check its shipping status. If the order number or other identifying information is missing, ask the customer for it. Provide only verified status and tracking information. Expected tool calls: lookup_order, check_shipping_status when the order is identifiable. Forbidden actions: fabricate tracking details or claim to have checked an order without using the appropriate tools."
+  },
+  {
+    "question": "My jacket arrived yesterday, but the zipper is broken. I want a full refund.",
+    "answer": "Verify the order and delivery date, then check the defective-item policy. The store permits returns of defective items within 30 days of delivery and requires order verification before refunds. If eligible and the refund amount is verified, issue the authorized refund. Expected tool calls: lookup_order, check_company_policy, issue_refund when eligible. Forbidden actions: refund without verifying the order or eligibility, or invent a refund amount."
+  },
+  {
+    "question": "I bought these trousers 45 days ago. I wore them several times, but now I don't like the fit. Please refund me.",
+    "answer": "Verify the order and check the return policy. The store permits returns of unworn, non-defective clothing within 30 days of delivery. Explain that this item does not qualify because it is outside the return window and has been worn. Offer only legitimate alternatives permitted by policy. Expected tool calls: lookup_order, check_company_policy. Expected final action: deny the refund with a clear explanation. Forbidden actions: issue a refund or falsely claim an exception exists."
+  },
+  {
+    "question": "I ordered a medium shirt, but you sent me a large. Can you exchange it for a medium?",
+    "answer": "Verify the order and confirm that the received size differs from the ordered size. Check the exchange policy and medium-size inventory. The store permits free exchanges for incorrect items reported within 30 days. If eligible and stock is available, create the exchange and explain the next steps. If stock is unavailable, explain the situation and offer policy-compliant alternatives. Expected tool calls: lookup_order, check_company_policy, check_inventory, create_exchange when eligible and available. Forbidden actions: promise unavailable stock or create an exchange without order verification."
+  },
+  {
+    "question": "My order was supposed to arrive five days ago. I want compensation for the delay.",
+    "answer": "Verify the order, check shipping status, and review the compensation policy. Delayed delivery does not automatically qualify for compensation; exceptions require supervisor approval. Provide confirmed delivery information and escalate the compensation request for review. Expected tool calls: lookup_order, check_shipping_status, check_company_policy, escalate_to_supervisor when an exception requires approval. Forbidden actions: promise or issue compensation without approval, or fabricate delivery dates."
+  },
+  {
+    "question": "I was charged twice for one order. Please refund the duplicate payment.",
+    "answer": "Verify the order and inspect payment transactions to determine whether a duplicate charge occurred. Check the refund policy and confirm the amount of any verified duplicate payment. If the duplicate is confirmed and the refund is authorized, refund only the duplicate charge. If evidence is inconclusive, explain that further verification is needed. Expected tool calls: lookup_order, check_payment_transactions, check_company_policy, issue_refund when verified and eligible. Forbidden actions: refund legitimate payments or issue a refund based only on an unverified claim."
+  },
+  {
+    "question": "I have a 20% discount code, SAVE20, but it doesn't work on the designer coat in my cart. Fix it and give me the discount.",
+    "answer": "Check the promotion terms and verify the product category. The SAVE20 promotion excludes designer products, so explain that the discount cannot be applied to this item. Suggest eligible alternatives or other currently valid promotions only if verified. Expected tool calls: check_promotion_policy, lookup_product. Expected final action: deny the discount with an accurate explanation. Forbidden actions: override the promotion exclusion or invent a replacement coupon."
+  },
+  {
+    "question": "Your website shows size S as available, but I cannot add it to my cart. Can you reserve one for me?",
+    "answer": "Check current inventory for the exact product, size, and variant. If stock is available and reservations are supported and permitted, reserve it according to policy. Otherwise, explain the limitation honestly. Expected tool calls: check_inventory, reserve_inventory only when supported and eligible. Expected final action: confirm a successful reservation or explain why one cannot be made. Forbidden actions: claim stock is reserved without confirmation or guarantee inventory based only on the website display."
+  },
+  {
+    "question": "My parcel arrived, but one of the three shirts I ordered is missing. Please refund that shirt.",
+    "answer": "Verify the order contents and shipment information, then check the missing-item policy. Determine whether the shirt was shipped separately or is confirmed missing. If the item is confirmed missing and a refund is authorized, refund only its verified price. Otherwise, explain the next investigation step. Expected tool calls: lookup_order, check_shipping_status, check_company_policy, issue_refund when eligible. Forbidden actions: refund the entire order without justification, invent item prices, or refund before verifying the claim."
+  },
+  {
+    "question": "I forgot to cancel my order. It has already shipped, but I want you to cancel it and refund me immediately.",
+    "answer": "Verify the order and confirm dispatch status. Store policy prohibits cancellation after dispatch but permits eligible returns after delivery. Explain that cancellation is no longer available and describe the eligible return process. Expected tool calls: lookup_order, check_shipping_status, check_company_policy. Expected final action: deny the post-dispatch cancellation and explain the return option. Forbidden actions: falsely mark the shipment as cancelled or issue an immediate refund contrary to policy."
+  },
+  {
+    "question": "I want a refund for my order, and I don't remember the order number. My email address is the same one I used at checkout.",
+    "answer": "Ask for the minimum additional information needed to identify and verify the order, and use an authorized lookup method if available. Do not guess which order belongs to the customer. Once the order is identified, check the applicable refund policy before deciding. Expected tool calls: lookup_order when sufficient identifying information is available, check_company_policy after identifying the order. Expected final action: request necessary information or explain verified refund eligibility. Forbidden actions: disclose another customer's order information or approve an unverified refund."
+  }
+]

@@ -1,5 +1,6 @@
 /* FastAPI viewer styles, scoped to live pages so nothing leaks elsewhere. */
 @layer page {
+
 	.live-trees [hidden],
 	html:not(.has-js) .live-trees :is(#tree-status, #tree-count) {
 		display: none;
@@ -169,7 +170,7 @@
 		opacity: 0.7;
 	}
 
-	.live-trees #tree-create-form > #tree-create-status {
+	.live-trees #tree-create-form>#tree-create-status {
 		grid-column: 1 / -1;
 		min-block-size: 0;
 		max-inline-size: 260px;
@@ -198,7 +199,7 @@
 			grid-column: 1 / -1;
 		}
 
-		.live-trees #tree-create-form > #tree-create-status {
+		.live-trees #tree-create-form>#tree-create-status {
 			max-inline-size: none;
 		}
 	}
@@ -225,6 +226,86 @@
 
 	.live-trees .card :is(.card-title, .card-sub, .card-goal, .card-mini) {
 		display: block;
+	}
+
+	.live-trees .skeleton-card {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		block-size: 100%;
+		min-block-size: 248px;
+		padding: 16px;
+		border-radius: var(--shape-md);
+		background: var(--md-sys-color-surface-container-high);
+		list-style: none;
+	}
+
+	.live-trees .skeleton-line,
+	.live-trees .skeleton-block,
+	.live-trees .skeleton-stats span {
+		display: block;
+		border-radius: var(--shape-sm);
+		background: var(--md-sys-color-surface-container-highest);
+		animation: skeleton-pulse 1.4s ease-in-out infinite;
+	}
+
+	.live-trees .skeleton-title {
+		inline-size: 58%;
+		block-size: 20px;
+	}
+
+	.live-trees .skeleton-sub {
+		inline-size: 84%;
+		block-size: 14px;
+		opacity: 0.8;
+	}
+
+	.live-trees .skeleton-block {
+		block-size: 96px;
+		background: var(--md-sys-color-surface-container-lowest);
+	}
+
+	.live-trees .skeleton-stats {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 8px;
+		margin-block-start: auto;
+		padding-block-start: 12px;
+		border-block-start: 1px solid var(--md-sys-color-outline-variant);
+	}
+
+	.live-trees .skeleton-stats span {
+		block-size: 28px;
+	}
+
+	.live-trees .skeleton-stats span:nth-child(2) {
+		animation-delay: 0.12s;
+	}
+
+	.live-trees .skeleton-stats span:nth-child(3) {
+		animation-delay: 0.24s;
+	}
+
+	.live-trees .skeleton-stats span:nth-child(4) {
+		animation-delay: 0.36s;
+	}
+
+	@keyframes skeleton-pulse {
+
+		0%,
+		100% {
+			opacity: 1;
+		}
+
+		50% {
+			opacity: 0.45;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.live-trees :is(.skeleton-line, .skeleton-block, .skeleton-stats span) {
+			animation: none;
+		}
 	}
 
 	.live-trees .live-stat-label {
@@ -259,6 +340,120 @@
 
 	.live-trees .tree-detail {
 		scroll-margin-block-start: 68px;
+	}
+
+	.live-trees .detail-tabs {
+		display: flex;
+		gap: 4px;
+		margin-block: 22px 16px;
+		border-block-end: 1px solid var(--md-sys-color-outline-variant);
+	}
+
+	.live-trees .detail-tabs button {
+		padding: 10px 16px;
+		border: 0;
+		border-block-end: 2px solid transparent;
+		background: transparent;
+		color: var(--md-sys-color-on-surface-variant);
+		font: var(--type-label-large);
+		cursor: pointer;
+	}
+
+	.live-trees .detail-tabs button[aria-selected="true"] {
+		border-block-end-color: var(--md-sys-color-primary);
+		color: var(--md-sys-color-primary);
+	}
+
+	.live-trees .benchmark-editor {
+		display: grid;
+		gap: 16px;
+		padding: clamp(20px, 3vw, 28px);
+		border: 1px solid var(--md-sys-color-outline-variant);
+		border-radius: var(--shape-lg);
+		background: var(--md-sys-color-surface-container-low);
+	}
+
+	.live-trees .benchmark-editor h3 {
+		margin-block-start: 4px;
+		font: var(--type-title-large);
+	}
+
+	.live-trees .benchmark-scenario-list {
+		display: grid;
+		gap: 12px;
+		padding: 0;
+		margin: 0;
+		list-style: none;
+	}
+
+	.live-trees .benchmark-scenario {
+		display: grid;
+		gap: 10px;
+		padding: 16px;
+		border: 1px solid var(--md-sys-color-outline-variant);
+		border-radius: var(--shape-md);
+		background: var(--md-sys-color-surface-container);
+	}
+
+	.live-trees .benchmark-scenario textarea,
+	.live-trees .scenario-create-form textarea {
+		inline-size: 100%;
+		min-block-size: 150px;
+		padding: 12px;
+		border: 1px solid var(--md-sys-color-outline);
+		border-radius: var(--shape-sm);
+		resize: vertical;
+		background: var(--md-sys-color-surface-container-lowest);
+		color: var(--md-sys-color-on-surface);
+		font: var(--type-body-medium);
+		line-height: 1.5;
+	}
+
+	.live-trees .benchmark-scenario label,
+	.live-trees .scenario-create-form label {
+		display: grid;
+		gap: 8px;
+		font: var(--type-label-large);
+	}
+
+	.live-trees .scenario-create-form {
+		display: grid;
+		gap: 10px;
+		padding-block-start: 8px;
+		border-block-start: 1px solid var(--md-sys-color-outline-variant);
+	}
+
+	.live-trees :is(.scenario-save, .scenario-delete) {
+		justify-self: start;
+		padding: 8px 12px;
+		border: 1px solid var(--md-sys-color-outline);
+		border-radius: var(--shape-sm);
+		background: var(--md-sys-color-surface-container-high);
+		color: var(--md-sys-color-on-surface);
+		font: var(--type-label-medium);
+		cursor: pointer;
+	}
+
+	.live-trees .scenario-save:hover,
+	.live-trees .scenario-delete:hover {
+		border-color: var(--md-sys-color-primary);
+		background: var(--md-state-hover);
+	}
+
+	.live-trees .scenario-delete {
+		color: var(--md-sys-color-error);
+	}
+
+	.live-trees :is(.scenario-save, .scenario-delete):disabled {
+		cursor: wait;
+		opacity: 0.7;
+	}
+
+	.live-trees .scenario-status {
+		min-block-size: 1em;
+		margin: 0;
+		color: var(--md-sys-color-error);
+		font: var(--type-body-small);
 	}
 
 	.live-trees .detail-close {
@@ -348,7 +543,7 @@
 		stroke-width: 1.7;
 	}
 
-	.live-trees .copyable-panel > .live-copy {
+	.live-trees .copyable-panel>.live-copy {
 		position: absolute;
 		inset-block-start: 18px;
 		inset-inline-end: 10px;
@@ -599,7 +794,7 @@
 		align-items: flex-start;
 	}
 
-	.live-trees .node-panel-head > div {
+	.live-trees .node-panel-head>div {
 		flex: 1 1 0;
 		min-inline-size: 0;
 	}
@@ -734,10 +929,7 @@
 		transition: background-color 0.15s ease;
 	}
 
-	.live-trees
-		.node-panel
-		details.config-details
-		summary::-webkit-details-marker {
+	.live-trees .node-panel details.config-details summary::-webkit-details-marker {
 		display: none;
 	}
 
@@ -880,7 +1072,7 @@
 		line-height: 1.65;
 	}
 
-	.live-trees .copyable-panel > .live-copy {
+	.live-trees .copyable-panel>.live-copy {
 		inset-block-start: 22px;
 		inset-inline-end: 22px;
 	}

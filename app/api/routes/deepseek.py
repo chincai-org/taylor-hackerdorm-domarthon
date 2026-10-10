@@ -12,25 +12,21 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from app.core.config import settings
+from app.core.config import llm_base_url, llm_model, llm_provider
 from app.harness.dsh import resolve_runtime, to_cordis_patch_yml
 from app.harness.importer import coerce_harness
 from app.services.deepseek_client import (
     DeepSeekClient,
     DeepSeekEmptyReplyError,
     DeepSeekNotAvailableError,
+    build_llm_client,
 )
 
 router = APIRouter(prefix="/deepseek", tags=["deepseek"])
 
 
 def _get_client() -> DeepSeekClient:
-    return DeepSeekClient(
-        api_key=settings.DEEPSEEK_API_KEY,
-        base_url=settings.DEEPSEEK_BASE_URL,
-        model=settings.DEEPSEEK_MODEL,
-        default_timeout=settings.DEEPSEEK_TIMEOUT_S,
-    )
+    return build_llm_client()
 
 
 class ChatRequest(BaseModel):
@@ -153,12 +149,13 @@ def _resolve(req: ChatRequest) -> dict[str, Any]:
 
 @router.get("/health")
 def deepseek_health() -> dict[str, str | bool]:
-    """Report whether DeepSeek is configured (no API call)."""
-    configured = bool((settings.DEEPSEEK_API_KEY or "").strip())
+    """Report whether a model API is configured (no API call)."""
+    provider = llm_provider()
     return {
-        "available": configured,
-        "model": settings.DEEPSEEK_MODEL,
-        "base_url": settings.DEEPSEEK_BASE_URL,
+        "available": provider is not None,
+        "provider": provider or "none",
+        "model": llm_model(),
+        "base_url": llm_base_url(),
     }
 
 
@@ -194,7 +191,7 @@ async def chat_with_deepseek(req: ChatRequest) -> ChatResponse:
         tool_calls=result["tool_calls"],
         steps=result.get("steps", []),
         executed_tools=rt.get("executed_tools", []),
-        model=rt["model"] or settings.DEEPSEEK_MODEL,
+        model=rt["model"] or llm_model(),
         applied_plugins=rt["applied_plugins"],
         ignored_plugins=rt["ignored_plugins"],
         policy_notes=rt["policy_notes"],

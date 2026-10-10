@@ -1,31 +1,30 @@
 # AGENTS.md
 
-Guidance for AI coding agents (and humans) working in this repository.
-This is a **24-hour hackathon project**: favor working end-to-end over polish, keep changes small, and don't over-engineer.
+Guide for AI coding agents (+ humans). **24h hackathon**: end-to-end > polish, small changes, no over-engineering.
 
 ## 1. Project Overview
 
-We are building a system where **one AI optimizes the harness of another AI**, inspired by [Petri](https://ethonline2026-two.vercel.app/) ([repo](https://github.com/Avoisavo/ethonline2026/tree/petri)).
+**One AI optimizes harness of another AI**, inspired by [Petri](https://ethonline2026-two.vercel.app/) ([repo](https://github.com/Avoisavo/ethonline2026/tree/petri)).
 
-- A **harness** is the configuration wrapped around a customer-support agent: system prompt, tool definitions/descriptions, routing/policy instructions, and any other settings that shape its behavior.
-- Harness versions are stored as a **tree**. Each node = one harness version + its **benchmark result**.
-- A **optimizer agent ("Workbuddy")** runs on the user's side, reads a node (and its children) through an **MCP server**, proposes an improved harness, and submits it back as a new child node.
-- The **server** automatically evaluates every new node against the benchmark and stores the result.
-- Failed attempts are **kept** in the tree so the optimizer never repeats the same approach.
+- **Harness** = config around customer-support agent: system prompt, tool defs/descriptions, routing/policy instructions, anything shaping behavior.
+- Versions stored as **tree**. Each node = one harness version + **benchmark result**.
+- **Optimizer ("Workbuddy")** runs user-side, reads node (+ children) via **MCP server**, proposes improved harness, submits back as new child node.
+- **Server** auto-evaluates every new node vs benchmark, stores result.
+- Failures **kept** → optimizer never repeats same approach.
 
-**Scope: one use case only — customer support.**
+**Scope: customer support only.**
 
-## 2. Core Concepts (use these terms consistently)
+## 2. Core Concepts (exact terms)
 
 | Term | Meaning |
 |---|---|
-| **Session / Tree** | One optimization run. Has its own benchmark and a root node. Identified by `tree_id`. |
-| **Node** | One harness version. Has `node_id`, `parent_id`, `harness`, `benchmark_result`, `status`. |
-| **Harness** | The agent configuration being optimized (prompt, tool specs, policy text, etc.). |
-| **Benchmark** | A fixed set of customer-support scenarios + deterministic checks, owned by a tree. |
-| **Child nodes** | Prior attempts to improve a node. Includes failures/regressions — they are signal, not noise. |
-| **Workbuddy** | The optimizer agent on the user side that calls MCP tools. |
-| **PI** | The agent harness/runtime the server uses to execute the benchmark (via the GraffiLab AI API — confirm exact name/endpoint with the team). |
+| **Session / Tree** | One optimization run. Own benchmark + root node. ID = `tree_id`. |
+| **Node** | One harness version. `node_id`, `parent_id`, `harness`, `benchmark_result`, `status`. |
+| **Harness** | Agent config under optimization (prompt, tool specs, policy text, etc.). |
+| **Benchmark** | Fixed customer-support scenarios + deterministic checks, owned by tree. |
+| **Child nodes** | Prior attempts incl. failures/regressions — signal, not noise. |
+| **Workbuddy** | Optimizer agent calling MCP tools. |
+| **PI** | Agent harness/runtime server uses for benchmark (GraffiLab AI API — confirm name/endpoint). |
 
 ## 3. Architecture
 
@@ -43,38 +42,36 @@ We are building a system where **one AI optimizes the harness of another AI**, i
                                               GraffiLab AI API (PI)
 ```
 
-### Responsibilities
-
-- **Server** stores the tree, runs PI against the benchmark, stores results, and exposes both MCP and REST.
-- **Workbuddy** lives on the user side. It does *not* touch the DB directly — only via MCP.
-- **Frontend** lists sessions, shows a tree visualization, and node/benchmark detail. Optionally supports "create new session".
+- **Server**: stores tree, runs PI vs benchmark, stores results, exposes MCP + REST.
+- **Workbuddy**: user-side. No direct DB access — MCP only.
+- **Frontend**: lists sessions, tree viz, node/benchmark detail. Optional "create session".
 
 ## 4. Tech Stack
 
 - **Backend:** Python, FastAPI, official MCP Python SDK (`mcp`) mounted alongside FastAPI.
-- **Database:** SQLAlchemy models and repository helpers backed by Neon Postgres in both local development and Vercel. Store harnesses, benchmark scenarios, and results in JSON fields; keep DB access behind `app/db/repository.py`.
-- **Frontend:** hosted on **Vercel**. Tree visualization (e.g., React Flow / d3 / simple SVG). Prefer whatever the team already scaffolded.
-- **Evaluation runtime:** PI via the GraffiLab AI API.
+- **Database:** SQLAlchemy models + repository helpers, Neon Postgres local + Vercel. Harnesses/scenarios/results in JSON fields; DB access behind `app/db/repository.py`.
+- **Frontend:** Vercel. Tree viz (React Flow / d3 / plain SVG). Prefer already-scaffolded.
+- **Eval runtime:** PI via GraffiLab AI API.
 
-> If the repo already contains a framework choice that conflicts with this file, follow the repo and update this section.
+> Repo choice beats this file on conflict — then update this section.
 
-## 5. Suggested Repository Layout
+## 5. Repository Layout
 
-Adjust to match what actually exists; don't restructure without reason.
+Don't restructure without reason.
 
 ```
 /
 ├── AGENTS.md
 ├── app/
 │   ├── main.py              # FastAPI app; mounts /trees, /showcase + REST/MCP routers
-│   ├── api/                 # REST endpoints for the frontend
+│   ├── api/                 # REST endpoints for frontend
 │   ├── core/                # Settings
 │   ├── db/                  # Engine, models, repository (SQLAlchemy + Neon Postgres)
 │   ├── harness/             # Harness import helpers
 │   ├── schemas/             # Shared Pydantic models (MCP + REST)
 │   ├── services/            # PI clients, digest helpers
 │   ├── mcp_server.py        # MCP tool definitions
-│   └── web/                 # Everything the browser sees
+│   └── web/                 # Everything browser sees
 │       ├── templates/       # Live pages: gallery.html (/), tree-detail.html (/tree/*)
 │       ├── static/          # Served at /trees: theme.css, live-viewer.css/js,
 │       │                    # showcase-enhance.js
@@ -87,7 +84,7 @@ Adjust to match what actually exists; don't restructure without reason.
 └── public/                  # Vercel static assets
 ```
 
-## 6. Data Model (starting point)
+## 6. Data Model
 
 ```
 Tree:   id, name, description, benchmark_id, root_node_id, status, metadata, created_at
@@ -97,73 +94,70 @@ Node:   id, tree_id, parent_id (nullable for root), harness (JSON/text),
 Benchmark: id, name, version, scenarios (JSON), created_at
 ```
 
-- The **root node** of every tree has a seed harness and is evaluated on creation.
-- **Invariant:** any node that is `complete` has a harness *and* a benchmark result. Workbuddy can assume this when reading.
-- A tree has exactly one root node; child nodes must reference a parent in the same tree.
-- Node status values are `pending`, `running`, `complete`, and `failed`.
-- Never delete nodes — failed/low-scoring nodes remain visible and queryable.
-- Store `rationale` (why Workbuddy made this change) on each node; it helps future attempts.
+- Root node has seed harness, evaluated on creation.
+- **Invariant:** `complete` node has harness *and* benchmark result. Workbuddy can assume it.
+- One root per tree; children reference parent in same tree.
+- Status ∈ `pending`, `running`, `complete`, `failed`.
+- Never delete nodes — failures stay visible/queryable.
+- Store `rationale` (why change) on each node → guides future attempts.
 
 ## 7. Benchmark Design (customer support)
 
-The benchmark must be **as objective and deterministic as possible** so scores are trustworthy.
+Must be **objective + deterministic** → trustworthy scores.
 
-Each scenario consists of:
-- A simulated customer message / conversation.
-- **Expected tool calls** (e.g., `query_database`, `check_company_policy`, `lookup_order`).
-- **Expected final action** (e.g., customer demands refund → `issue_refund`; policy-violating request → `deny_with_explanation`).
-- Optional **forbidden actions** (e.g., issuing a refund outside policy).
+Each scenario:
+- Simulated customer message / conversation.
+- **Expected tool calls** (e.g. `query_database`, `check_company_policy`, `lookup_order`).
+- **Expected final action** (refund demand → `issue_refund`; policy violation → `deny_with_explanation`).
+- Optional **forbidden actions** (e.g. refund outside policy).
 
-Scoring guidelines:
-- Prefer **programmatic checks** (tool called? correct arguments? correct final action?) over LLM-as-judge.
-- If an LLM judge is unavoidable, use a fixed rubric, binary pass/fail items, and temperature 0.
-- Report: overall score, per-scenario pass/fail, and failure reasons. Per-scenario detail is what Workbuddy learns from.
-- Benchmarks are **immutable once a tree has nodes** — changing them invalidates comparisons.
-- Keep scenarios mocked/sandboxed: tools in the benchmark must not touch real systems.
+Scoring:
+- **Programmatic checks** (tool called? correct args? correct final action?) > LLM-as-judge.
+- LLM judge unavoidable → fixed rubric, binary pass/fail, temperature 0.
+- Report: overall score, per-scenario pass/fail, failure reasons. Per-scenario detail = what Workbuddy learns from.
+- **Immutable once tree has nodes** — changes invalidate comparisons.
+- Mocked/sandboxed scenarios: benchmark tools never touch real systems.
 
 ## 8. MCP Interface
 
-Workbuddy's workflow: user supplies `tree_id` and `node_id`, then prompts **"Improve this node"**. Workbuddy should call tools in roughly this order.
-
-Proposed tools (names may be adjusted; keep them small and self-describing):
+Workbuddy flow: user gives `tree_id` + `node_id`, prompts **"Improve this node"**. Call order ≈ table order.
 
 | Tool | Purpose |
 |---|---|
-| `list_trees()` | List sessions (id, name, best score, node count). |
+| `list_trees()` | Sessions (id, name, best score, node count). |
 | `get_tree(tree_id)` | Tree summary + structure (node ids, parents, scores). |
 | `get_node(tree_id, node_id)` | Harness, benchmark results (incl. per-scenario failures), rationale. |
-| `get_children(tree_id, node_id)` | Prior attempts from this node with their harness diffs/results/rationale. |
-| `get_benchmark(tree_id)` | Benchmark description so the optimizer understands what's measured. |
-| `create_child_node(tree_id, parent_id, harness, rationale)` | Create a child, trigger evaluation, return the new `node_id` + status (and result if fast enough). |
-| `get_node_status(tree_id, node_id)` | Poll evaluation status/result. |
+| `get_children(tree_id, node_id)` | Prior attempts: harness diffs/results/rationale. |
+| `get_benchmark(tree_id)` | Benchmark description → what gets measured. |
+| `create_child_node(tree_id, parent_id, harness, rationale)` | Create child, trigger eval, return `node_id` + status (+ result if fast). |
+| `get_node_status(tree_id, node_id)` | Poll eval status/result. |
 
-Rules for MCP tools:
-- Return **concise, structured JSON**. Truncate large payloads; offer drill-down instead.
-- Include enough context in `get_node` / `get_children` for the optimizer to **avoid repeating failed approaches**.
-- `create_child_node` must validate the parent exists, belongs to the tree, and is `complete`.
-- Evaluation may take time — either run async and have Workbuddy poll, or block with a sensible timeout. Don't leave nodes stuck in `running`; mark `failed` on error/timeout.
-- Tool errors should be clear and actionable (what was wrong, what to do).
+Rules:
+- **Concise structured JSON**. Truncate big payloads; offer drill-down.
+- `get_node` / `get_children` must carry enough context → **avoid repeating failed approaches**.
+- `create_child_node` validates parent exists, belongs to tree, is `complete`.
+- Eval slow → async + poll, or block with sane timeout. No stuck `running`; mark `failed` on error/timeout.
+- Errors clear + actionable (what wrong, what next).
 
 ## 9. Evaluation Flow (server-side)
 
-1. `create_child_node` inserts a node with `status=pending`.
-2. Evaluator picks it up, sets `running`, runs PI with the node's harness against every benchmark scenario.
-3. Evaluator applies checks, writes `score` + `result`, sets `complete` (or `failed` with error info).
-4. Frontend and MCP both read the updated node.
+1. `create_child_node` inserts node `status=pending`.
+2. Evaluator sets `running`, runs PI + node harness vs every scenario.
+3. Applies checks, writes `score` + `result`, sets `complete` (or `failed` + error).
+4. Frontend + MCP read updated node.
 
-Guidelines:
-- Cap concurrency and per-scenario timeouts to protect API quota (hackathon budget!).
-- Cache nothing across harness versions unless keyed by harness hash + benchmark version.
-- Log raw PI transcripts per scenario so failures are debuggable (store reference or truncated text in DB).
-- Keep the evaluator deterministic where possible (fixed seeds/temperature 0).
+- Cap concurrency + per-scenario timeouts → protects API quota (hackathon budget!).
+- Cache only keyed by harness hash + benchmark version.
+- Log raw PI transcripts per scenario (reference or truncated text in DB) → debuggable failures.
+- Deterministic where possible (fixed seeds/temperature 0).
 
 ## 10. Frontend Requirements
 
-- **Home:** list of sessions/trees with name, node count, best score. Optional "Create session" form.
-- **Tree page:** visual tree; nodes show score and status; failed/regressed nodes are visibly distinct but not hidden; highlight best node.
-- **Node detail:** harness, rationale, per-scenario benchmark results, parent/child links.
-- Read data from the server's REST API (configurable base URL via env var).
-- Keep it simple and demo-ready; legibility beats animation.
+- **Home:** sessions/trees: name, node count, best score. Optional "Create session".
+- **Tree page:** visual tree; score + status per node; failed/regressed distinct but visible; highlight best.
+- **Node detail:** harness, rationale, per-scenario results, parent/child links.
+- Data from server REST API (base URL via env var).
+- Simple + demo-ready; legibility > animation.
 
 ## 11. Development Commands
 
@@ -171,44 +165,43 @@ Guidelines:
 # Install/sync Python dependencies
 uv sync
 
-# Start the FastAPI + MCP server locally
+# Start FastAPI + MCP server locally
 uv run uvicorn app.main:app --reload --port 5001
 
-# Or run the one-off DeepSeek harness eval (needs DEEPSEEK_API_KEY)
+# Or run one-off DeepSeek harness eval (needs DEEPSEEK_API_KEY)
 uv run python scripts/deepseek_eval.py
 
-# Create the local Neon Postgres schema
+# Create local Neon Postgres schema
 uv run python -c "from app.db import create_tables; create_tables()"
 
 # Format and lint
 uv run ruff format .
 uv run ruff check .
 
-# Run tests when test files are present
+# Run tests when test files present
 uv run pytest
 
-# Rebuild the static showcase (writes app/web/showcase/dist/)
+# Rebuild static showcase (writes app/web/showcase/dist/)
 node app/web/showcase/build.mjs
 
-# Showcase unit + render tests (pure Node, no browser needed)
+# Showcase unit + render tests (pure Node, no browser)
 node --test app/web/showcase/checks/unit.mjs app/web/showcase/checks/render.mjs
 ```
 
 ### DeepSeek agent API (prompt + harness, streamed over SSE)
 
-- `POST /api/v1/deepseek/chat` returns one JSON reply (`reply`, `tool_calls`, harness echo).
-- `POST /api/v1/deepseek/stream` streams the same result as SSE (`-N` / no-buffer keeps it live).
+- `POST /api/v1/deepseek/chat` → one JSON reply (`reply`, `tool_calls`, harness echo).
+- `POST /api/v1/deepseek/stream` → same result as SSE (`curl -N` / no-buffer keeps live).
 - Both take `{ prompt, harness_yml?, harness?, system_prompt?, tools?, model?, timeout? }`.
-  Pass the harness as raw `cordis.patch.yml` text in `harness_yml` (preferred for yml),
-  or as dsh patch-layer JSON in `harness`. The two are mutually exclusive; omit both
-  for bare prompt-only behavior.
-- First SSE event is always `{"harness": {...}}` (normalized harness, `patch_yml`,
-  model, applied/ignored plugins, warnings), then `{"delta"}` chunks, an optional
-  `{"tool_calls"}` event, then `{"status": "done"}` or `{"error"}`.
-- Requires `DEEPSEEK_API_KEY` on the server (`GET /api/v1/deepseek/health` reports
-  `available`; otherwise chat/stream return `503`).
+  Harness as raw `cordis.patch.yml` text in `harness_yml` (preferred for yml), or dsh
+  patch-layer JSON in `harness`. Mutually exclusive; omit both → bare prompt-only.
+- SSE order: first event always `{"harness": {...}}` (normalized harness, `patch_yml`,
+  model, applied/ignored plugins, warnings) → `{"delta"}` chunks → optional
+  `{"tool_calls"}` → `{"status": "done"}` or `{"error"}`.
+- Needs server-side `DEEPSEEK_API_KEY` (`GET /api/v1/deepseek/health` reports `available`;
+  else chat/stream → `503`).
 
-Example — stream one customer-support prompt with a harness file:
+Example — stream one support prompt with harness file:
 
 ```bash
 jq -n --arg prompt "I was charged twice for the same order." \
@@ -220,70 +213,66 @@ curl -N -X POST https://taylor-hackerdorm-domarthon-production.up.railway.app/ap
   -d @/tmp/body.json
 ```
 
-What this does: `jq --rawfile yml` reads `cordis.patch.yml` as a raw string into
-`$yml`, builds `{prompt, harness_yml}` JSON into `/tmp/body.json`, and `curl -N`
-POSTs it to the production host (use `http://127.0.0.1:5001/api/v1/deepseek/stream`
-locally). Replace `prompt` / `yml` to test other scenarios or harnesses.
+`jq --rawfile yml` reads `cordis.patch.yml` as raw string into `$yml`, builds
+`{prompt, harness_yml}` into `/tmp/body.json`; `curl -N` POSTs to prod host (local:
+`http://127.0.0.1:5001/api/v1/deepseek/stream`). Swap `prompt` / `yml` for other
+scenarios/harnesses.
 
-Local development and Vercel production both use Neon Postgres. Put the local
-pooled connection string in `.env.development.local`; Vercel provides its own
-`DATABASE_URL` value in the deployment environment. The application uses the
-same database code in both environments and only the credentials differ.
+Local + Vercel both use Neon Postgres. Local pooled string in `.env.development.local`;
+Vercel provides own `DATABASE_URL`. Same DB code both envs, only credentials differ.
 
-Environment variables (never commit secrets; provide `.env.example`):
-- `GRAFFILAB_API_KEY` (confirm name) — PI evaluation API
-- `DATABASE_URL` — Neon Postgres connection URL; loaded from `.env.development.local` locally
+Env vars (never commit secrets; provide `.env.example`):
+- `GRAFFILAB_API_KEY` (confirm name) — PI eval API
+- `DATABASE_URL` — Neon Postgres URL; local via `.env.development.local`
 - `NEXT_PUBLIC_API_URL` / equivalent — frontend → server base URL
 
 ## 12. Coding Conventions
 
-- **Python:** type hints, Pydantic models for all request/response bodies, small functions, `async` where it helps (PI calls, MCP).
-- **Frontend:** TypeScript preferred if already in use; follow existing lint/format config.
-- Keep MCP tool schemas and REST schemas in sync — share Pydantic models.
-- Prefer clear names matching Section 2 terminology (`tree`, `node`, `harness`, `benchmark`).
-- Add brief docstrings to MCP tools — they are what Workbuddy reads to decide how to use them.
+- **Python:** type hints, Pydantic models for all req/resp bodies, small fns, `async` where helps (PI calls, MCP).
+- **Frontend:** TypeScript preferred if already used; follow existing lint/format.
+- MCP + REST schemas in sync — share Pydantic models.
+- Names match §2 terms (`tree`, `node`, `harness`, `benchmark`).
+- Brief docstrings on MCP tools — Workbuddy reads them to decide usage.
 
 ## 13. Do / Don't
 
 **Do**
-- Ship a thin vertical slice first: seed tree → read via MCP → create child → evaluate → show in UI.
-- Seed a demo tree with a handful of nodes (including failures) so the UI and MCP are demoable immediately.
-- Keep the evaluator and DB interfaces swappable.
-- Note any assumptions in PR descriptions / commit messages.
+- Thin vertical slice first: seed tree → read via MCP → create child → evaluate → show in UI.
+- Seed demo tree with handful nodes (incl. failures) → UI + MCP demoable immediately.
+- Keep evaluator + DB interfaces swappable.
+- Note assumptions in PR descriptions / commit messages.
 
 **Don't**
-- Don't let Workbuddy (or any client) write to the DB except through the MCP tools.
-- Don't delete or overwrite existing nodes or their results.
-- Don't modify a benchmark after nodes exist for its tree.
-- Don't hardcode API keys or commit `.env`.
-- Don't add heavy infrastructure (queues, Docker orchestration, auth systems) unless strictly needed for the demo.
-- Don't expand scope beyond customer support.
+- Workbuddy (or any client) writing DB except via MCP tools.
+- Delete/overwrite nodes or results.
+- Modify benchmark after its tree has nodes.
+- Hardcode API keys or commit `.env`.
+- Heavy infra (queues, Docker orchestration, auth) unless demo-blocked.
+- Expand scope beyond customer support.
 
-## 14. Definition of Done (for the hackathon demo)
+## 14. Definition of Done (hackathon demo)
 
-- [ ] Can create/seed a tree with a benchmark and an evaluated root node.
-- [ ] MCP server exposes tools to read a node, its children, and the benchmark.
-- [ ] `create_child_node` stores the node and automatically runs PI against the benchmark.
-- [ ] Workbuddy, given `tree_id` + `node_id` and "Improve this node", can produce a new child end-to-end.
-- [ ] Frontend lists sessions and visualizes a tree with scores and per-scenario results.
-- [ ] Server deployed/reachable by Workbuddy; frontend deployed on Vercel.
-- [ ] README/demo script showing the full loop.
+- [ ] Create/seed tree with benchmark + evaluated root node.
+- [ ] MCP tools read node, children, benchmark.
+- [ ] `create_child_node` stores node + auto-runs PI vs benchmark.
+- [ ] Workbuddy given `tree_id` + `node_id` + "Improve this node" → new child end-to-end.
+- [ ] Frontend lists sessions, visualizes tree with scores + per-scenario results.
+- [ ] Server reachable by Workbuddy; frontend on Vercel.
+- [ ] README/demo script showing full loop.
 
 ## 15. Database Plan
 
-- Local development and production use **Neon Postgres** through `DATABASE_URL`.
-- SQLAlchemy is the shared database layer in both environments; only the connection credentials differ.
-- `trees` store optimization sessions, `benchmarks` store immutable scenario sets, and `nodes` store the general tree using `tree_id` plus `parent_id`.
-- Harnesses, benchmark scenarios, benchmark results, metadata, and evaluation errors are JSON fields.
-- `create_root_node` enforces one root per tree; `create_child_node` validates that the parent belongs to the requested tree.
-- Nodes are retained, including failed and regressed attempts. Evaluation updates status, score, result, and error through `update_node_evaluation`.
-- Database schema creation is exposed through `create_tables()` for local setup. Production migrations should be added before schema changes are deployed.
+- Local + prod: **Neon Postgres** via `DATABASE_URL`.
+- SQLAlchemy shared layer both envs; only credentials differ.
+- `trees` = sessions, `benchmarks` = immutable scenario sets, `nodes` = tree via `tree_id` + `parent_id`.
+- Harnesses, scenarios, results, metadata, eval errors = JSON fields.
+- `create_root_node` enforces one root/tree; `create_child_node` validates parent ∈ same tree.
+- Nodes retained incl. failed/regressed. Eval updates status/score/result/error via `update_node_evaluation`.
+- Schema creation via `create_tables()` locally. Add prod migrations before deploying schema changes.
 
 ### Database schema
 
-The schema currently contains three tables. The application generates UUID
-values as 36-character strings; timestamps are timezone-aware and default to
-the database server's current time.
+Three tables. App generates UUIDs as 36-char strings; timestamps tz-aware, default DB `CURRENT_TIMESTAMP`.
 
 ```text
 benchmarks
@@ -321,116 +310,96 @@ created_at        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 updated_at        TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 ```
 
-Relationships and constraints:
+Relationships/constraints:
 
-- Each tree references one immutable benchmark through `trees.benchmark_id`.
-- Each node belongs to one tree through `nodes.tree_id`.
-- A root node has `parent_id = NULL`; a child node stores its parent in
-  `parent_id`. The parent column is not a database foreign key because tree
-  creation and parent validation are enforced by the repository.
-- `trees.root_node_id` identifies the tree's root node and may be null while a
-  tree is being created.
-- JSON fields contain benchmark scenarios, harness definitions, benchmark
-  results, tree metadata, and evaluation errors.
-- Expected node statuses are `pending`, `running`, `complete`, and `failed`.
-- `ix_nodes_tree_parent` indexes `(tree_id, parent_id)` for tree traversal.
-- `ix_nodes_tree_status` indexes `(tree_id, status)` for status filtering.
-- `ix_nodes_tree_score` indexes `(tree_id, score)` for ranking nodes.
+- Tree → one immutable benchmark via `trees.benchmark_id`.
+- Node → one tree via `nodes.tree_id`.
+- Root: `parent_id = NULL`; child: `parent_id` = parent. No DB FK on parent — repo enforces creation/validation.
+- `trees.root_node_id` nullable while tree being created.
+- JSON fields: scenarios, harness defs, results, tree metadata, eval errors.
+- Status ∈ `pending`, `running`, `complete`, `failed`.
+- `ix_nodes_tree_parent` (`tree_id`, `parent_id`) → traversal.
+- `ix_nodes_tree_status` (`tree_id`, `status`) → status filter.
+- `ix_nodes_tree_score` (`tree_id`, `score`) → ranking.
 
 
-- Exact GraffiLab AI / PI API shape, auth, and rate limits.
-- Whether evaluation is synchronous or async-with-polling for MCP.
-- Whether "Create session" is in the MVP.
-- MCP transport (streamable HTTP vs SSE) for the hosted deployment — note Vercel's serverless limits may make long-running evaluation better hosted elsewhere (e.g., a small VM/Fly/Railway) with Vercel serving only the frontend.
+- Exact GraffiLab AI / PI API shape, auth, rate limits.
+- Eval sync vs async-with-polling for MCP.
+- "Create session" in MVP?
+- MCP transport (streamable HTTP vs SSE) for hosted deploy — Vercel serverless limits may push long evals elsewhere (small VM/Fly/Railway), Vercel serving frontend only.
 
 ---
 
-## 16. Frontend guidance — live backend viewer and standalone Petri showcase
+## 16. Frontend guidance — live backend viewer + standalone Petri showcase
 
-### 16.1 Production integration (takes precedence over the showcase notes below)
+### 16.1 Production integration (takes precedence over showcase notes)
 
-- The live gallery is `/`, rendered from `app/web/templates/gallery.html`. Native cards
-  navigate to `/tree/{tree_id}`, rendered from `app/web/templates/tree-detail.html`. The
-  detail page fetches only `/api/v1/trees/{tree_id}` and has a native Back to trees
-  link. FastAPI serves live-viewer assets under `/trees` and the static showcase
-  under `/showcase`; REST contracts are unchanged.
-- Keep loading, failure and retry handling on both live pages. Node selection
-  retains keyboard focus on the selected link; the live region announces changes.
-- `app/web/static/live-viewer.js` restores the integration from commit
-  `54019be`; `live-viewer.css` scopes the live viewer's styles to `.live-trees`.
-  Keep both assets linked from the production template. No Node build is required
-  to serve the live page in the existing Python container.
-- Live nodes use `pending`, `running`, `complete`, and `failed`, with nullable
-  raw scores, harness JSON, rationale, benchmark results and errors. Harness and
-  result payloads have copy controls. Scenario-array benchmark results render as
-  passed/failed/unscored cards; summary-only results render as labeled facts.
-  Do not show raw result JSON in the normal detail UI. Keep copy payload verbatim.
-  The wide lineage SVG is centered in a bounded scroll stage. Do not apply the
-  static showcase's acceptance thresholds, basis points, verification keys, or
+- Live gallery `/` renders `app/web/templates/gallery.html`. Native cards → `/tree/{tree_id}`
+  from `app/web/templates/tree-detail.html`. Detail fetches only `/api/v1/trees/{tree_id}` +
+  native Back to trees link. FastAPI serves live-viewer assets at `/trees`, static showcase
+  at `/showcase`; REST contracts unchanged.
+- Keep loading/failure/retry handling on both live pages. Node selection keeps keyboard
+  focus on selected link; live region announces changes.
+- `app/web/static/live-viewer.js` restores integration from commit `54019be`;
+  `live-viewer.css` scopes live styles to `.live-trees`. Keep both linked from prod template.
+  No Node build needed to serve live page in Python container.
+- Live nodes: `pending`, `running`, `complete`, `failed`; nullable raw scores, harness JSON,
+  rationale, results, errors. Harness + result payloads have copy controls. Scenario-array
+  results → passed/failed/unscored cards; summary-only → labeled facts. No raw result JSON
+  in normal detail UI. Copy payload verbatim. Wide lineage SVG centered in bounded scroll
+  stage. Never apply showcase acceptance thresholds / basis points / verification keys /
   Petri CLI instructions to backend data.
-- The static showcase remains `/showcase/index.html` or a local `file://` page.
-  `showcase-enhance.js` only enhances it; `build.mjs` composes the static `templates/` modules.
-  Never overwrite production integration with standalone showcase code.
-- Run `node checks/integration.mjs` from `app/web/showcase` for read-only
-  same-origin API-contract/browser tests using local fixtures, without database
-  access. It covers clipboard payloads, scenario result rendering, sparse-tree
-  centering and dropdown pointer behavior. Also run the static build, unit/render
-  tests and static checks.
-- Frontend `lib/` modules must be tracked in Git. The root `.gitignore` explicitly
-  exempts `app/web/showcase/lib/` from the generic Python `lib/` ignore rule.
-- Production's live data requires JavaScript, as in the recovered commit. The
-  no-JavaScript production shell links to the JSON API/docs instead of showing
-  fictional showcase data. The strict no-JavaScript requirements below apply to
-  the standalone showcase only.
+- Static showcase stays `/showcase/index.html` or local `file://` page.
+  `showcase-enhance.js` only enhances; `build.mjs` composes static `templates/` modules.
+  Never overwrite prod integration with showcase code.
+- `node checks/integration.mjs` from `app/web/showcase`: read-only same-origin
+  API-contract/browser tests on local fixtures, no DB. Covers clipboard payloads, scenario
+  rendering, sparse-tree centering, dropdown pointer. Also run static build, unit/render,
+  static checks.
+- Frontend `lib/` tracked in Git. Root `.gitignore` exempts `app/web/showcase/lib/` from
+  generic Python `lib/` ignore.
+- Live data needs JS (as recovered commit). No-JS prod shell links JSON API/docs instead of
+  fictional showcase data. Strict no-JS rules below = standalone showcase only.
 
 ---
 
 ### 16.2 Standalone showcase notes
 
-Instructions for any AI agent asked to change this project. Read this file first. The
-**Traps** section is the important one: every entry there is a bug that has already
-happened once, and each one is easy to reintroduce.
+Read first before changing showcase. **Traps** section matters most: every entry = bug that
+already happened once, easy to reintroduce.
 
 ---
 
 #### 16.2.1 What this is
 
-A **standalone, plain HTML/CSS/JS recreation** of the "Trees" section of an app called
-Petri. No framework, no bundler, no runtime dependencies.
+**Standalone plain HTML/CSS/JS recreation** of Petri "Trees" section. No framework/bundler/runtime deps.
 
-The showcase source lives under `app/web/showcase/`; its build output lives in
-`app/web/showcase/dist/` (served at `/showcase/`, also opens from `file://`).
-If you move the deliverable somewhere else, move this file with it and fix the
-paths in §16.2.3 and §16.2.4 — the `checks/` scripts contain absolute paths and
-will need them updated too.
+Source: `app/web/showcase/`; build output: `app/web/showcase/dist/` (served `/showcase/`,
+opens `file://`). Move deliverable → move this guidance too + fix paths in §16.2.3/§16.2.4
+(`checks/` scripts contain absolute paths).
 
 | | |
 |---|---|
-| Reference repo (Next.js) | `ref/` — a clone of `https://github.com/Avoisavo/ethonline2026` |
+| Reference repo (Next.js) | `ref/` — clone of `https://github.com/Avoisavo/ethonline2026` |
 | Live reference | `https://ethonline2026-two.vercel.app/` |
 | Deliverable | `app/web/showcase/` (source) → `dist/` (generated pages) |
 | Screenshots | `shots/` |
-| Work log | `.workbuddy-ai/memory/2026-10-10.md` (read this for the history of *why*) |
+| Work log | `.workbuddy-ai/memory/2026-10-10.md` (history of *why*) |
 
-`ref/` is a **read-only source of truth for behaviour and geometry**. Never edit it. When
-the reference and this recreation disagree, the reference usually wins — but see
-§16.2.6 for the places where diverging was a deliberate decision.
+`ref/` = **read-only source of truth for behaviour/geometry**. Never edit. Reference usually
+wins on disagreement — except deliberate divergences in §16.2.6.
 
 ---
 
 #### 16.2.2 Non-negotiable constraints
 
-1. **Everything must work with JavaScript disabled.** This is the headline requirement and
-   the one most likely to be broken by a careless change. Read §16.2.5 before touching anything
-   interactive.
-2. **No dependencies.** No npm packages, no framework, no bundler, no CDN script. The
-   build step is `node build.mjs` using Node's standard library only.
-3. **The output opens from `file://`.** No server required. Every page is written into
-   the one flat `dist/` folder so the stylesheet, the script and the cross-page links
-   are plain siblings.
-4. **Static HTML, generated at build time.** Pages must be complete and readable before any
-   script runs.
-5. **Visually faithful to the reference**, except for the deliberate divergences in §16.2.6.
+1. **Works with JS disabled.** Headline req, easiest to break. Read §16.2.5 before touching
+   anything interactive.
+2. **No dependencies.** No npm/framework/bundler/CDN. Build = `node build.mjs`, Node stdlib only.
+3. **Opens from `file://`.** No server. All pages in one flat `dist/` → stylesheet/script/links
+   plain siblings.
+4. **Static HTML, generated at build time.** Complete + readable before any script runs.
+5. **Visually faithful to reference**, except deliberate divergences (§16.2.6).
 
 ---
 
@@ -438,36 +407,35 @@ the reference and this recreation disagree, the reference usually wins — but s
 
 ```
 app/web/showcase/
-  build.mjs                 THE GENERATOR. Emits dist/ pages and per-tree stylesheets.
+  build.mjs                 THE GENERATOR. Emits dist/ pages + per-tree stylesheets.
   registry.mjs              Tree registry: TREES[] + loadTree(). Showcase or real snapshot.
   lib/
     layout.mjs              buildForest / tidySlots — port of ref/lib/layout.ts
-    glyph.mjs               The per-node status glyph (port of ref/components/Glyph.tsx)
+    glyph.mjs               Per-node status glyph (port of ref/components/Glyph.tsx)
     metrics.mjs             changesOf / fmtPct
     format.mjs              Status words, basis points, node numbers, claim/sign helpers
-    objectives.mjs          OBJECTIVES — the fork "direction" options
+    objectives.mjs          OBJECTIVES — fork "direction" options
   data/
     showcase.mjs            5 hand-authored trees (port of ref/lib/showcase.ts)
     petri-export.json       Real `petri export` snapshot (1 tree)
     petri-digest.json       Its digest panel
-  checks/                   The verification suite. See §16.2.4.2.
+  checks/                   Verification suite (§16.2.4.2).
   dist/                     GENERATED — gallery, 6 tree pages + stylesheets,
-                            plus copies of theme.css / showcase-enhance.js so the
-                            showcase opens from file:// with no server.
+                            + copies of theme.css / showcase-enhance.js (file:// needs
+                            no server).
 ```
 
-The shared `theme.css` and `showcase-enhance.js` live in `app/web/static/`
-(also served to the live viewer at `/trees/`); `build.mjs` copies them into
-`dist/` on every build.
+Shared `theme.css` + `showcase-enhance.js` live in `app/web/static/` (also served to live
+viewer at `/trees/`); `build.mjs` copies both into `dist/` every build.
 
-The six slugs: `research--hermes-agent--claude-sonnet-5`,
+Six slugs: `research--hermes-agent--claude-sonnet-5`,
 `coding--claude-code--claude-opus-5`, `coding--petri-harness-v1--claude-sonnet-5`,
 `finance--pi--claude-haiku-4-5`, `security--codex-cli--gpt-5`,
 `data-analysis--openhands--gemini-2-5-pro`.
 
-**Never hand-edit anything under `dist/`.** Gallery, tree pages and stylesheets
-are overwritten on every build. The `<slug>.css` files say so in a header comment. Edit
-`build.mjs`, `theme.css`, `showcase-enhance.js` or `data/`, then rebuild.
+**Never hand-edit `dist/`.** Gallery/tree pages/stylesheets overwritten every build.
+`<slug>.css` header says so. Edit `build.mjs`, `theme.css`, `showcase-enhance.js` or
+`data/`, then rebuild.
 
 ---
 
@@ -480,42 +448,40 @@ cd app/web/showcase
 node build.mjs
 ```
 
-Expected: `Wrote dist/index.html, 6 tree pages (…) and 6 tree stylesheets (…).` The byte counts
-move as content changes — only the shape of the message matters.
+Expected: `Wrote dist/index.html, 6 tree pages (…) and 6 tree stylesheets (…).` Byte counts
+drift with content — only message shape matters.
 
-Plain `node` is fine if it is on PATH. Otherwise use the managed runtime:
-`C:/Users/liewjayyong/.workbuddy-ai/binaries/node/versions/22.22.2-6/node.exe`
+No `node` on PATH → managed runtime (`node` v22 under the Workbuddy binaries dir).
 
 ##### 16.2.4.2 Checks
 
-Playwright is **not** a dependency of the deliverable — it is a dev tool, already installed
-at `C:/Users/liewjayyong/.workbuddy-ai/binaries/node/workspace/node_modules/playwright-core`.
-The scripts resolve it via `createRequire` against that path.
+Playwright = dev tool, **not** deliverable dep. Already installed under the
+Workbuddy-managed Node workspace (`playwright-core`).
+Scripts resolve it via `createRequire` there.
 
 ```bash
 cd app/web/showcase/checks
-node verify.mjs        # contrast, font sizes, tap targets; then the JS-on interaction path
-node nojs.mjs          # THE HEADLINE CHECK — the same interactions with JavaScript disabled
+node verify.mjs        # contrast, font sizes, tap targets; then JS-on interaction path
+node nojs.mjs          # THE HEADLINE CHECK — same interactions, JS disabled
 node sweep.mjs         # 7 pages × 9 widths (360…1920): overflow, escaped elements, sticky overlap
-node palette.mjs       # resolved colour of every semantic element; flags any non-blue hue
-node clipboard.mjs     # the clipboard really receives the command; the icon swaps
-node copy-fallback.mjs # the no-navigator.clipboard path, and that the glyph actually draws
-node cmd-box.mjs       # copy control geometry inside the command box; no word split
+node palette.mjs       # resolved colour of every semantic element; flags non-blue hue
+node clipboard.mjs     # clipboard really gets command; icon swaps
+node copy-fallback.mjs # no-navigator.clipboard path + glyph draws
+node cmd-box.mjs       # copy control geometry inside command box; no word split
 node shots.mjs         # regenerates ../shots/
 ```
 
-**Caveat — read the output, not just the exit code.** Only `cmd-box.mjs` calls
-`process.exit(1)` on failure. The others print failures and still exit `0`. Do not treat a
-zero exit as a pass.
+**Caveat — read output, not exit code.** Only `cmd-box.mjs` calls `process.exit(1)` on
+failure. Others print failures yet exit `0`. Zero exit ≠ pass.
 
 ##### 16.2.4.3 Definition of done
 
-Any change to layout, CSS or markup must end with all of these green:
+Layout/CSS/markup change → all green:
 
 | Check | Expected |
 |---|---|
-| `verify.mjs` | `contrast 0`, `<12px 0`, `tap<24 0` on all three pages; selection/chips/switch correct |
-| `nojs.mjs` | node click, narrow list-row click and "Full record" all swap strip **and** panel; 6 gallery links |
+| `verify.mjs` | `contrast 0`, `<12px 0`, `tap<24 0` all three pages; selection/chips/switch correct |
+| `nojs.mjs` | node click, narrow list-row click, "Full record" all swap strip **and** panel; 6 gallery links |
 | `sweep.mjs` | `0 failing viewport/page combinations out of 63` |
 | `palette.mjs` | `All non-failure chrome sits in the blue family.` |
 | `clipboard.mjs` | clipboard matches `data-copy`; `0 copy buttons rendered with no script` |
@@ -526,252 +492,226 @@ Any change to layout, CSS or markup must end with all of these green:
 
 #### 16.2.5 The four mechanisms
 
-Understand these before changing anything interactive. They are what make the JS-off
-requirement work.
+Required reading before touching anything interactive. Makes JS-off work.
 
-##### 16.2.5.1 Layout is solved at build time
+##### 16.2.5.1 Layout solved at build time
 
-A tidy tree's row layout depends on how many leaves sit above each node. `lib/layout.mjs`
-computes that in Node, so each page ships complete static SVG. The browser never computes
-geometry. **If you add a node or change the tree shape, rebuild — do not try to fix layout
-in CSS or JS.**
+Tidy-tree row layout depends on leaves above each node. `lib/layout.mjs` computes in Node;
+pages ship complete static SVG. Browser never computes geometry. **Node added / shape
+changed → rebuild, never fix layout in CSS/JS.**
 
 ##### 16.2.5.2 State lives in CSS
 
-The Tree|Stats switch and the four info chips are **native radio groups**
-(`<input>` + `<label>`), shown and hidden with `body:has(#id:checked)`. No JS, and the
-arrow keys work natively. Do not convert these to buttons or add JS to them.
+Tree|Stats switch + four info chips = **native radio groups** (`<input>` + `<label>`),
+shown/hidden via `body:has(#id:checked)`. No JS; arrow keys native. Never convert to
+buttons or add JS.
 
-##### 16.2.5.3 Selection has two paths and one outcome
+##### 16.2.5.3 Selection: two paths, one outcome
 
-Which version is on show can be decided two ways, and they must never fight:
+Two ways to decide shown version, must never fight:
 
-- **No script** — the figure links to `#s-<short>`, and the generated `<slug>.css` uses
-  `:target`.
-- **With script** — `showcase-enhance.js` adds `is-open` to a `.selected-strip`, because `:target` is
-  **not** re-evaluated when the fragment is rewritten in place (see Trap 1).
+- **No script** — figure links `#s-<short>`, generated `<slug>.css` uses `:target`.
+- **With script** — `showcase-enhance.js` adds `is-open` to `.selected-strip` (`:target`
+  **not** re-evaluated when fragment rewritten in place — see Trap 1).
 
-The generated rules cover both, and the `:target` half disables itself the moment a strip is
-marked:
+Generated rules cover both; `:target` half disables itself once strip marked:
 
 ```css
 :is(body:not(:has(.selected-strip.is-open)):has(#s-he-07:target),
     body:has(.selected-strip.is-open):has(.selected-strip[data-for="he-07"].is-open))
 ```
 
-The mechanism is **custom properties**, not declarations — one rule covers the wide figure
-and the narrow list, another covers the strip and its record. `theme.css` supplies the
-defaults (`--sel-ring` falls back to `none`), so an unchosen version costs nothing.
+Mechanism = **custom properties**, not declarations — one rule covers wide figure + narrow
+list, another covers strip + record. `theme.css` defaults (`--sel-ring` → `none`) → unchosen
+version costs nothing.
 
-##### 16.2.5.4 The progressive-enhancement gate
+##### 16.2.5.4 Progressive-enhancement gate
 
-Controls that genuinely need a script carry `.needs-js` and are **hidden until the script
-runs**:
+Script-only controls carry `.needs-js`, **hidden until script runs**:
 
 ```css
 .needs-js { display: none; }                    /* not display:none in the markup */
 html.has-js .icon-btn.needs-js { display: inline-flex; }
 ```
 
-`showcase-enhance.js` adds `html.has-js` before it does anything else. So if the script never loads, the copy
-buttons and the direction picker are simply absent — never shown-but-inert. The commands
-themselves stay readable as plain text. **Never add a control that looks interactive but
-needs JS without this gate.**
+`showcase-enhance.js` adds `html.has-js` first. Script never loads → copy buttons + direction
+picker absent, never shown-but-inert. Commands stay readable plain text. **Never add
+interactive-looking control needing JS without this gate.**
 
 ---
 
-#### 16.2.6 Deliberate divergences from the reference
+#### 16.2.6 Deliberate divergences from reference
 
-These are **intentional**. Do not "fix" them back to the reference without being asked.
+**Intentional.** Never "fix" back without asking.
 
 | Area | Ours | Reference |
 |---|---|---|
 | Colour | M3 dark seeded from **blue** | M3 baseline purple (`#6750A4`) |
 | `tertiary` | cyan (`#a2d2df`) | M3 pink |
-| `.record-info` | `position: sticky` | static (leaves a tall void) |
-| `.chips` | bare M3 filter-chip group, 32px, gap 8 | nested in a sunk panel, 34px, gap 4 |
+| `.record-info` | `position: sticky` | static (leaves tall void) |
+| `.chips` | bare M3 filter-chip group, 32px, gap 8 | nested sunk panel, 34px, gap 4 |
 | Radii | 8px / 12px (`--shape-sm` etc.) | fixed 10px |
-| Copy control | 32px **icon button** with a clipboard glyph, **inside** the command box in both blocks | text button reading "Copy"; inside in `.checkit-cmd`, but **below** the command in `.np-block.fork` |
+| Copy control | 32px **icon button** with clipboard glyph, **inside** command box both blocks | text "Copy"; inside in `.checkit-cmd`, **below** command in `.np-block.fork` |
 | `build.mjs` output | flat folder (`index.html`, `<slug>.html`) | Next.js routes |
 
-The **copy control placement** is worth calling out because the reference is itself
-inconsistent — see the table above. We put it inside in both places. The one consequence:
-the button takes ~34px of the command's width (300 → 266px), which is what pushes the fork
-command into wrapping at sidebar widths.
+**Copy placement** stands out: reference itself inconsistent (table above). Ours inside both
+places. Cost: button eats ~34px command width (300 → 266px) → pushes fork command to wrap
+at sidebar widths.
 
 ---
 
 #### 16.2.7 Traps
 
-Each entry: symptom → cause → the fix that works.
+Each: symptom → cause → working fix.
 
-##### 16.2.7.1 `:target` is not re-evaluated by `history.replaceState()`
+##### 16.2.7.1 `:target` not re-evaluated by `history.replaceState()`
 
-**Symptom.** Clicking a tree node changes the URL but nothing on screen moves.
-**Cause.** The code drove selection off `:target` and only called `replaceState`.
-Rewriting the fragment in place does not re-resolve `:target`.
-**Fix.** `showcase-enhance.js` drives selection with the `is-open` class; the fragment is kept only so
-the URL stays shareable. This is what §16.2.5.3 exists for.
-**Trap.** A one-off test *appears* to prove `replaceState` works if it sets the fragment
-during initial script execution — before the first style resolution, the target is simply
-computed for the first time. Test the click, not the load.
+**Symptom.** Node click changes URL, screen static.
+**Cause.** Selection drove off `:target` + only `replaceState`. In-place fragment rewrite
+never re-resolves `:target`.
+**Fix.** `showcase-enhance.js` selects via `is-open` class; fragment kept only for shareable
+URL (§16.2.5.3).
+**Trap.** One-off test *seems* to prove `replaceState` works if fragment set during initial
+script run — target just computed first time before first style resolution. Test the click,
+not the load.
 
-##### 16.2.7.2 One fragment cannot mean two things
+##### 16.2.7.2 One fragment can't mean two things
 
-**Symptom (JS off).** Clicking "Full record ↓" silently resets the page to its default
-version.
-**Cause.** The strip carried `id="s-<short>"` and the figure linked to it, but "Full record"
-pointed at `#record`, which matches none of the generated `#s-*:target` rules — so every
-strip collapsed.
-**Fix.** The `s-<short>` id lives on the **record `<article class="rec">`**, so one fragment
-both selects the version and scrolls to it. `showcase-enhance.js` keys selection off
-`strip.dataset.for`, not `strip.id`, and the "Full record" link is a plain anchor with no
-`preventDefault`. `.rec` carries `scroll-margin-block-start: 64px` to clear the top bar.
-The "nothing chosen yet" test is therefore `body:not(:has(.rec:target))` — **not**
+**Symptom (JS off).** "Full record ↓" resets page to default version.
+**Cause.** Strip held `id="s-<short>"`, figure linked it, but "Full record" → `#record`
+matches no `#s-*:target` rule → all strips collapse.
+**Fix.** `s-<short>` id lives on **record `<article class="rec">`** → one fragment selects
+version + scrolls to it. `showcase-enhance.js` keys off `strip.dataset.for`, not `strip.id`;
+"Full record" plain anchor, no `preventDefault`. `.rec` has `scroll-margin-block-start: 64px`
+(clears top bar). Empty-choice test = `body:not(:has(.rec:target))` — **not**
 `.selected-strip:target`.
 
-##### 16.2.7.3 `data-fork-out` must stay on the `<pre>`
+##### 16.2.7.3 `data-fork-out` stays on `<pre>`
 
-**Symptom.** The fork block's copy button disappears the first time the direction picker
-changes.
-**Cause.** `showcase-enhance.js` does `out.textContent = …`, which **replaces every child**. If the
-attribute sits on the wrapper, the button is a child and gets deleted.
-**Fix.** Keep `data-fork-out` on the `<pre>` and the button a *sibling* of it.
-`checks/cmd-box.mjs` asserts both.
+**Symptom.** Fork copy button vanishes on first direction-picker change.
+**Cause.** `showcase-enhance.js` does `out.textContent = …` → **replaces every child**.
+Attribute on wrapper → button (child) deleted.
+**Fix.** `data-fork-out` on `<pre>`, button its *sibling*. `checks/cmd-box.mjs` asserts both.
 
-##### 16.2.7.4 The copy button is a sibling, not a child
+##### 16.2.7.4 Copy button = sibling, never child
 
-Same root cause as 16.2.7.3, generalised: **never nest a copy button inside the element whose
-text is copied.** `data-copy` (literal string) and `data-copy-out` (read from a
-`[data-fork-out]` element) are the two hooks.
+Same root as 16.2.7.3: **never nest copy button inside copied element.** Hooks: `data-copy`
+(literal string) + `data-copy-out` (reads `[data-fork-out]`).
 
 ##### 16.2.7.5 Chromium reports `fill` as `rgb(0, 0, 0)` for HTML elements
 
-**Symptom.** A colour probe reports black for every link.
-**Cause.** For an **HTML** element, `fill` is a meaningless `rgb(0, 0, 0)` — it is *not*
-`none`. A probe that "falls back to `color` when `fill` is none" silently reports black.
-**Fix.** Name the CSS channel to read per element in `checks/palette.mjs` (`PROBES`).
+**Symptom.** Colour probe reports black for every link.
+**Cause.** HTML-element `fill` = meaningless `rgb(0, 0, 0)` — *not* `none`. "Fallback to
+`color` when `fill` none" probe silently reports black.
+**Fix.** Name CSS channel per element in `checks/palette.mjs` (`PROBES`).
 
 ##### 16.2.7.6 Playwright forces light mode
 
-Every page here is dark-only. Pass `colorScheme: "dark"` to the context, or screenshots and
-measurements will not match.
+Pages dark-only. Pass `colorScheme: "dark"` to context, else screenshots/measurements wrong.
 
 ##### 16.2.7.7 `waitUntil: "load"` never settles on `file://` with scripting off
 
-Use `{ waitUntil: "domcontentloaded" }` in a `javaScriptEnabled: false` context.
+Use `{ waitUntil: "domcontentloaded" }` in `javaScriptEnabled: false` context.
 
 ##### 16.2.7.8 Chromium normalises clipboard newlines to CRLF
 
-Comparing clipboard content against a `<pre>`'s text fails on `\n` vs `\r\n`. Normalise
-before comparing.
+Clipboard-vs-`<pre>` comparison fails `\n` vs `\r\n`. Normalise before comparing.
 
 ##### 16.2.7.9 Unscoped selectors match hidden records
 
-**Symptom.** A geometry assertion passes when it should fail, or a readability check
-reports `false`.
-**Cause.** Every record ships its own fork block, check-it list and panels, but only one is
-displayed. `document.querySelector(".fork .cmd")` returns the **first**, which belongs to a
-hidden record and measures **0×0** — and a 0×0 box satisfies every containment test for
-free.
-**Fix.** Scope to the visible record: `.rec[data-for="he-08"]`. `checks/cmd-box.mjs`
-additionally asserts the box has non-zero size, so a vacuous pass is impossible.
+**Symptom.** Geometry assertion passes when should fail, or readability check `false`.
+**Cause.** Every record ships own fork block/check-it/panels, only one displayed.
+`document.querySelector(".fork .cmd")` returns **first** → hidden record, measures **0×0** —
+0×0 satisfies every containment test free.
+**Fix.** Scope to visible record: `.rec[data-for="he-08"]`. `checks/cmd-box.mjs` also asserts
+non-zero box → vacuous pass impossible.
 
-##### 16.2.7.10 Edge reports `file://` as a secure context
+##### 16.2.7.10 Edge reports `file://` as secure context
 
-**Symptom.** The `execCommand` fallback path is never exercised locally.
-**Cause.** `navigator.clipboard` is present even on `file://` in Edge, so the fallback never
-runs.
-**Fix.** `checks/copy-fallback.mjs` deletes `navigator.clipboard` before load to force the
-fallback. The fallback is not dead code — it is the only route in a genuinely insecure
-context.
+**Symptom.** `execCommand` fallback never exercised locally.
+**Cause.** `navigator.clipboard` present even on `file://` in Edge → fallback never runs.
+**Fix.** `checks/copy-fallback.mjs` deletes `navigator.clipboard` before load → forces fallback.
+Fallback ≠ dead code — only route in genuinely insecure context.
 
-##### 16.2.7.11 The figure's SVG text is in user units
+##### 16.2.7.11 Figure SVG text in user units
 
-`.h-word`, `.h-num` and the objective labels are inside the SVG viewBox, and the build
-computes label boxes from character counts. **Resizing them desyncs the geometry.** The
-"no text below 12px" rule applies to HTML labels only.
+`.h-word`, `.h-num`, objective labels inside SVG viewBox; build derives label boxes from char
+counts. **Resizing desyncs geometry.** Sub-12px rule = HTML labels only.
 
-##### 16.2.7.12 A `--flag` can break after its hyphen
+##### 16.2.7.12 `--flag` can break after hyphen
 
-**Symptom.** A command renders as `--` at the end of one line and `area` at the start of the
-next.
-**Cause.** A hyphen is a legitimate CSS break opportunity.
-**Fix.** There isn't one in CSS. `word-break: keep-all`, `line-break: strict`,
-`break-spaces` and `overflow-wrap: anywhere` were all measured and break in the same place.
-Only markup around each token would stop it. `checks/cmd-box.mjs` reports it as a `note`,
-not a failure. A soft wrap inserts **no characters**, so the clipboard payload is unaffected.
+**Symptom.** Command renders `--` line-end + `area` next-line-start.
+**Cause.** Hyphen = legit CSS break opportunity.
+**Fix.** None in CSS. `word-break: keep-all`, `line-break: strict`, `break-spaces`,
+`overflow-wrap: anywhere` all measured, break same place. Only per-token markup stops it.
+`checks/cmd-box.mjs` reports as `note`, not failure. Soft wrap inserts **zero chars** →
+clipboard payload unaffected.
 
 ##### 16.2.7.13 `overflow-wrap: break-word` splits words mid-token
 
-It breaks a token at the overflow point — `improves` becomes `improv` / `es`. Use
-`overflow-wrap: normal`, which only breaks at real opportunities.
+Token breaks at overflow point — `improves` → `improv` / `es`. Use `overflow-wrap: normal`
+→ breaks only at real opportunities.
 
-**Trap within the trap:** at the real content widths, `break-word` and `normal` render
-*identically*, so a test asserting "no mid-word break" passes under both and proves nothing.
-The assertion only becomes meaningful with a synthetic over-long token. If a test can never
-go red, it is not evidence.
+**Trap-in-trap:** at real content widths `break-word` ≡ `normal` rendering, so "no mid-word
+break" test passes under both, proves nothing. Assertion meaningful only with synthetic
+over-long token. Test that can never go red ≠ evidence.
 
-##### 16.2.7.14 `@layer` order is load-bearing
+##### 16.2.7.14 `@layer` order load-bearing
 
-`@layer tokens, base, layout, card, glyph, page, motion;` — this is why the stylesheet needs
-no `!important`. Put new rules in the correct layer. `.checkit-cmd` sits in `page`, after
-`.cmd`, and relies on source order for its one extra declaration.
+`@layer tokens, base, layout, card, glyph, page, motion;` → stylesheet needs no `!important`.
+New rules → correct layer. `.checkit-cmd` in `page` after `.cmd`, relies on source order for
+its one extra declaration.
 
 ##### 16.2.7.15 Tap targets need real padding
 
-A `::after` pseudo-element "hit area" was tried and **reverted**: `elementsFromPoint` showed
-it does not extend the hit area, and tooling cannot measure it. Use real `padding-block`.
+`::after` pseudo hit-area tried + **reverted**: `elementsFromPoint` proves no hit-area
+extension, tooling can't measure. Use real `padding-block`.
 
-##### 16.2.7.16 Do not hand-edit generated CSS or HTML
+##### 16.2.7.16 Never hand-edit generated CSS/HTML
 
-`<slug>.css` carries a GENERATED header. Edit `selectionCss()` in `build.mjs` and rebuild.
+`<slug>.css` carries GENERATED header. Edit `selectionCss()` in `build.mjs`, rebuild.
 
 ---
 
 #### 16.2.8 Conventions
 
-- **Comments explain *why*, not what.** A rule that looks odd usually has a reason recorded
-  next to it — read it before changing the rule. Several comments name the alternative that
-  was measured and rejected.
+- **Comments explain *why*, not what.** Odd-looking rule usually has reason beside it — read
+  first. Several name measured-and-rejected alternative.
 - **Escape every interpolation** in `build.mjs` with `esc()`.
-- **No raw colour outside `@layer tokens`.** Use M3 role names (`--md-sys-color-*`),
-  `--md-state-*` for state layers, `--shape-*` for radii, `--type-*` for type. If a value is
-  not an M3 role, say so in a comment.
-- **Additive JS only.** If `showcase-enhance.js` never loads, the pages still work. Anything that cannot
-  meet that bar goes behind the `.needs-js` gate.
-- **Prefer one shared rule over two near-identical ones.** The two command blocks share
-  `.cmd`; the two strip/record reveals share the generated `--sel-*` properties.
-- **Delete dead CSS.** There is no unused-class linter in `checks/`, so grep the stylesheet
-  against the generated markup before assuming a class is still needed. (An earlier
-  `check.mjs` did this and is no longer present — worth reinstating if dead CSS becomes a
-  recurring problem.)
+- **No raw colour outside `@layer tokens`.** M3 roles (`--md-sys-color-*`), `--md-state-*`
+  state layers, `--shape-*` radii, `--type-*` type. Non-M3 value → say so in comment.
+- **Additive JS only.** `showcase-enhance.js` never loads → pages still work. Anything else →
+  `.needs-js` gate.
+- **One shared rule > two near-identical.** Two command blocks share `.cmd`; strip/record
+  reveals share generated `--sel-*` props.
+- **Delete dead CSS.** No unused-class linter in `checks/` → grep stylesheet vs generated markup
+  before assuming class needed. (Earlier `check.mjs` did this, now gone — reinstate if dead
+  CSS recurs.)
 
 ---
 
 #### 16.2.9 Do not
 
-- Add a dependency, framework, bundler or CDN script.
-- Add a build step other than `node build.mjs`.
-- Move a page out of `dist/`. The preview harness maps each directory to its own base
-  path, so `index.html` and `tree/*.html` would get different bases and every card link
-  would 404. Every generated page lives in the one flat `dist/` folder for this reason.
+- Dependency / framework / bundler / CDN script.
+- Build step beyond `node build.mjs`.
+- Move page out of `dist/`. Preview harness maps each dir to own base path →
+  `index.html` vs `tree/*.html` different bases → every card link 404s. All generated pages
+  stay in one flat `dist/`.
 - Hand-edit anything under `dist/`.
 - Edit anything in `ref/`.
-- Convert the radio-group switch or chips to JS.
-- Put an interactive-looking control in the markup without the `.needs-js` gate.
-- Trust a green test without checking it can go red (see 16.2.7.13).
-- Claim a layout change is done without running `sweep.mjs` — 63 viewport/page
-  combinations is the only thing that catches a narrow-width regression.
+- Convert radio-group switch/chips to JS.
+- Interactive-looking control without `.needs-js` gate.
+- Trust green test without checking it goes red (see 16.2.7.13).
+- Claim layout done without `sweep.mjs` — 63 viewport/page combos = only narrow-width net.
 
 ---
 
-#### 16.2.10 If you are asked to match the reference more closely
+#### 16.2.10 Matching reference more closely
 
-1. Measure, do not eyeball. Render the live site with Playwright at the same viewport
-   (`colorScheme: "dark"`) and compare **computed box models**.
-2. Compare the DOM, not just the pixels. A previous "the switch must be fragment-driven"
-   assumption was wrong — reading `ref/components/Panels.tsx` showed React buttons with
-   `aria-pressed` and no anchors at all, and the change was reverted.
-3. Check §16.2.6 first — the difference may be deliberate.
-4. After any change, run the full suite in §16.2.4.3.
+1. Measure, never eyeball. Render live site via Playwright at same viewport
+   (`colorScheme: "dark"`), compare **computed box models**.
+2. Compare DOM, not just pixels. Past "switch must be fragment-driven" assumption wrong —
+   `ref/components/Panels.tsx` showed React buttons with `aria-pressed`, no anchors; change
+   reverted.
+3. Check §16.2.6 first — difference may be deliberate.
+4. After change → full suite (§16.2.4.3).

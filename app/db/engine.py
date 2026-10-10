@@ -20,9 +20,12 @@ def build_engine() -> Engine:
     engine_kwargs: dict[str, Any] = {
         "future": True,
         "pool_pre_ping": True,
-        "pool_size": 1,
-        "max_overflow": 0,
     }
+    # SQLite's SingletonThreadPool does not accept PostgreSQL pool sizing
+    # options. Keeping this branch makes the repository usable in local tests
+    # while preserving the bounded pool used by Neon/PostgreSQL.
+    if not url.startswith("sqlite"):
+        engine_kwargs.update({"pool_size": 1, "max_overflow": 0})
 
     return create_engine(url, connect_args=connect_args, **engine_kwargs)
 

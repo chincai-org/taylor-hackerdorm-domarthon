@@ -8,6 +8,7 @@ from app.db.repository import (
     get_children,
     get_node,
     get_tree,
+    get_tree_nodes,
     list_trees,
     update_node_evaluation,
 )
@@ -22,6 +23,7 @@ __all__ = [
     "get_children",
     "get_node",
     "get_tree",
+    "get_tree_nodes",
     "list_trees",
     "session_scope",
     "update_node_evaluation",

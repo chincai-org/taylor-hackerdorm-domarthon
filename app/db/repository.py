@@ -81,6 +81,12 @@ def create_child_node(
     )
     session.add(node)
     session.flush()
+
+    # A new node is a tree mutation. Touch the parent tree so list_trees() can
+    # order sessions by their most recent optimizer activity.
+    tree = session.get(Tree, tree_id)
+    if tree is not None:
+        tree.updated_at = func.now()
     return node
 
 
@@ -88,8 +94,22 @@ def get_tree(session: Session, tree_id: str) -> Tree | None:
     return session.get(Tree, tree_id)
 
 
-def list_trees(session: Session, *, limit: int = 50) -> list[Tree]:
-    return list(session.scalars(select(Tree).order_by(Tree.updated_at.desc()).limit(max(1, limit))))
+def list_trees(session: Session, *, limit: int | None = None) -> list[Tree]:
+    query = select(Tree).order_by(Tree.updated_at.desc())
+    if limit is not None:
+        query = query.limit(max(1, limit))
+    return list(session.scalars(query))
+
+
+def get_tree_nodes(session: Session, *, tree_id: str) -> list[Node]:
+    """Return every node in a tree in stable creation order."""
+    return list(
+        session.scalars(
+            select(Node)
+            .where(Node.tree_id == tree_id)
+            .order_by(Node.created_at, Node.id)
+        )
+    )
 
 
 def get_node(session: Session, *, tree_id: str, node_id: str) -> Node | None:

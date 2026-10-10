@@ -9,7 +9,7 @@
     config:
       baseURL: 'https://api.deepseek.com'
       apiKey: '${ENV:DEEPSEEK_API_KEY}'
-      model: 'tencent/hy3'
+      model: 'grafilab/deepseek-v4-flash'
       
   - id: tool-filesystem
     name: '@deepseek-ai/dsh-plugin-fs'

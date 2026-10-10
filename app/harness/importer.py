@@ -186,7 +186,7 @@ def import_harness(content: str, profile: str | None = None) -> dict[str, Any]:
     model_cfg = _cfg("@deepseek-ai/dsh-agent-default-model")
     openai_cfg = _cfg("@deepseek-ai/dsh-plugin-openai")
     # The OpenAI-compatible adapter carries the effective model id
-    # (e.g. tencent/hy3) when no dsh-agent-default-model row is present.
+    # (e.g. grafilab/deepseek-v4-flash) when no dsh-agent-default-model row is present.
     provider = str(model_cfg.get("provider", "deepseek-official"))
     model_id = str(model_cfg.get("model") or openai_cfg.get("model") or "deepseek-chat")
     adapter_cfg = _cfg("@deepseek-ai/dsh-plugin-openai")

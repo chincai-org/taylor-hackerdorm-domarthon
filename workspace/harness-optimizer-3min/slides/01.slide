@@ -1,0 +1,43 @@
+<Slide style={{ width: 1280, height: 720, background: "#0F172A", padding: 72, color: "#F7F4EC", fontFamily: "Aptos, Arial" }}>
+  <Box style={{ position: "absolute", top: 0, left: 0, width: 1280, height: 8, background: "linear-gradient(135deg, #3B82F6 0%, #06B6D4 100%)" }} />
+  <Box style={{ position: "absolute", top: 40, right: 72, width: 470, height: 470, border: "1px solid rgba(59,130,246,0.28)", borderRadius: 235, opacity: 0.8 }} />
+  <Box style={{ position: "absolute", top: 92, right: 132, width: 350, height: 350, border: "1px solid rgba(6,182,212,0.22)", borderRadius: 175 }} />
+  <Box style={{ position: "relative", width: 620, height: 520, justifyContent: "center" }}>
+    <Text style={{ fontSize: 16, fontWeight: "bold", letterSpacing: 2, color: "#06B6D4", marginBottom: 24 }}>HACKERDORM DOMARTHON · 2026</Text>
+    <Text style={{ fontSize: 68, fontWeight: "bold", lineHeight: 1.05, color: "#F7F4EC" }}>Stop guessing.</Text>
+    <Text style={{ fontSize: 68, fontWeight: "bold", lineHeight: 1.05, color: "#3B82F6" }}>Optimize the harness.</Text>
+    <Box style={{ width: 520, height: 2, background: "#06B6D4", marginTop: 34, marginBottom: 26 }} />
+    <Text style={{ fontSize: 25, lineHeight: 1.45, color: "#F7F4EC", opacity: 0.9 }}>One AI improves another AI — measured, versioned, and never blind to failure.</Text>
+    <Text style={{ fontSize: 18, fontFamily: "Consolas, Courier New", color: "#06B6D4", marginTop: 34 }}>Sharpmon</Text>
+  </Box>
+  <Box style={{ position: "absolute", top: 140, right: 124, width: 450, height: 450, alignItems: "center", justifyContent: "center" }}>
+    <svg width={440} height={430} viewBox="0 0 440 430">
+      <path d="M220 55 L120 170 L55 290" stroke="#3B82F6" strokeWidth="3" fill="none" opacity="0.8" />
+      <path d="M220 55 L320 170 L385 290" stroke="#06B6D4" strokeWidth="3" fill="none" opacity="0.8" />
+      <path d="M120 170 L90 330" stroke="#3B82F6" strokeWidth="3" fill="none" opacity="0.55" />
+      <path d="M120 170 L170 330" stroke="#3B82F6" strokeWidth="3" fill="none" opacity="0.55" />
+      <path d="M320 170 L270 330" stroke="#06B6D4" strokeWidth="3" fill="none" opacity="0.55" />
+      <path d="M320 170 L350 330" stroke="#06B6D4" strokeWidth="3" fill="none" opacity="0.55" />
+      <circle cx="220" cy="55" r="24" fill="#3B82F6" />
+      <circle cx="120" cy="170" r="19" fill="#06B6D4" />
+      <circle cx="320" cy="170" r="19" fill="#06B6D4" />
+      <circle cx="55" cy="290" r="14" fill="#3B82F6" opacity="0.82" />
+      <circle cx="90" cy="330" r="14" fill="#3B82F6" opacity="0.55" />
+      <circle cx="170" cy="330" r="14" fill="#3B82F6" opacity="0.55" />
+      <circle cx="270" cy="330" r="14" fill="#06B6D4" opacity="0.55" />
+      <circle cx="350" cy="330" r="14" fill="#06B6D4" opacity="0.55" />
+      <text x="220" y="61" text-anchor="middle" fill="#F7F4EC" font-size="14" font-family="Arial" font-weight="700">AI</text>
+      <text x="120" y="176" text-anchor="middle" fill="#0F172A" font-size="11" font-family="Arial" font-weight="700">v1</text>
+      <text x="320" y="176" text-anchor="middle" fill="#0F172A" font-size="11" font-family="Arial" font-weight="700">v2</text>
+      <text x="55" y="294" text-anchor="middle" fill="#F7F4EC" font-size="9" font-family="Arial">fail</text>
+      <text x="90" y="334" text-anchor="middle" fill="#F7F4EC" font-size="9" font-family="Arial">try</text>
+      <text x="170" y="334" text-anchor="middle" fill="#F7F4EC" font-size="9" font-family="Arial">try</text>
+      <text x="270" y="334" text-anchor="middle" fill="#F7F4EC" font-size="9" font-family="Arial">try</text>
+      <text x="350" y="334" text-anchor="middle" fill="#F7F4EC" font-size="9" font-family="Arial">best</text>
+    </svg>
+  </Box>
+  <Box style={{ position: "absolute", left: 72, bottom: 24, width: 1136, height: 32, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+    <Text style={{ fontSize: 14, color: "#F7F4EC", opacity: 0.55 }}>Customer-support agents · 3-minute pitch</Text>
+    <Text style={{ fontSize: 14, color: "#F7F4EC", opacity: 0.55 }}>01 / 04</Text>
+  </Box>
+</Slide>

@@ -1,4 +1,4 @@
-# Harness Trees — one AI optimizes the harness of another AI
+# Sharpmon — a AI monster that sharpens the harness of another AI
 
 A 24-hour hackathon build. A **harness** is everything wrapped around a
 customer-support agent: system prompt, tool definitions, routing and policy
@@ -125,17 +125,17 @@ benchmark falls back to one generic harness review (marked `"generic": true`).
 
 ## Environment
 
-| Variable | Purpose |
-|---|---|
-| `DATABASE_URL` | Neon Postgres URL (`.env.development.local` locally) |
-| `GRAFFILAB_API_KEY` | Model API key for evaluation (GraffiLab model endpoint) |
-| `GRAFFILAB_BASE_URL` | Endpoint override (default `https://llm.grafilab.ai/v1`) |
-| `GRAFFILAB_MODEL` | Judge/candidate model (default `grafilab/deepseek-v4-flash`) |
-| `JUDGE_MODEL` | Judge model override (defaults to the provider model) |
-| `DEEPSEEK_API_KEY` | Override credential (wins when set; DeepSeek endpoint/model apply) |
-| `DEEPSEEK_MODEL` | Model name when using the DeepSeek override (default `deepseek-chat`) |
-| `DEEPSEEK_BASE_URL` | Endpoint override for the DeepSeek path |
-| `NEXT_PUBLIC_API_URL` | Frontend → API base URL if split |
+| Variable              | Purpose                                                               |
+| --------------------- | --------------------------------------------------------------------- |
+| `DATABASE_URL`        | Neon Postgres URL (`.env.development.local` locally)                  |
+| `GRAFFILAB_API_KEY`   | Model API key for evaluation (GraffiLab model endpoint)               |
+| `GRAFFILAB_BASE_URL`  | Endpoint override (default `https://llm.grafilab.ai/v1`)              |
+| `GRAFFILAB_MODEL`     | Judge/candidate model (default `grafilab/deepseek-v4-flash`)          |
+| `JUDGE_MODEL`         | Judge model override (defaults to the provider model)                 |
+| `DEEPSEEK_API_KEY`    | Override credential (wins when set; DeepSeek endpoint/model apply)    |
+| `DEEPSEEK_MODEL`      | Model name when using the DeepSeek override (default `deepseek-chat`) |
+| `DEEPSEEK_BASE_URL`   | Endpoint override for the DeepSeek path                               |
+| `NEXT_PUBLIC_API_URL` | Frontend → API base URL if split                                      |
 
 Never commit secrets. See `.env.example`.
 

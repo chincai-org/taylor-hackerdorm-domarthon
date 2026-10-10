@@ -384,4 +384,7 @@ Relationships/constraints:
 - Live data needs JS. No-JS shell links JSON API/docs instead of fictional data.
 - `theme.css` = shared M3 theme (tokens → motion layers, no `!important`); `live-viewer.css`
   scopes live styles to `.live-trees`. No raw colour outside `@layer tokens`.
+- Gallery create form (`#tree-create-form`) POSTs JSON to `/api/v1/trees`, shows inline
+  status, resets + refreshes cards on 201. Button sits in fields row; status is own
+  full-width row below (`:empty` hidden).
 - Verify via `uv run pytest` + live HTTP smoke (`/`, `/tree/x`, `/favicon.ico`, assets).

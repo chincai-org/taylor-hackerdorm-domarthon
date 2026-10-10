@@ -169,11 +169,16 @@
 		opacity: 0.7;
 	}
 
-	.live-trees #tree-create-status {
-		min-block-size: 1em;
+	.live-trees #tree-create-form > #tree-create-status {
+		grid-column: 1 / -1;
+		min-block-size: 0;
 		max-inline-size: 260px;
 		color: var(--md-sys-color-on-surface-variant);
 		font: var(--type-body-small);
+	}
+
+	.live-trees #tree-create-status:empty {
+		display: none;
 	}
 
 	.live-trees #tree-create-status.notice-error {
@@ -191,11 +196,9 @@
 
 		.live-trees .tree-create-actions {
 			grid-column: 1 / -1;
-			grid-template-columns: auto 1fr;
-			align-items: center;
 		}
 
-		.live-trees #tree-create-status {
+		.live-trees #tree-create-form > #tree-create-status {
 			max-inline-size: none;
 		}
 	}

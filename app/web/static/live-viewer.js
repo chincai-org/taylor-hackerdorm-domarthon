@@ -35,6 +35,60 @@
   let trees = new Map();
   let selectedTree = null;
 
+  // Gallery create form posts JSON and refreshes the card list in place.
+  // Without this the button falls back to a plain GET reload that creates nothing.
+  const createForm = document.getElementById("tree-create-form");
+  if (createForm) {
+    const nameInput = document.getElementById("tree-name");
+    const descInput = document.getElementById("tree-description");
+    const submit = document.getElementById("tree-create-submit");
+    const formStatus = document.getElementById("tree-create-status");
+    const setFormStatus = (text, kind) => {
+      formStatus.textContent = text;
+      formStatus.classList.toggle("notice-error", kind === "error");
+      formStatus.classList.toggle("notice-success", kind === "success");
+    };
+    createForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (createForm.getAttribute("aria-busy") === "true") return;
+      setFormStatus("", null);
+      submit.disabled = true;
+      createForm.setAttribute("aria-busy", "true");
+      try {
+        const response = await fetch(
+          createForm.dataset.createUrl ?? "/api/v1/trees",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({
+              name: nameInput.value,
+              description: descInput.value || null,
+            }),
+          },
+        );
+        if (!response.ok) {
+          let detail = `Tree API returned ${response.status}`;
+          try {
+            const problem = await response.json();
+            if (typeof problem?.detail === "string") detail = problem.detail;
+          } catch {
+            // Non-JSON error body; keep the status text.
+          }
+          throw new Error(detail);
+        }
+        const tree = await response.json();
+        createForm.reset();
+        setFormStatus(`Tree "${tree.name}" created.`, "success");
+        await loadTrees();
+      } catch (error) {
+        setFormStatus(`Could not create tree. ${error.message}`, "error");
+      } finally {
+        submit.disabled = false;
+        createForm.removeAttribute("aria-busy");
+      }
+    });
+  }
+
   /** Validate the backend's tree/node contract before rendering. */
   function prepareTree(tree) {
     if (

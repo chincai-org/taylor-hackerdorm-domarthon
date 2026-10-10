@@ -66,11 +66,11 @@ fields such as version, kind, profile, or dsh_plugins. Send only a JSON object
 with the changes to apply: existing plugin config updates go in `plugins`, new
 rows in `add_plugins`, removals in `remove_plugins`, and top-level prompt/model
 updates in `system_prompt` / `model`. The server preserves every unmentioned
-parent field, rejects suggestions longer than 120 lines, then judges the child
-synchronously against every benchmark scenario with direct Grafilab API calls
-(temperature 0, JSON verdict per scenario; empty benchmark falls back to one
-generic harness review). The returned node is `complete` with a score, or
-`failed` with an error.
+parent field, rejects suggestions longer than 120 lines, then rolls out the
+child per benchmark scenario via the candidate API and judges each rollout
+with Grafilab (temperature 0, JSON verdict per scenario; empty benchmark falls
+back to one generic rollout + review). The returned node is `complete` with a
+score, or `failed` with an error.
 """
 
 mcp_server = MCPServer(
@@ -233,11 +233,11 @@ def create_child_node(
     Existing plugin rows are partially updated through ``plugins``; use
     ``add_plugins`` and ``remove_plugins`` for row additions/removals. All
     unmentioned parent data is retained and the suggestion payload must stay
-    within 120 lines. The server materializes the child patch, then judges it
-    against every benchmark scenario with direct Grafilab API calls
-    (temperature 0, JSON verdict per scenario). The call blocks until judging
-    finishes; the returned node is ``complete`` with a score, or ``failed``
-    with an error.
+    within 120 lines. The server materializes the child patch, rolls it out
+    per benchmark scenario via the candidate API, then judges each rollout
+    with Grafilab (temperature 0, JSON verdict per scenario). The call blocks
+    until rollout + judging finishes; the returned node is ``complete`` with
+    a score, or ``failed`` with an error.
     """
     if not isinstance(parent_revision, str) or not parent_revision.strip():
         raise ValueError(

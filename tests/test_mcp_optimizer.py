@@ -372,6 +372,102 @@ def test_judge_reply_parsing() -> None:
     assert score == 0.0
     assert reason
 
+    # Airtight: a truncated reply containing '"passed": true' never passes.
+    passed, score, reason = _parse_judge_reply('{"passed": true, "score": 9')
+    assert passed is False
+    assert score == 0.0
+    assert reason.startswith("judge_parse_error")
+
+    # Non-finite scores are treated as missing (derived conservatively).
+    passed, score, _ = _parse_judge_reply('{"passed": true, "score": NaN, "reason": "x"}')
+    assert passed is True
+    assert score == 85.0
+    passed, score, _ = _parse_judge_reply('{"passed": false, "score": Infinity, "reason": "x"}')
+    assert passed is False
+    assert score == 0.0
+
+    # Boolean and string scores are not numbers → treated as missing.
+    _, score, _ = _parse_judge_reply('{"passed": true, "score": true, "reason": "x"}')
+    assert score == 85.0
+    _, score, _ = _parse_judge_reply('{"passed": false, "score": "90", "reason": "x"}')
+    assert score == 0.0
+
+    # Empty reasons default instead of staying silent.
+    _, _, empty_reason = _parse_judge_reply('{"passed": false, "score": 10, "reason": "  "}')
+    assert empty_reason == "no reason given"
+
+
+def test_rubric_is_single_sourced_across_prompts() -> None:
+    from app.services import evaluator as evaluator
+
+    candidate = {
+        "prompt": "Hi",
+        "reply": "Hello, how can I help?",
+        "tool_calls": [],
+        "model": "m",
+    }
+    scenario_prompt = evaluator._judge_prompt(
+        "- id: persona",
+        {"id": "a", "customer_message": "Hi", "forbidden_actions": ["x"]},
+        candidate,
+    )
+    generic_prompt = evaluator._judge_prompt(
+        "- id: persona", dict(evaluator.GENERIC_REVIEW_SCENARIO), candidate
+    )
+    rubric = evaluator._rubric_text()
+    # System prompt and both branches embed the exact same rubric text.
+    assert rubric in evaluator.JUDGE_SYSTEM
+    assert rubric in scenario_prompt
+    assert rubric in generic_prompt
+    # Every cap is visible to the judge in both branches (escalation was
+    # previously missing from the scenario branch).
+    for cap in ("20", "59", "79", "39"):
+        assert cap in scenario_prompt
+        assert cap in generic_prompt
+    assert "minimum" in rubric
+    assert evaluator.RUBRIC_VERSION == "2"
+    assert evaluator.PASS_THRESHOLD == 85.0
+
+
+def test_total_timeout_keeps_finished_verdicts(monkeypatch) -> None:
+    import asyncio
+
+    import app.services.evaluator as evaluator
+    from app.core import config
+
+    monkeypatch.setattr(config.settings, "GRAFFILAB_API_KEY", "grafilab-key")
+    monkeypatch.setattr(config.settings, "EVAL_TOTAL_TIMEOUT_S", 0.2)
+
+    async def fake_judge_one(client, patch_yml, scenario):
+        if scenario.get("id") == "slow":
+            await asyncio.sleep(10)
+            raise AssertionError("should have been cancelled")
+        return True, 90.0, "fast ok", {"prompt": "p", "reply": "r", "tool_calls": []}
+
+    monkeypatch.setattr(evaluator, "_judge_one", fake_judge_one)
+
+    class NoClient:
+        def __init__(self, **kwargs: object) -> None:
+            pass
+
+    monkeypatch.setattr(evaluator, "DeepSeekClient", NoClient)
+
+    score, result = evaluator.evaluate_harness_sync(
+        VALID_PATCH_YML,
+        [
+            {"id": "fast", "customer_message": "Hi"},
+            {"id": "slow", "customer_message": "Hello?"},
+        ],
+    )
+    assert result["scenarios"][0]["passed"] is True
+    assert result["scenarios"][0]["score"] == 90.0
+    assert result["scenarios"][1]["passed"] is False
+    assert result["scenarios"][1]["score"] == 0.0
+    assert result["scenarios"][1]["reason"] == "eval_total_timeout"
+    assert result["passed"] == 1
+    assert result["total"] == 2
+    assert score == 45.0
+
 
 def test_evaluator_calls_grafilab_directly_with_harness_text(monkeypatch) -> None:
     import app.services.evaluator as evaluator
@@ -381,6 +477,20 @@ def test_evaluator_calls_grafilab_directly_with_harness_text(monkeypatch) -> Non
     monkeypatch.setattr(config.settings, "JUDGE_MODEL", None)
 
     calls: dict[str, object] = {}
+    rollouts: list[dict[str, object]] = []
+
+    async def fake_run_candidate(patch_yml: str, scenario: dict) -> dict:
+        rollouts.append({"patch_yml": patch_yml, "scenario": dict(scenario)})
+        sid = str(scenario.get("id", "x"))
+        return {
+            "prompt": str(scenario.get("customer_message", "")),
+            "reply": f"rollout reply for {sid}: I can help with that.",
+            "tool_calls": [{"name": "lookup_order", "arguments": {}}],
+            "steps": [],
+            "model": "candidate-model",
+        }
+
+    monkeypatch.setattr(evaluator, "_run_candidate", fake_run_candidate)
 
     class FakeClient:
         def __init__(
@@ -415,21 +525,66 @@ def test_evaluator_calls_grafilab_directly_with_harness_text(monkeypatch) -> Non
     ]
     score, result = evaluator.evaluate_harness_sync(VALID_PATCH_YML, scenarios)
 
+    # Rollout ran once per scenario with the harness + customer message.
+    assert len(rollouts) == 2
+    assert all(r["patch_yml"] == VALID_PATCH_YML for r in rollouts)
+    assert rollouts[0]["scenario"]["customer_message"] == "I want a refund."
+    assert rollouts[1]["scenario"]["customer_message"] == "I cannot log in."
+
     assert calls["api_key"] == "grafilab-key"
     assert calls["base_url"] == config.settings.GRAFFILAB_BASE_URL
     assert calls["temperature"] == 0
     assert calls["system_text"]
-    assert "0 to 100" in str(calls["system_text"])
+    assert "ACTUAL" in str(calls["system_text"])
     prompts = calls["prompts"]
     assert isinstance(prompts, list) and len(prompts) == 2
     assert all(VALID_PATCH_YML.strip() in prompt for prompt in prompts)
     assert all("0-100" in prompt for prompt in prompts)
+    # Judge saw the actual rollout output, not just the harness.
+    assert all("rollout reply for" in prompt for prompt in prompts)
+    assert all("rollout_reply" in prompt for prompt in prompts)
     assert score == 65.0
     assert result["passed"] == 1
     assert result["total"] == 2
+    assert result["evaluation_mode"] == "rollout+judge"
+    assert result["rubric_version"] == "2"
+    assert result["pass_threshold"] == 85.0
+    assert result["judge_temperature"] == 0.0
+    assert result["candidate_url"].endswith("/api/v1/deepseek/chat")
     assert result["scenarios"][0]["score"] == 90.0
     assert result["scenarios"][1]["score"] == 40.0
+    assert result["scenarios"][0]["candidate_reply"].startswith("rollout reply for a")
+    assert result["scenarios"][1]["candidate_prompt"] == "I cannot log in."
     assert result["judge_model"] == config.settings.GRAFFILAB_MODEL
+
+
+def test_evaluator_rollout_failure_fails_scenario_without_judge(monkeypatch) -> None:
+    import app.services.evaluator as evaluator
+    from app.core import config
+
+    monkeypatch.setattr(config.settings, "GRAFFILAB_API_KEY", "grafilab-key")
+
+    async def failing_candidate(_patch_yml: str, _scenario: dict) -> dict:
+        raise RuntimeError("candidate boom")
+
+    monkeypatch.setattr(evaluator, "_run_candidate", failing_candidate)
+
+    class NoJudgeClient:
+        def __init__(self, **kwargs: object) -> None:
+            pass
+
+        async def run_prompt_single(self, *args: object, **kwargs: object) -> dict:
+            raise AssertionError("judge must not run when rollout fails")
+
+    monkeypatch.setattr(evaluator, "DeepSeekClient", NoJudgeClient)
+
+    score, result = evaluator.evaluate_harness_sync(
+        VALID_PATCH_YML, [{"id": "a", "customer_message": "Hi"}]
+    )
+    assert score == 0.0
+    assert result["passed"] == 0
+    assert result["scenarios"][0]["passed"] is False
+    assert "candidate_error" in result["scenarios"][0]["reason"]
 
 
 def test_evaluator_empty_scenarios_falls_back_to_generic_review(monkeypatch) -> None:
@@ -440,6 +595,18 @@ def test_evaluator_empty_scenarios_falls_back_to_generic_review(monkeypatch) -> 
     monkeypatch.setattr(config.settings, "JUDGE_MODEL", None)
 
     calls: dict[str, object] = {}
+
+    async def fake_run_candidate(patch_yml: str, scenario: dict) -> dict:
+        calls["rollout_scenario"] = dict(scenario)
+        return {
+            "prompt": "generic prompt",
+            "reply": "generic rollout reply: happy to help.",
+            "tool_calls": [],
+            "steps": [],
+            "model": "candidate-model",
+        }
+
+    monkeypatch.setattr(evaluator, "_run_candidate", fake_run_candidate)
 
     class FakeClient:
         def __init__(self, **kwargs: object) -> None:
@@ -457,11 +624,14 @@ def test_evaluator_empty_scenarios_falls_back_to_generic_review(monkeypatch) -> 
     assert isinstance(prompt, str)
     assert VALID_PATCH_YML.strip() in prompt
     assert "generic" in prompt.lower()
+    assert "generic rollout reply" in prompt
     assert score == 90.0
     assert result["generic"] is True
+    assert result["evaluation_mode"] == "rollout+judge"
     assert result["total"] == 1
     assert result["scenarios"][0]["scenario_id"] == "generic-harness-review"
     assert result["scenarios"][0]["score"] == 90.0
+    assert result["scenarios"][0]["candidate_reply"].startswith("generic rollout reply")
 
 
 def test_create_child_rejects_non_complete_parents(monkeypatch) -> None:

@@ -27,48 +27,66 @@ _LAUNCHES: dict[int, dict[str, Any]] = {}
 _URL_RE = re.compile(r"https?://[^\s'\"]+")
 
 
-def _translate_node_patch(harness_text: str) -> str:
-    """Map node harness rows onto web-profile row ids dsh --patch accepts.
-
-    Node ids (persona, tool-filesystem, …) do not exist in the web profile, so
-    a raw dump is dropped entry by entry. Only carried-over settings are
-    emitted; anything without a counterpart is left to profile defaults.
-    """
+def _node_persona_prefix(harness_text: str) -> str | None:
+    """Extract the persona prefix from node harness text, if present."""
     import yaml
 
     try:
         rows = yaml.safe_load(harness_text) or []
     except yaml.YAMLError:
+        return None
+    for row in rows:
+        if isinstance(row, dict) and row.get("id") == "persona":
+            config = row.get("config")
+            if isinstance(config, dict):
+                prefix = config.get("prefix")
+                if isinstance(prefix, str) and prefix.strip():
+                    return prefix
+    return None
+
+
+def _preset_persona_patch(prefix: str) -> str:
+    """Build a --patch overriding the nested persona prefix in web presets.
+
+    Agents run under preset-standard/ptc, whose nested persona rows win over
+    the top-level system-prompt row. Patch replaces whole row configs, so the
+    preset blocks are derived from a live --dump-config (always current) with
+    only the nested ``prefix:`` line swapped. Returns "" when derivation fails.
+    """
+    import json
+    import re
+
+    try:
+        dumped = subprocess.run(
+            [_npx(), "-y", "@deepseek-ai/dsh", "--profile", "web", "--dump-config"],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+    except (OSError, subprocess.SubprocessError):
         return ""
-    by_id = {r.get("id"): r for r in rows if isinstance(r, dict)}
-    patch: list[dict[str, Any]] = []
-
-    def _config(row_id: str) -> dict[str, Any]:
-        row = by_id.get(row_id)
-        if not isinstance(row, dict):
-            return {}
-        config = row.get("config")
-        return config if isinstance(config, dict) else {}
-
-    prefix = _config("persona").get("prefix")
-    if isinstance(prefix, str) and prefix.strip():
-        patch.append(
-            {
-                "id": "system-prompt",
-                "name": "@deepseek-ai/dsh-system-prompt",
-                "config": {"personaPrefix": prefix},
-            }
-        )
-    fs_workspace = _config("tool-filesystem").get("workspace")
-    if isinstance(fs_workspace, str) and fs_workspace.strip():
-        patch.append(
-            {
-                "id": "tool-fs",
-                "name": "@deepseek-ai/dsh-tool-fs",
-                "config": {"workspace": fs_workspace},
-            }
-        )
-    return yaml.safe_dump(patch, sort_keys=False) if patch else ""
+    if dumped.returncode != 0:
+        return ""
+    text = dumped.stdout
+    blocks: list[str] = []
+    for preset_id in ("preset-standard", "preset-ptc"):
+        start = text.find(f"\n- id: {preset_id}\n")
+        if start < 0:
+            continue
+        start += 1
+        end = len(text)
+        for marker in ("\n- id: ", "\n# =="):
+            stop = text.find(marker, start + 1)
+            if stop > 0:
+                end = min(end, stop)
+        block = text[start:end].rstrip() + "\n"
+        targets = re.findall(r"(?m)^(\s*)prefix: .*$", block)
+        if len(targets) != 1:
+            continue
+        quoted = json.dumps(prefix)
+        block = re.sub(r"(?m)^(\s*)prefix: .*$", rf"\g<1>prefix: {quoted}", block, count=1)
+        blocks.append(block)
+    return "".join(blocks)
 
 
 def _spawn_enabled() -> bool:
@@ -123,12 +141,18 @@ def launch_dsh_web(request: LaunchRequest) -> dict[str, Any]:
         )
     with open(f"{workspace}/cordis.patch.yml", "w", encoding="utf-8") as handle:
         handle.write(exported)
-    # The node harness must be TRANSLATED to profile row ids: dsh web loads its
-    # own profile and --patch only overrides existing row ids (unknown ids are
-    # dropped with "entry not found"). Verified via `dsh --dump-config`.
+    # The node persona overrides the nested persona prefix inside the web
+    # presets (top-level system-prompt row is inert once presets define their
+    # own). Preset blocks come from a live dump so they track dsh updates.
+    node_patch = ""
+    persona_applied = False
+    prefix = _node_persona_prefix(exported)
+    if prefix is not None:
+        node_patch = _preset_persona_patch(prefix)
+        persona_applied = bool(node_patch)
     node_patch_path = f"{workspace}/node.patch.yml"
     with open(node_patch_path, "w", encoding="utf-8") as handle:
-        handle.write(_translate_node_patch(exported))
+        handle.write(node_patch)
     # Provider overlay: registers Grafilab (OpenAI-compatible) as a selectable
     # provider with the working model id, and makes it the default. Without
     # this dsh falls back to catalog id "deepseek-flash", which Grafilab 404s
@@ -211,7 +235,7 @@ def launch_dsh_web(request: LaunchRequest) -> dict[str, Any]:
         "node_id": request.node_id,
         "proc": proc,
     }
-    return {"url": url, "pid": proc.pid, "workspace": workspace}
+    return {"url": url, "pid": proc.pid, "workspace": workspace, "persona_applied": persona_applied}
 
 
 @router.get("/launches")

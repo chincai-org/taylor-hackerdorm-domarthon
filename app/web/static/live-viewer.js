@@ -235,7 +235,11 @@
     // Reserve room for the label block to the right of the deepest nodes,
     // otherwise the SVG clips the text and horizontal scroll never appears.
     const labelReserve = compact ? 0 : 270;
-    const width = Math.max(520, 25 + tree.bounds.depth * columnGap + labelReserve + 25);
+    // Left breathing room doubles as leftward scroll range: without it the
+    // root column pins to the plate edge and can never scroll left.
+    const leftPad = compact ? 0 : 120;
+    const width =
+      Math.max(520, 25 + tree.bounds.depth * columnGap + labelReserve + 25) + leftPad;
     const naturalHeight = (tree.bounds.lastRow + 1) * rowGap + 40;
     const height = Math.max(compact ? 140 : 300, naturalHeight);
     const rowCenter =
@@ -244,7 +248,7 @@
     const point = (id) => {
       const slot = tree.slots.get(id);
       return {
-        x: 25 + slot.depth * columnGap,
+        x: 25 + leftPad + slot.depth * columnGap,
         y: 20 + slot.row * rowGap + verticalOffset,
       };
     };
@@ -646,6 +650,9 @@
     document.title = `${tree.name} · Harness trees`;
     detail.hidden = false;
     detail.innerHTML = `<p class="muted">${escape(tree.description || "No description provided.")}</p><div class="detail-tabs" role="tablist" aria-label="Tree views"><button type="button" role="tab" aria-selected="${activeTab === "nodes"}" data-detail-tab="nodes">Nodes</button><button type="button" role="tab" aria-selected="${activeTab === "benchmark"}" data-detail-tab="benchmark">Benchmark</button></div><section data-detail-panel="nodes"${activeTab === "nodes" ? "" : " hidden"}><div class="stage plate"><section class="tree-plate" tabindex="0" aria-label="Scrollable harness tree">${nodeTree(tree)}</section><div class="legend" role="group" aria-label="Node status"><span><i class="legend-dot pass" aria-hidden="true"></i>Complete</span><span><i class="legend-dot wait" aria-hidden="true"></i>Pending / running</span><span><i class="legend-dot fail" aria-hidden="true"></i>Failed</span></div></div><article id="live-node" class="node-panel" aria-live="polite"></article></section><section data-detail-panel="benchmark"${activeTab === "benchmark" ? "" : " hidden"}>${benchmarkEditor(tree)}</section>`;
+    // Fresh render starts at top-left: stale offsets (or early measurements
+    // before CSS settles) otherwise strand the root off-screen.
+    detail.querySelector(".tree-plate")?.scrollTo(0, 0);
     const node =
       (selectedNodeId && tree.nodeMap.get(selectedNodeId)) ??
       tree.nodeMap.get(tree.root_node_id) ??

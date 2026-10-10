@@ -487,11 +487,12 @@
 
 	.live-trees .tree-svg {
 		display: block;
-		/* Intrinsic width/height attrs carry the layout size, so wide trees
-		   overflow into horizontal scroll at 1:1 scale instead of shrinking
-		   text. min 100% keeps narrow trees filling the plate. */
+		/* Intrinsic width/height attrs carry the layout size: the SVG keeps
+		   its 1:1 width so wide trees overflow into horizontal scroll instead
+		   of shrinking text. min 100% defeated this (always fit, never any
+		   horizontal overflow), so it stays off. */
+		justify-self: start;
 		inline-size: auto;
-		min-inline-size: 100%;
 		max-inline-size: none;
 		block-size: auto;
 	}

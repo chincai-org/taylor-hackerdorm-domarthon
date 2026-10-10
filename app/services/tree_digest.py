@@ -65,6 +65,8 @@ def _scenario_digest(scenario: Any) -> Any:
         "id",
         "scenario_id",
         "name",
+        "question",
+        "answer",
         "customer_message",
         "expected_intent",
         "expected_tools",

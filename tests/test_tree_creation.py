@@ -12,6 +12,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.api.routes import trees
 from app.db.models import Base, Node, Tree
+from app.db.repository import create_benchmark, create_tree
 
 
 def _session_factory() -> tuple[sessionmaker[Session], object]:
@@ -114,6 +115,47 @@ def test_create_tree_request_rejects_blank_name() -> None:
         assert "Name cannot be blank" in str(exc)
     else:
         raise AssertionError("blank tree name was accepted")
+
+
+def test_benchmark_scenarios_can_be_created_updated_and_deleted(monkeypatch) -> None:
+    factory, _ = _session_factory()
+
+    @contextmanager
+    def scope() -> Iterator[Session]:
+        session = factory()
+        try:
+            yield session
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    monkeypatch.setattr(trees, "session_scope", scope)
+    with scope() as session:
+        benchmark = create_benchmark(session, name="Test benchmark", scenarios=[])
+        tree = create_tree(session, name="Test tree", benchmark_id=benchmark.id)
+        tree_id = tree.id
+
+    created = trees.create_scenario(
+        tree_id,
+        trees.ScenarioRequest(scenario={"name": "Refund", "expected_final_action": "refund"}),
+    )
+    scenario_id = created["scenario"]["id"]
+    assert created["benchmark"]["version"] == 2
+
+    updated = trees.update_scenario(
+        tree_id,
+        scenario_id,
+        trees.ScenarioRequest(scenario={"name": "Updated refund"}),
+    )
+    assert updated["scenario"] == {"name": "Updated refund", "id": scenario_id}
+    assert updated["benchmark"]["version"] == 3
+
+    deleted = trees.delete_scenario(tree_id, scenario_id)
+    assert deleted["benchmark"]["scenarios"] == []
+    assert deleted["benchmark"]["version"] == 4
 
 
 def test_create_tree_root_judge_error_marks_failed(monkeypatch) -> None:

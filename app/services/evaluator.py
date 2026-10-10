@@ -116,6 +116,8 @@ def _judge_prompt(patch_yml: str, scenario: dict[str, Any]) -> str:
                     "id",
                     "scenario_id",
                     "name",
+                    "question",
+                    "answer",
                     "customer_message",
                     "expected_intent",
                     "expected_tools",

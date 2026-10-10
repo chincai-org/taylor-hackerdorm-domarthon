@@ -224,7 +224,7 @@
 		}
 	}
 
-	.live-trees .card :is(.card-title, .card-sub, .card-goal, .card-mini) {
+	.live-trees .card :is(.card-title, .card-sub, .card-mini) {
 		display: block;
 	}
 

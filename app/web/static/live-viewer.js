@@ -283,7 +283,7 @@
 
   function card(tree) {
     const stats = tree.stats;
-    return `<li><a class="card tree-card" href="/tree/${escape(encodeURIComponent(tree.id))}"><span class="card-top"><span><span class="card-title">${escape(tree.name)}</span><span class="card-sub">${escape(tree.description || "Customer-support harness")}</span></span><span class="tag">${escape(tree.status)}</span></span><span class="card-mini">${nodeTree(tree, true)}</span><span class="card-goal">${escape(tree.benchmark?.name || "Benchmark pending")}</span><span class="card-stats">${[
+    return `<li><a class="card tree-card" href="/tree/${escape(encodeURIComponent(tree.id))}"><span class="card-top"><span><span class="card-title">${escape(tree.name)}</span><span class="card-sub">${escape(tree.description || "Customer-support harness")}</span></span><span class="tag">${escape(tree.status)}</span></span><span class="card-mini">${nodeTree(tree, true)}</span><span class="card-stats">${[
       ["Nodes", stats.node_count],
       ["Complete", stats.complete_count],
       ["Failed", stats.failed_count],
@@ -457,10 +457,20 @@
           const expected = scenario?.expected_action ?? scenario?.expected;
           const actual = scenario?.actual_action ?? scenario?.actual;
           const reason = scenario?.reason ?? scenario?.failure_reason;
-          return `<li class="scenario-result scenario-status-${state}"><div class="scenario-heading"><strong>${escape(name)}</strong><span class="scenario-badge">${state === "unknown" ? "No verdict" : state}</span></div>${expected !== undefined || actual !== undefined ? `<dl class="scenario-actions">${expected !== undefined ? `<div><dt>Expected</dt><dd>${escape(expected)}</dd></div>` : ""}${actual !== undefined ? `<div><dt>Actual</dt><dd>${escape(actual)}</dd></div>` : ""}</dl>` : ""}${reason ? `<p class="scenario-reason">${escape(reason)}</p>` : ""}</li>`;
+          const contested = scenario?.contested === true;
+          const dissent =
+            typeof scenario?.dissent === "string" && scenario.dissent.trim()
+              ? scenario.dissent
+              : null;
+          return `<li class="scenario-result scenario-status-${state}"><div class="scenario-heading"><strong>${escape(name)}</strong><span class="scenario-badges"><span class="scenario-badge">${state === "unknown" ? "No verdict" : state}</span>${contested ? '<span class="scenario-badge scenario-contested">contested</span>' : ""}</span></div>${expected !== undefined || actual !== undefined ? `<dl class="scenario-actions">${expected !== undefined ? `<div><dt>Expected</dt><dd>${escape(expected)}</dd></div>` : ""}${actual !== undefined ? `<div><dt>Actual</dt><dd>${escape(actual)}</dd></div>` : ""}</dl>` : ""}${reason ? `<p class="scenario-reason">${escape(reason)}</p>` : ""}${dissent ? `<details class="scenario-dissent"><summary>Minority view (quarantined)</summary><p>${escape(dissent)}</p></details>` : ""}</li>`;
         })
         .join("");
-      return `<section class="benchmark-results" aria-labelledby="benchmark-heading"><header class="result-header"><div><p class="eyebrow">Evaluation</p><h4 id="benchmark-heading">Benchmark result</h4></div><span class="result-summary">${summary}</span></header>${scenarios.length ? `<ul class="scenario-list">${rows}</ul>` : '<p class="muted">No scenario results are available.</p>'}</section>`;
+      const council = result.council;
+      const councilLine =
+        council && typeof council === "object"
+          ? `<p class="council-line">${council.judges ?? "?"} judges${council.discarded ? ` · ${council.discarded} dissent${council.discarded === 1 ? "" : "s"}` : ""}${Array.isArray(council.contested) && council.contested.length ? ` · ${council.contested.length} contested` : ""}</p>`
+          : "";
+      return `<section class="benchmark-results" aria-labelledby="benchmark-heading"><header class="result-header"><div><p class="eyebrow">Evaluation</p><h4 id="benchmark-heading">Benchmark result</h4>${councilLine}</div><span class="result-summary">${summary}</span></header>${scenarios.length ? `<ul class="scenario-list">${rows}</ul>` : '<p class="muted">No scenario results are available.</p>'}</section>`;
     }
     const entries = Object.entries(result);
     const facts = entries.filter(

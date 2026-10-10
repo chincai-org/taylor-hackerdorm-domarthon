@@ -255,11 +255,6 @@
 		block-size: 96px;
 	}
 
-	.card-goal {
-		font: var(--type-body-medium);
-		letter-spacing: 0.25px;
-		color: var(--md-sys-color-on-surface-variant);
-	}
 
 	.card-stats {
 		display: grid;

@@ -965,10 +965,6 @@
 			align-items: stretch;
 		}
 
-		.live-trees .result-header .live-copy {
-			align-self: flex-start;
-		}
-
 		.live-trees .result-summary {
 			align-self: flex-start;
 			white-space: normal;

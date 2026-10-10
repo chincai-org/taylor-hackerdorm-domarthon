@@ -10,11 +10,13 @@ from fastapi.templating import Jinja2Templates
 
 from app.api.main import api_router
 from app.core.config import settings
+from app.db.engine import create_tables
 from app.mcp_server import mcp_app
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    create_tables()
     async with mcp_app.router.lifespan_context(mcp_app):
         yield
 

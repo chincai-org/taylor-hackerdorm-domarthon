@@ -5,6 +5,32 @@
           <h1 id="trees-heading">Optimization trees</h1>
           <p id="tree-count" class="muted">Loading trees…</p>
         </div>
+        <section class="tree-create-panel" aria-labelledby="create-tree-heading">
+          <div class="tree-create-intro">
+            <div>
+              <p class="eyebrow">New optimization session</p>
+              <h2 id="create-tree-heading">Create a tree</h2>
+              <p class="muted">Start from the checked-in DeepSeek harness and refine it with Workbuddy.</p>
+            </div>
+            <span class="tree-create-badge" aria-hidden="true">DeepSeek default</span>
+          </div>
+          <form id="tree-create-form" data-create-url="/api/v1/trees">
+            <div class="tree-create-fields">
+              <label>
+                <span>Name</span>
+                <input id="tree-name" name="name" type="text" maxlength="255" required autocomplete="off" placeholder="e.g. Refund support" />
+              </label>
+              <label>
+                <span>Description <small>Optional</small></span>
+                <textarea id="tree-description" name="description" rows="1" maxlength="2000" placeholder="What do you want to optimize?"></textarea>
+              </label>
+              <div class="tree-create-actions">
+                <button id="tree-create-submit" type="submit">Create tree</button>
+                <p id="tree-create-status" role="status" aria-live="polite"></p>
+              </div>
+            </div>
+          </form>
+        </section>
         <p id="tree-status" class="notice" role="status">Loading tree data…</p>
         <button id="tree-retry" class="detail-close" type="button" hidden>
           Retry loading trees

@@ -1,13 +1,42 @@
 from collections.abc import Iterable
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field, field_validator
 
 from app.db.engine import session_scope
 from app.db.models import Benchmark, Node, Tree
-from app.db.repository import get_benchmark, get_tree, list_trees
+from app.db.repository import (
+    create_benchmark,
+    create_root_node,
+    get_benchmark,
+    get_tree,
+    list_trees,
+)
+from app.db.repository import create_tree as persist_tree
+from app.harness.importer import import_harness
 
 router = APIRouter(prefix="/trees", tags=["trees"])
+
+
+class CreateTreeRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=255)
+    description: str | None = Field(default=None, max_length=2000)
+
+    @field_validator("name")
+    @classmethod
+    def normalize_name(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Name cannot be blank")
+        return value
+
+    @field_validator("description")
+    @classmethod
+    def normalize_description(cls, value: str | None) -> str | None:
+        value = value.strip() if value is not None else None
+        return value or None
 
 
 def _node(node: Node) -> dict[str, Any]:
@@ -57,6 +86,56 @@ def _tree(tree: Tree, nodes: Iterable[Node], benchmark: Benchmark | None) -> dic
             "best_score": max(scores) if scores else None,
         },
     }
+
+
+@router.post("", status_code=201)
+def create_tree_endpoint(request: CreateTreeRequest) -> dict[str, Any]:
+    """Create a support tree with the repository's default DeepSeek harness."""
+    patch_path = Path(__file__).resolve().parents[3] / "cordis.patch.yml"
+    try:
+        patch_yml = patch_path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise HTTPException(
+            status_code=500,
+            detail="The default cordis.patch.yml harness could not be read.",
+        ) from exc
+
+    try:
+        imported = import_harness(patch_yml)
+    except ValueError as exc:
+        raise HTTPException(status_code=500, detail=f"Default harness is invalid: {exc}") from exc
+
+    with session_scope() as session:
+        benchmark = create_benchmark(
+            session,
+            name="Customer support benchmark (unconfigured)",
+            scenarios=[],
+        )
+        tree = persist_tree(
+            session,
+            name=request.name,
+            description=request.description,
+            benchmark_id=benchmark.id,
+            metadata={
+                "initial_harness_source": "cordis.patch.yml",
+                "harness_import": {
+                    "kept": imported["kept"],
+                    "dropped": imported["dropped"],
+                    "warnings": imported["warnings"],
+                },
+                "benchmark_status": "unconfigured",
+            },
+        )
+        create_root_node(
+            session,
+            tree_id=tree.id,
+            harness=imported["harness"],
+            rationale="Initial DeepSeek harness loaded from cordis.patch.yml.",
+        )
+        nodes = list(
+            session.query(Node).filter(Node.tree_id == tree.id).order_by(Node.created_at)
+        )
+        return _tree(tree, nodes, benchmark)
 
 
 @router.get("")

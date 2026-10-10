@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tree detail · Harness trees</title>
+    <meta name="description" content="Inspect a live customer-support harness optimization tree." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/trees/theme.css" />
+    <link rel="stylesheet" href="/trees/live-viewer.css" />
+    <script src="/trees/showcase-enhance.js" defer></script>
+    <script src="/trees/live-viewer.js" defer></script>
+  </head>
+  <body class="live-trees">
+    <header class="topbar">
+      <div class="topbar-in">
+        <a class="brand" href="/"
+          ><span class="brand-mark" aria-hidden="true"></span>Harness trees</a
+        >
+        <nav class="topnav" aria-label="Main">
+          <a href="/">Trees</a>
+          <a href="/docs">API docs</a>
+        </nav>
+      </div>
+    </header>
+    <main class="container container-wide">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="/">Trees</a><span aria-hidden="true">/</span><span>Tree detail</span>
+      </nav>
+      <div class="section-head">
+        <h1 id="detail-heading">Tree detail</h1>
+        <a class="detail-close" href="/">Back to trees</a>
+      </div>
+      <p id="tree-status" class="notice" role="status">Loading tree data…</p>
+      <button id="tree-retry" class="detail-close" type="button" hidden>Retry loading trees</button>
+      <section
+        id="tree-detail"
+        class="tree-detail section"
+        data-tree-id="{{ tree_id }}"
+        data-tree-url="{{ tree_api_url }}"
+        hidden
+        aria-labelledby="detail-heading"
+      ></section>
+      <noscript
+        ><p class="notice">
+          The live tree viewer requires JavaScript. You can still
+          <a href="{{ tree_api_url }}">read this tree's data</a> or
+          <a href="/docs">open the API documentation</a>.
+        </p></noscript
+      >
+    </main>
+  </body>
+</html>

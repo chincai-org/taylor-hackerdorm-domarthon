@@ -30,23 +30,28 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 app.mount("/mcp", mcp_app)
 app.mount(
     "/trees",
-    StaticFiles(directory=Path(__file__).parent.parent / "frontend" / "trees-section"),
+    StaticFiles(directory=Path(__file__).parent / "web" / "static"),
     name="trees",
 )
+app.mount(
+    "/showcase",
+    StaticFiles(directory=Path(__file__).parent / "web" / "showcase" / "dist"),
+    name="showcase",
+)
 
-templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
+templates = Jinja2Templates(directory=Path(__file__).parent / "web" / "templates")
 
 
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
-    return templates.TemplateResponse(request, "index.html")
+    return templates.TemplateResponse(request, "gallery.html")
 
 
 @app.get("/tree/{tree_id}", response_class=HTMLResponse)
 def read_tree_page(request: Request, tree_id: str):
     return templates.TemplateResponse(
         request,
-        "tree.html",
+        "tree-detail.html",
         {
             "tree_id": tree_id,
             "tree_api_url": f"{settings.API_V1_STR}/trees/{quote(tree_id, safe='')}",

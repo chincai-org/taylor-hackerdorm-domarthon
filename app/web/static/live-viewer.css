@@ -1,0 +1,771 @@
+/* FastAPI viewer styles from 54019be, scoped so the static showcase is unchanged. */
+@layer page {
+	.live-trees [hidden],
+	html:not(.has-js) .live-trees :is(#tree-status, #tree-count) {
+		display: none;
+	}
+
+	.live-trees .tree-card {
+		inline-size: 100%;
+		border: 0;
+		color: inherit;
+		text-align: start;
+		cursor: pointer;
+		font: inherit;
+	}
+
+	.live-trees .card :is(.card-title, .card-sub, .card-goal, .card-mini) {
+		display: block;
+	}
+
+	.live-trees .live-stat-label {
+		display: block;
+		color: var(--md-sys-color-on-surface-dim);
+		font: var(--type-label-medium);
+	}
+
+	.live-trees .live-stat-value {
+		display: block;
+		margin-block-start: 3px;
+		font: var(--type-title-medium);
+	}
+
+	.live-trees .notice {
+		padding: 14px 16px;
+		border-radius: var(--shape-md);
+		background: var(--md-sys-color-surface-container);
+		color: var(--md-sys-color-on-surface-variant);
+	}
+
+	.live-trees :is(.notice-error, .error-copy, .status-failed) {
+		color: var(--md-sys-color-error);
+	}
+
+	.live-trees .empty-state {
+		padding: 32px;
+		border-radius: var(--shape-md);
+		background: var(--md-sys-color-surface-container);
+		list-style: none;
+	}
+
+	.live-trees .tree-detail {
+		scroll-margin-block-start: 68px;
+	}
+
+	.live-trees .detail-close {
+		border: 1px solid var(--md-sys-color-outline);
+		border-radius: var(--shape-full);
+		padding: 8px 16px;
+		color: var(--md-sys-color-on-surface);
+		background: transparent;
+		cursor: pointer;
+		font: inherit;
+	}
+
+	.live-trees .stage {
+		gap: 12px;
+	}
+
+	.live-trees .tree-plate {
+		display: grid;
+		grid-template-rows: minmax(0, 1fr);
+		align-items: center;
+		justify-items: start;
+		block-size: min(60vh, 560px);
+		min-block-size: min(360px, 50vh);
+	}
+
+	.live-trees .tree-svg {
+		display: block;
+		min-inline-size: 700px;
+		inline-size: 100%;
+		block-size: auto;
+	}
+
+	.live-trees select,
+	.live-trees .detail-close:hover,
+	.live-trees select:hover {
+		cursor: pointer;
+	}
+
+	.live-trees select:hover {
+		border-color: var(--md-sys-color-primary);
+		background-color: var(--md-sys-color-surface-container-high);
+	}
+
+	.live-trees .copyable-panel {
+		position: relative;
+		min-inline-size: 0;
+	}
+
+	.live-trees .copyable-panel pre {
+		padding-inline-end: 112px;
+	}
+
+	.live-trees .live-copy {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		min-block-size: 36px;
+		padding: 6px 12px;
+		border: 1px solid var(--md-sys-color-outline);
+		border-radius: var(--shape-full);
+		background: var(--md-sys-color-surface-container-high);
+		color: var(--md-sys-color-on-surface);
+		font: var(--type-label-medium);
+		cursor: pointer;
+	}
+
+	.live-trees .live-copy:hover {
+		background: var(--md-state-hover);
+	}
+
+	.live-trees .live-copy:disabled {
+		cursor: wait;
+		opacity: 0.7;
+	}
+
+	.live-trees .live-copy svg {
+		inline-size: 16px;
+		block-size: 16px;
+		fill: none;
+		stroke: currentColor;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		stroke-width: 1.7;
+	}
+
+	.live-trees .copyable-panel > .live-copy {
+		position: absolute;
+		inset-block-start: 18px;
+		inset-inline-end: 10px;
+	}
+
+	.live-trees .live-copy-status {
+		min-block-size: 1em;
+		color: var(--md-sys-color-primary);
+		font: var(--type-label-medium);
+	}
+
+	.live-trees .benchmark-results {
+		display: grid;
+		gap: 12px;
+		margin-block-start: 18px;
+	}
+
+	.live-trees .result-header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	.live-trees .result-header h4 {
+		margin: 2px 0 0;
+		font: var(--type-title-medium);
+	}
+
+	.live-trees .result-summary {
+		color: var(--md-sys-color-on-surface-variant);
+		font: var(--type-label-medium);
+	}
+
+	.live-trees .scenario-list {
+		display: grid;
+		gap: 8px;
+		padding: 0;
+		margin: 0;
+		list-style: none;
+	}
+
+	.live-trees .scenario-result {
+		display: grid;
+		gap: 8px;
+		padding: 14px;
+		border: 1px solid var(--md-sys-color-outline-variant);
+		border-inline-start: 4px solid var(--md-sys-color-outline);
+		border-radius: var(--shape-sm);
+		background: var(--md-sys-color-surface-container-low);
+	}
+
+	.live-trees .scenario-status-passed {
+		border-inline-start-color: var(--md-sys-color-primary);
+	}
+
+	.live-trees .scenario-status-failed {
+		border-inline-start-color: var(--md-sys-color-error);
+	}
+
+	.live-trees .scenario-heading,
+	.live-trees .scenario-actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 10px 16px;
+	}
+
+	.live-trees .scenario-badge {
+		color: var(--md-sys-color-on-surface-variant);
+		font: var(--type-label-medium);
+		text-transform: capitalize;
+	}
+
+	.live-trees .scenario-status-passed .scenario-badge {
+		color: var(--md-sys-color-primary);
+	}
+
+	.live-trees .scenario-status-failed .scenario-badge,
+	.live-trees .scenario-reason {
+		color: var(--md-sys-color-error);
+	}
+
+	.live-trees .scenario-actions {
+		justify-content: flex-start;
+		margin: 0;
+	}
+
+	.live-trees .scenario-actions dt {
+		color: var(--md-sys-color-on-surface-dim);
+		font: var(--type-label-medium);
+		text-transform: capitalize;
+	}
+
+	.live-trees .scenario-actions dd {
+		margin: 2px 0 0;
+		overflow-wrap: anywhere;
+	}
+
+	.live-trees .scenario-reason {
+		margin: 0;
+	}
+
+	.live-trees .result-facts {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+		gap: 10px;
+		margin: 0;
+	}
+
+	.live-trees .result-fact {
+		padding: 12px;
+		border-radius: var(--shape-sm);
+		background: var(--md-sys-color-surface-container-low);
+	}
+
+	.live-trees .result-fact dt {
+		color: var(--md-sys-color-on-surface-dim);
+		font: var(--type-label-medium);
+		text-transform: capitalize;
+	}
+
+	.live-trees .result-fact dd {
+		margin: 4px 0 0;
+		overflow-wrap: anywhere;
+	}
+
+	.live-trees .result-list h5 {
+		margin: 0 0 6px;
+		font: var(--type-title-small);
+		text-transform: capitalize;
+	}
+
+	.live-trees .result-list ul {
+		display: grid;
+		gap: 6px;
+		padding-inline-start: 20px;
+		margin: 0;
+		color: var(--md-sys-color-on-surface-variant);
+	}
+
+	.live-trees .result-list li {
+		overflow-wrap: anywhere;
+	}
+
+	.live-trees .live-node[aria-current="true"] {
+		opacity: 1;
+		filter: drop-shadow(0 0 2px var(--md-sys-color-primary));
+	}
+
+	.live-trees .live-node:focus-visible {
+		outline: 2px solid var(--md-sys-color-primary);
+		outline-offset: 4px;
+	}
+
+	.live-trees .node-panel {
+		padding: 20px;
+		border-radius: var(--shape-md);
+		background: var(--md-sys-color-surface-container);
+		min-inline-size: 0;
+	}
+
+	.live-trees :is(.node-panel-head, .node-facts) {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	.live-trees .node-panel-head h3 {
+		overflow-wrap: anywhere;
+	}
+
+	.live-trees .node-facts {
+		justify-content: flex-start;
+		margin-block: 18px;
+	}
+
+	.live-trees .node-facts div {
+		min-inline-size: 140px;
+	}
+
+	.live-trees .node-facts :is(dt, dd) {
+		margin: 0;
+	}
+
+	.live-trees .node-facts dt {
+		color: var(--md-sys-color-on-surface-dim);
+		font: var(--type-label-medium);
+	}
+
+	.live-trees .node-facts dd {
+		margin-block-start: 4px;
+		overflow-wrap: anywhere;
+	}
+
+	.live-trees .node-panel details {
+		margin-block-start: 14px;
+	}
+
+	.live-trees .node-panel pre {
+		max-block-size: 280px;
+		overflow: auto;
+		padding: 14px;
+		margin-block-start: 10px;
+		border-radius: var(--shape-sm);
+		background: var(--md-sys-color-surface-container-lowest);
+	}
+
+	.live-trees .legend-dot {
+		inline-size: 10px;
+		block-size: 10px;
+		display: inline-block;
+		border-radius: 50%;
+		background: var(--md-sys-color-primary);
+	}
+
+	.live-trees .legend-dot.wait {
+		background: transparent;
+		border: 2px solid var(--md-sys-color-outline);
+	}
+
+	.live-trees .legend-dot.fail {
+		background: var(--md-sys-color-error);
+	}
+}
+
+/* M3 polish for the live node panel (/tree/*). CSS-only: markup from
+   production.js is the API contract (see checks/integration.mjs), so no
+   selectors are renamed and every overflow guard keeps working. Only M3 role
+   tokens are used; the one shadow is a black scrim, not a colour. */
+@layer page {
+	.live-trees .node-panel {
+		gap: 16px;
+		padding: clamp(20px, 3vw, 28px);
+		border: 1px solid var(--md-sys-color-outline-variant);
+		border-radius: var(--shape-lg);
+		background: var(--md-sys-color-surface-container-low);
+		/* M3 elevation 1 in a dark scheme: tonal lift plus a scrim shadow. */
+		box-shadow:
+			0 1px 2px rgb(0 0 0 / 30%),
+			0 4px 16px rgb(0 0 0 / 25%);
+	}
+
+	.live-trees .node-panel-head {
+		align-items: flex-start;
+	}
+
+	.live-trees .node-panel-head > div {
+		flex: 1 1 0;
+		min-inline-size: 0;
+	}
+
+	.live-trees .node-panel-head .eyebrow {
+		display: block;
+		margin-block-end: 4px;
+		text-transform: uppercase;
+	}
+
+	.live-trees .node-panel-head h3 {
+		min-inline-size: 0;
+		overflow-wrap: anywhere;
+		font: var(--type-title-large);
+		letter-spacing: 0;
+	}
+
+	/* Status reads as an M3 tonal chip: filled, pill, no outline. Page layer
+     beats the card-layer .tag, so this override always wins. */
+	.live-trees .node-panel-head .tag {
+		flex: none;
+		border-color: transparent;
+		border-radius: var(--shape-full);
+		font: var(--type-label-medium);
+		letter-spacing: 0.5px;
+		text-transform: capitalize;
+	}
+
+	.live-trees .node-panel-head .tag::before {
+		content: "";
+		inline-size: 8px;
+		block-size: 8px;
+		margin-inline-end: 8px;
+		border-radius: var(--shape-full);
+		background: currentColor;
+	}
+
+	.live-trees .node-panel-head .status-complete {
+		background: var(--md-sys-color-primary-container);
+		color: var(--md-sys-color-on-primary-container);
+	}
+
+	.live-trees .node-panel-head .status-failed {
+		background: var(--md-sys-color-error-container);
+		color: var(--md-sys-color-on-error-container);
+	}
+
+	.live-trees .node-panel-head :is(.status-pending, .status-running) {
+		background: var(--md-sys-color-secondary-container);
+		color: var(--md-sys-color-on-secondary-container);
+	}
+
+	/* Facts become three M3 mini-cards. Order is fixed by nodePanel():
+     1 Node ID, 2 Score, 3 Parent — so nth-child is safe here. */
+	.live-trees .node-facts {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+		gap: 12px;
+		inline-size: 100%;
+		margin-block: 4px 8px;
+	}
+
+	.live-trees .node-facts div {
+		min-inline-size: 0;
+		padding: 14px 16px;
+		border-radius: var(--shape-md);
+		background: var(--md-sys-color-surface-container-high);
+	}
+
+	.live-trees .node-facts dt {
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
+	.live-trees .node-facts dd {
+		min-inline-size: 0;
+		margin-block-start: 6px;
+		overflow-wrap: anywhere;
+		font: var(--type-title-medium);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.live-trees .node-facts div:nth-child(1) dd code {
+		display: block;
+		overflow-wrap: anywhere;
+		word-break: break-all;
+		font: var(--type-mono-medium);
+		font-size: 13px;
+		line-height: 1.6;
+		color: var(--md-sys-color-on-surface-variant);
+	}
+
+	.live-trees .node-facts div:nth-child(2) dd {
+		font-size: 28px;
+		line-height: 36px;
+		font-weight: 400;
+		color: var(--md-sys-color-primary);
+	}
+
+	.live-trees .node-facts div:nth-child(3) dd code {
+		font: var(--type-mono-medium);
+		font-size: 13px;
+		color: var(--md-sys-color-on-surface);
+	}
+
+	.live-trees .error-copy {
+		padding: 14px 16px;
+		border-radius: var(--shape-md);
+		background: var(--md-sys-color-error-container);
+		color: var(--md-sys-color-on-error-container);
+		font: var(--type-body-medium);
+		overflow-wrap: anywhere;
+	}
+
+	/* Harness disclosure becomes an M3 outlined card with a chevron. */
+	.live-trees .node-panel details.config-details {
+		margin-block-start: 4px;
+		border: 1px solid var(--md-sys-color-outline-variant);
+		border-radius: var(--shape-md);
+		overflow: clip;
+	}
+
+	.live-trees .node-panel details.config-details summary {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 14px 16px;
+		border-radius: var(--shape-md);
+		font: var(--type-title-small);
+		color: var(--md-sys-color-on-surface);
+		cursor: pointer;
+		transition: background-color 0.15s ease;
+	}
+
+	.live-trees
+		.node-panel
+		details.config-details
+		summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.live-trees .node-panel details.config-details summary::after {
+		content: "";
+		flex: none;
+		margin-inline-start: auto;
+		inline-size: 8px;
+		block-size: 8px;
+		border-inline-end: 2px solid var(--md-sys-color-primary);
+		border-block-end: 2px solid var(--md-sys-color-primary);
+		transform: rotate(45deg) translate(-2px, -2px);
+		transition: transform 0.15s ease;
+	}
+
+	.live-trees .node-panel details.config-details[open] summary::after {
+		transform: rotate(225deg);
+	}
+
+	.live-trees .node-panel details.config-details summary:hover {
+		background: var(--md-state-hover);
+	}
+
+	.live-trees .node-panel details.config-details[open] summary {
+		border-radius: var(--shape-md) var(--shape-md) 0 0;
+		border-block-end: 1px solid var(--md-sys-color-outline-variant);
+	}
+
+	.live-trees .node-panel .copyable-panel {
+		padding: 12px;
+	}
+
+	.live-trees .node-panel .copyable-panel pre {
+		margin: 0;
+		padding: 16px;
+		padding-inline-end: 104px;
+		font-size: 12.5px;
+		line-height: 1.65;
+	}
+
+	.live-trees .copyable-panel > .live-copy {
+		inset-block-start: 22px;
+		inset-inline-end: 22px;
+	}
+
+	/* Copy controls become M3 tonal buttons: filled, 40px, pill. */
+	.live-trees .live-copy {
+		min-block-size: 40px;
+		padding: 6px 18px 6px 16px;
+		border: 0;
+		border-radius: var(--shape-full);
+		background: var(--md-sys-color-secondary-container);
+		color: var(--md-sys-color-on-secondary-container);
+		font: var(--type-label-large);
+		transition:
+			filter 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+
+	.live-trees .live-copy:hover {
+		background: var(--md-sys-color-secondary-container);
+		filter: brightness(1.12);
+		box-shadow: 0 1px 3px rgb(0 0 0 / 40%);
+	}
+
+	.live-trees .live-copy svg {
+		inline-size: 18px;
+		block-size: 18px;
+	}
+
+	/* Benchmark block gets a divider so Evaluation reads as its own section. */
+	.live-trees .benchmark-results {
+		gap: 14px;
+		margin-block-start: 8px;
+		border-block-start: 1px solid var(--md-sys-color-outline-variant);
+		padding-block-start: 20px;
+	}
+
+	.live-trees .result-header {
+		align-items: flex-start;
+	}
+
+	.live-trees .result-header .eyebrow {
+		display: block;
+		margin-block-end: 2px;
+		text-transform: uppercase;
+	}
+
+	.live-trees .result-header h4 {
+		font: var(--type-title-large);
+		letter-spacing: 0;
+	}
+
+	.live-trees .result-summary {
+		flex: none;
+		padding: 8px 14px;
+		border-radius: var(--shape-full);
+		background: var(--md-sys-color-secondary-container);
+		color: var(--md-sys-color-on-secondary-container);
+		font: var(--type-label-medium);
+		letter-spacing: 0.25px;
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+	}
+
+	/* Passed / Total become large-number stat cards. */
+	.live-trees .result-facts {
+		gap: 12px;
+	}
+
+	.live-trees .result-fact {
+		min-inline-size: 0;
+		padding: 16px;
+		border-radius: var(--shape-md);
+		background: var(--md-sys-color-surface-container-high);
+	}
+
+	.live-trees .result-fact dt {
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
+	.live-trees .result-fact dd {
+		margin: 6px 0 0;
+		font-size: 28px;
+		line-height: 36px;
+		font-weight: 400;
+		font-variant-numeric: tabular-nums;
+		overflow-wrap: anywhere;
+	}
+
+	.live-trees .result-fact:first-child dd {
+		color: var(--md-sys-color-primary);
+	}
+
+	/* Failures become an M3 error-outline card with a badge heading. */
+	.live-trees .result-list {
+		padding: 16px;
+		border: 1px solid var(--md-sys-color-error);
+		border-radius: var(--shape-md);
+		background: var(--md-sys-color-surface-container-high);
+	}
+
+	.live-trees .result-list h5 {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin: 0 0 10px;
+		font: var(--type-title-small);
+		letter-spacing: 0.5px;
+		text-transform: uppercase;
+		color: var(--md-sys-color-error);
+	}
+
+	.live-trees .result-list h5::before {
+		content: "!";
+		display: grid;
+		flex: none;
+		place-items: center;
+		inline-size: 22px;
+		block-size: 22px;
+		border-radius: var(--shape-full);
+		background: var(--md-sys-color-error-container);
+		color: var(--md-sys-color-on-error-container);
+		font: var(--type-label-medium);
+	}
+
+	.live-trees .result-list ul {
+		gap: 8px;
+		color: var(--md-sys-color-on-surface-variant);
+		font: var(--type-body-medium);
+	}
+
+	.live-trees .result-list li::marker {
+		color: var(--md-sys-color-error);
+	}
+
+	/* Scenario cards: tonal badge chips instead of plain coloured text. */
+	.live-trees .scenario-result {
+		padding: 16px;
+		border-radius: var(--shape-md);
+		gap: 10px;
+	}
+
+	.live-trees .scenario-heading strong {
+		font: var(--type-title-small);
+		letter-spacing: 0.1px;
+	}
+
+	.live-trees .scenario-badge {
+		padding: 5px 12px;
+		border-radius: var(--shape-full);
+		background: var(--md-sys-color-secondary-container);
+		color: var(--md-sys-color-on-secondary-container);
+		font: var(--type-label-medium);
+		letter-spacing: 0.5px;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+
+	.live-trees .scenario-status-passed .scenario-badge {
+		background: var(--md-sys-color-primary-container);
+		color: var(--md-sys-color-on-primary-container);
+	}
+
+	.live-trees .scenario-status-failed .scenario-badge {
+		background: var(--md-sys-color-error-container);
+		color: var(--md-sys-color-on-error-container);
+	}
+
+	.live-trees .scenario-actions dt {
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
+	.live-trees .scenario-actions dd {
+		font: var(--type-body-medium);
+	}
+
+	.live-trees .scenario-reason {
+		font: var(--type-body-small);
+	}
+
+	@media (max-width: 560px) {
+		.live-trees .node-panel {
+			padding: 18px;
+		}
+
+		.live-trees .result-header {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.live-trees .result-header .live-copy {
+			align-self: flex-start;
+		}
+
+		.live-trees .result-summary {
+			align-self: flex-start;
+			white-space: normal;
+		}
+	}
+}

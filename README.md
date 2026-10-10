@@ -72,3 +72,22 @@ Set your key before running model calls:
 ```bash
 export OPENROUTER_API_KEY="your_openrouter_api_key_here"
 ```
+
+## MCP endpoint
+
+The FastAPI app exposes a Streamable HTTP MCP server at:
+
+```text
+http://127.0.0.1:5001/mcp/
+```
+
+Start the server with `uv run python main.py` or:
+
+```bash
+uv run uvicorn app.main:app --reload --port 5001
+```
+
+The template currently exposes one example tool, `get_support_item`. Replace
+or add tools in [app/mcp_server.py](app/mcp_server.py). The endpoint uses the
+official Python MCP SDK and stateless HTTP sessions, making it suitable for
+local development and simple deployments.

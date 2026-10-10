@@ -153,7 +153,7 @@ class DeepSeekClient:
         if text or tool_calls:
             return {"reply": text, "tool_calls": tool_calls}
         raise DeepSeekEmptyReplyError(
-            f"DeepSeek model '{self.model}' returned no text or tool call."
+            f"DeepSeek model '{model or self.model}' returned no text or tool call."
         )
 
     async def run_prompt_agent(
@@ -206,7 +206,7 @@ class DeepSeekClient:
                     if text or all_calls:
                         return {"reply": text, "tool_calls": all_calls, "steps": steps}
                     raise DeepSeekEmptyReplyError(
-                        f"DeepSeek model '{self.model}' returned no text or tool call."
+                        f"DeepSeek model '{model or self.model}' returned no text or tool call."
                     )
                 all_calls.extend(tool_calls)
                 results: list[dict[str, Any]] = []

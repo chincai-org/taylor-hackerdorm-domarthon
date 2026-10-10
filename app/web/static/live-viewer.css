@@ -766,6 +766,108 @@
 		border-block-end: 1px solid var(--md-sys-color-outline-variant);
 	}
 
+	.live-trees .harness-diff {
+		display: grid;
+		gap: 12px;
+		margin-block-start: 4px;
+		padding: 16px;
+		border: 1px solid var(--md-sys-color-outline-variant);
+		border-radius: var(--shape-md);
+		background: var(--md-sys-color-surface-container-high);
+	}
+
+	.live-trees .diff-header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	.live-trees .diff-header h4 {
+		margin-block-start: 2px;
+		font: var(--type-title-medium);
+	}
+
+	.live-trees .diff-summary {
+		display: inline-flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		padding: 7px 12px;
+		border-radius: var(--shape-full);
+		background: var(--md-sys-color-secondary-container);
+		color: var(--md-sys-color-on-secondary-container);
+		font: var(--type-label-medium);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.live-trees .diff-count-add {
+		color: var(--md-sys-color-primary);
+	}
+
+	.live-trees .diff-count-delete {
+		color: var(--md-sys-color-error);
+	}
+
+	.live-trees .diff-view {
+		max-block-size: 420px;
+		overflow: auto;
+		padding-block: 8px;
+		border: 1px solid var(--md-sys-color-outline-variant);
+		border-radius: var(--shape-sm);
+		background: var(--md-sys-color-surface-container-lowest);
+		font: var(--type-mono-medium);
+		font-size: 12px;
+		line-height: 1.65;
+	}
+
+	.live-trees .diff-line {
+		display: grid;
+		grid-template-columns: 24px 48px minmax(max-content, 1fr);
+		min-inline-size: max-content;
+		padding-inline: 10px;
+		white-space: pre;
+	}
+
+	.live-trees .diff-line code {
+		font: inherit;
+		white-space: pre;
+	}
+
+	.live-trees .diff-marker {
+		font-weight: 700;
+		text-align: center;
+	}
+
+	.live-trees .diff-number {
+		padding-inline-end: 8px;
+		color: var(--md-sys-color-on-surface-dim);
+		text-align: end;
+		user-select: none;
+	}
+
+	.live-trees .diff-add {
+		background: rgb(168 199 250 / 12%);
+	}
+
+	.live-trees .diff-add .diff-marker {
+		color: var(--md-sys-color-primary);
+	}
+
+	.live-trees .diff-delete {
+		background: rgb(255 180 171 / 12%);
+	}
+
+	.live-trees .diff-delete .diff-marker {
+		color: var(--md-sys-color-error);
+	}
+
+	.live-trees .diff-note {
+		margin: 0;
+		color: var(--md-sys-color-on-surface-dim);
+		font: var(--type-body-small);
+	}
+
 	.live-trees .node-panel .copyable-panel {
 		padding: 12px;
 	}

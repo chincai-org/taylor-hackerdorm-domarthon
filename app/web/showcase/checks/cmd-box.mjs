@@ -3,7 +3,7 @@
 // must still be there after the direction picker rewrites the fork command.
 //
 // Why this needs a test rather than an eyeball: the fork command's element is
-// rewritten wholesale by `main.js` (`out.textContent = ...`), so if the copy
+// rewritten wholesale by `showcase-enhance.js` (`out.textContent = ...`), so if the copy
 // button ever ends up *inside* that element it is silently deleted from the DOM
 // the first time the picker changes. The button has to be a sibling.
 import { assert, open, withBrowser } from "./browser.mjs";

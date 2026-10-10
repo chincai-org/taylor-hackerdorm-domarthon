@@ -6,311 +6,48 @@
 
    Two ways in, one outcome:
      - no script  → the figure links to #s-<short>, so :target decides
-     - with script → main.js marks the strip .is-open, because :target is not
+     - with script → showcase-enhance.js marks the strip .is-open, because :target is not
                      re-evaluated when the fragment is rewritten in place
    The :target half is disabled the moment a strip is marked, so the two can
    never show two records at once.
 */
 
 /* Until a version is chosen, the best one is the one on show. */
-body:not(:has(.rec:target)):not(:has(.selected-strip.is-open))
-:is(.selected-strip[data-default], .rec[data-default]) {
-	--sel-strip: flex;
-	--sel-rec: block;
-}
-body:not(:has(.rec:target)):not(:has(.selected-strip.is-open))
-	:is(.h-node[href="#s-pi-07"], .t-row[href="#s-pi-07"]) {
-	--sel-ring: block;
-	--sel-hit: var(--md-sys-color-primary-container);
-	--sel-edge: var(--md-sys-color-primary);
-	--sel-backdrop: var(--md-sys-color-primary-container);
-	--sel-row: var(--md-sys-color-primary-container);
-}
+body:not(:has(.rec:target)):not(:has(.selected-strip.is-open)) :is(.selected-strip[data-default], .rec[data-default]) { --sel-strip: flex; --sel-rec: block; }
+body:not(:has(.rec:target)):not(:has(.selected-strip.is-open)) :is(.h-node[href="#s-pi-07"], .t-row[href="#s-pi-07"]) { --sel-ring: block; --sel-hit: var(--md-sys-color-primary-container); --sel-edge: var(--md-sys-color-primary); --sel-backdrop: var(--md-sys-color-primary-container); --sel-row: var(--md-sys-color-primary-container); }
 
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-00:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-00"].is-open
-		)
-	)
-	:is(.selected-strip[data-for="pi-00"], .rec[data-for="pi-00"]) {
-	--sel-strip: flex;
-	--sel-rec: block;
-}
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-00:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-00"].is-open
-		)
-	)
-	:is(.h-node[href="#s-pi-00"], .t-row[href="#s-pi-00"]) {
-	--sel-ring: block;
-	--sel-hit: var(--md-sys-color-primary-container);
-	--sel-edge: var(--md-sys-color-primary);
-	--sel-backdrop: var(--md-sys-color-primary-container);
-	--sel-row: var(--md-sys-color-primary-container);
-}
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-00:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-00"].is-open)) :is(.selected-strip[data-for="pi-00"], .rec[data-for="pi-00"]) { --sel-strip: flex; --sel-rec: block; }
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-00:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-00"].is-open)) :is(.h-node[href="#s-pi-00"], .t-row[href="#s-pi-00"]) { --sel-ring: block; --sel-hit: var(--md-sys-color-primary-container); --sel-edge: var(--md-sys-color-primary); --sel-backdrop: var(--md-sys-color-primary-container); --sel-row: var(--md-sys-color-primary-container); }
 
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-01:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-01"].is-open
-		)
-	)
-	:is(.selected-strip[data-for="pi-01"], .rec[data-for="pi-01"]) {
-	--sel-strip: flex;
-	--sel-rec: block;
-}
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-01:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-01"].is-open
-		)
-	)
-	:is(.h-node[href="#s-pi-01"], .t-row[href="#s-pi-01"]) {
-	--sel-ring: block;
-	--sel-hit: var(--md-sys-color-primary-container);
-	--sel-edge: var(--md-sys-color-primary);
-	--sel-backdrop: var(--md-sys-color-primary-container);
-	--sel-row: var(--md-sys-color-primary-container);
-}
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-01:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-01"].is-open)) :is(.selected-strip[data-for="pi-01"], .rec[data-for="pi-01"]) { --sel-strip: flex; --sel-rec: block; }
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-01:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-01"].is-open)) :is(.h-node[href="#s-pi-01"], .t-row[href="#s-pi-01"]) { --sel-ring: block; --sel-hit: var(--md-sys-color-primary-container); --sel-edge: var(--md-sys-color-primary); --sel-backdrop: var(--md-sys-color-primary-container); --sel-row: var(--md-sys-color-primary-container); }
 
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-10:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-10"].is-open
-		)
-	)
-	:is(.selected-strip[data-for="pi-10"], .rec[data-for="pi-10"]) {
-	--sel-strip: flex;
-	--sel-rec: block;
-}
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-10:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-10"].is-open
-		)
-	)
-	:is(.h-node[href="#s-pi-10"], .t-row[href="#s-pi-10"]) {
-	--sel-ring: block;
-	--sel-hit: var(--md-sys-color-primary-container);
-	--sel-edge: var(--md-sys-color-primary);
-	--sel-backdrop: var(--md-sys-color-primary-container);
-	--sel-row: var(--md-sys-color-primary-container);
-}
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-10:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-10"].is-open)) :is(.selected-strip[data-for="pi-10"], .rec[data-for="pi-10"]) { --sel-strip: flex; --sel-rec: block; }
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-10:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-10"].is-open)) :is(.h-node[href="#s-pi-10"], .t-row[href="#s-pi-10"]) { --sel-ring: block; --sel-hit: var(--md-sys-color-primary-container); --sel-edge: var(--md-sys-color-primary); --sel-backdrop: var(--md-sys-color-primary-container); --sel-row: var(--md-sys-color-primary-container); }
 
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-02:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-02"].is-open
-		)
-	)
-	:is(.selected-strip[data-for="pi-02"], .rec[data-for="pi-02"]) {
-	--sel-strip: flex;
-	--sel-rec: block;
-}
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-02:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-02"].is-open
-		)
-	)
-	:is(.h-node[href="#s-pi-02"], .t-row[href="#s-pi-02"]) {
-	--sel-ring: block;
-	--sel-hit: var(--md-sys-color-primary-container);
-	--sel-edge: var(--md-sys-color-primary);
-	--sel-backdrop: var(--md-sys-color-primary-container);
-	--sel-row: var(--md-sys-color-primary-container);
-}
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-02:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-02"].is-open)) :is(.selected-strip[data-for="pi-02"], .rec[data-for="pi-02"]) { --sel-strip: flex; --sel-rec: block; }
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-02:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-02"].is-open)) :is(.h-node[href="#s-pi-02"], .t-row[href="#s-pi-02"]) { --sel-ring: block; --sel-hit: var(--md-sys-color-primary-container); --sel-edge: var(--md-sys-color-primary); --sel-backdrop: var(--md-sys-color-primary-container); --sel-row: var(--md-sys-color-primary-container); }
 
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-03:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-03"].is-open
-		)
-	)
-	:is(.selected-strip[data-for="pi-03"], .rec[data-for="pi-03"]) {
-	--sel-strip: flex;
-	--sel-rec: block;
-}
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-03:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-03"].is-open
-		)
-	)
-	:is(.h-node[href="#s-pi-03"], .t-row[href="#s-pi-03"]) {
-	--sel-ring: block;
-	--sel-hit: var(--md-sys-color-primary-container);
-	--sel-edge: var(--md-sys-color-primary);
-	--sel-backdrop: var(--md-sys-color-primary-container);
-	--sel-row: var(--md-sys-color-primary-container);
-}
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-03:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-03"].is-open)) :is(.selected-strip[data-for="pi-03"], .rec[data-for="pi-03"]) { --sel-strip: flex; --sel-rec: block; }
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-03:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-03"].is-open)) :is(.h-node[href="#s-pi-03"], .t-row[href="#s-pi-03"]) { --sel-ring: block; --sel-hit: var(--md-sys-color-primary-container); --sel-edge: var(--md-sys-color-primary); --sel-backdrop: var(--md-sys-color-primary-container); --sel-row: var(--md-sys-color-primary-container); }
 
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-04:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-04"].is-open
-		)
-	)
-	:is(.selected-strip[data-for="pi-04"], .rec[data-for="pi-04"]) {
-	--sel-strip: flex;
-	--sel-rec: block;
-}
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-04:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-04"].is-open
-		)
-	)
-	:is(.h-node[href="#s-pi-04"], .t-row[href="#s-pi-04"]) {
-	--sel-ring: block;
-	--sel-hit: var(--md-sys-color-primary-container);
-	--sel-edge: var(--md-sys-color-primary);
-	--sel-backdrop: var(--md-sys-color-primary-container);
-	--sel-row: var(--md-sys-color-primary-container);
-}
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-04:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-04"].is-open)) :is(.selected-strip[data-for="pi-04"], .rec[data-for="pi-04"]) { --sel-strip: flex; --sel-rec: block; }
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-04:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-04"].is-open)) :is(.h-node[href="#s-pi-04"], .t-row[href="#s-pi-04"]) { --sel-ring: block; --sel-hit: var(--md-sys-color-primary-container); --sel-edge: var(--md-sys-color-primary); --sel-backdrop: var(--md-sys-color-primary-container); --sel-row: var(--md-sys-color-primary-container); }
 
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-05:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-05"].is-open
-		)
-	)
-	:is(.selected-strip[data-for="pi-05"], .rec[data-for="pi-05"]) {
-	--sel-strip: flex;
-	--sel-rec: block;
-}
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-05:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-05"].is-open
-		)
-	)
-	:is(.h-node[href="#s-pi-05"], .t-row[href="#s-pi-05"]) {
-	--sel-ring: block;
-	--sel-hit: var(--md-sys-color-primary-container);
-	--sel-edge: var(--md-sys-color-primary);
-	--sel-backdrop: var(--md-sys-color-primary-container);
-	--sel-row: var(--md-sys-color-primary-container);
-}
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-05:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-05"].is-open)) :is(.selected-strip[data-for="pi-05"], .rec[data-for="pi-05"]) { --sel-strip: flex; --sel-rec: block; }
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-05:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-05"].is-open)) :is(.h-node[href="#s-pi-05"], .t-row[href="#s-pi-05"]) { --sel-ring: block; --sel-hit: var(--md-sys-color-primary-container); --sel-edge: var(--md-sys-color-primary); --sel-backdrop: var(--md-sys-color-primary-container); --sel-row: var(--md-sys-color-primary-container); }
 
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-11:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-11"].is-open
-		)
-	)
-	:is(.selected-strip[data-for="pi-11"], .rec[data-for="pi-11"]) {
-	--sel-strip: flex;
-	--sel-rec: block;
-}
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-11:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-11"].is-open
-		)
-	)
-	:is(.h-node[href="#s-pi-11"], .t-row[href="#s-pi-11"]) {
-	--sel-ring: block;
-	--sel-hit: var(--md-sys-color-primary-container);
-	--sel-edge: var(--md-sys-color-primary);
-	--sel-backdrop: var(--md-sys-color-primary-container);
-	--sel-row: var(--md-sys-color-primary-container);
-}
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-11:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-11"].is-open)) :is(.selected-strip[data-for="pi-11"], .rec[data-for="pi-11"]) { --sel-strip: flex; --sel-rec: block; }
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-11:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-11"].is-open)) :is(.h-node[href="#s-pi-11"], .t-row[href="#s-pi-11"]) { --sel-ring: block; --sel-hit: var(--md-sys-color-primary-container); --sel-edge: var(--md-sys-color-primary); --sel-backdrop: var(--md-sys-color-primary-container); --sel-row: var(--md-sys-color-primary-container); }
 
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-06:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-06"].is-open
-		)
-	)
-	:is(.selected-strip[data-for="pi-06"], .rec[data-for="pi-06"]) {
-	--sel-strip: flex;
-	--sel-rec: block;
-}
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-06:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-06"].is-open
-		)
-	)
-	:is(.h-node[href="#s-pi-06"], .t-row[href="#s-pi-06"]) {
-	--sel-ring: block;
-	--sel-hit: var(--md-sys-color-primary-container);
-	--sel-edge: var(--md-sys-color-primary);
-	--sel-backdrop: var(--md-sys-color-primary-container);
-	--sel-row: var(--md-sys-color-primary-container);
-}
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-06:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-06"].is-open)) :is(.selected-strip[data-for="pi-06"], .rec[data-for="pi-06"]) { --sel-strip: flex; --sel-rec: block; }
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-06:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-06"].is-open)) :is(.h-node[href="#s-pi-06"], .t-row[href="#s-pi-06"]) { --sel-ring: block; --sel-hit: var(--md-sys-color-primary-container); --sel-edge: var(--md-sys-color-primary); --sel-backdrop: var(--md-sys-color-primary-container); --sel-row: var(--md-sys-color-primary-container); }
 
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-07:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-07"].is-open
-		)
-	)
-	:is(.selected-strip[data-for="pi-07"], .rec[data-for="pi-07"]) {
-	--sel-strip: flex;
-	--sel-rec: block;
-}
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-07:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-07"].is-open
-		)
-	)
-	:is(.h-node[href="#s-pi-07"], .t-row[href="#s-pi-07"]) {
-	--sel-ring: block;
-	--sel-hit: var(--md-sys-color-primary-container);
-	--sel-edge: var(--md-sys-color-primary);
-	--sel-backdrop: var(--md-sys-color-primary-container);
-	--sel-row: var(--md-sys-color-primary-container);
-}
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-07:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-07"].is-open)) :is(.selected-strip[data-for="pi-07"], .rec[data-for="pi-07"]) { --sel-strip: flex; --sel-rec: block; }
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-07:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-07"].is-open)) :is(.h-node[href="#s-pi-07"], .t-row[href="#s-pi-07"]) { --sel-ring: block; --sel-hit: var(--md-sys-color-primary-container); --sel-edge: var(--md-sys-color-primary); --sel-backdrop: var(--md-sys-color-primary-container); --sel-row: var(--md-sys-color-primary-container); }
 
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-08:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-08"].is-open
-		)
-	)
-	:is(.selected-strip[data-for="pi-08"], .rec[data-for="pi-08"]) {
-	--sel-strip: flex;
-	--sel-rec: block;
-}
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-08:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-08"].is-open
-		)
-	)
-	:is(.h-node[href="#s-pi-08"], .t-row[href="#s-pi-08"]) {
-	--sel-ring: block;
-	--sel-hit: var(--md-sys-color-primary-container);
-	--sel-edge: var(--md-sys-color-primary);
-	--sel-backdrop: var(--md-sys-color-primary-container);
-	--sel-row: var(--md-sys-color-primary-container);
-}
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-08:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-08"].is-open)) :is(.selected-strip[data-for="pi-08"], .rec[data-for="pi-08"]) { --sel-strip: flex; --sel-rec: block; }
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-08:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-08"].is-open)) :is(.h-node[href="#s-pi-08"], .t-row[href="#s-pi-08"]) { --sel-ring: block; --sel-hit: var(--md-sys-color-primary-container); --sel-edge: var(--md-sys-color-primary); --sel-backdrop: var(--md-sys-color-primary-container); --sel-row: var(--md-sys-color-primary-container); }
 
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-09:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-09"].is-open
-		)
-	)
-	:is(.selected-strip[data-for="pi-09"], .rec[data-for="pi-09"]) {
-	--sel-strip: flex;
-	--sel-rec: block;
-}
-:is(
-		body:not(:has(.selected-strip.is-open)):has(#s-pi-09:target),
-		body:has(.selected-strip.is-open):has(
-			.selected-strip[data-for="pi-09"].is-open
-		)
-	)
-	:is(.h-node[href="#s-pi-09"], .t-row[href="#s-pi-09"]) {
-	--sel-ring: block;
-	--sel-hit: var(--md-sys-color-primary-container);
-	--sel-edge: var(--md-sys-color-primary);
-	--sel-backdrop: var(--md-sys-color-primary-container);
-	--sel-row: var(--md-sys-color-primary-container);
-}
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-09:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-09"].is-open)) :is(.selected-strip[data-for="pi-09"], .rec[data-for="pi-09"]) { --sel-strip: flex; --sel-rec: block; }
+:is(body:not(:has(.selected-strip.is-open)):has(#s-pi-09:target), body:has(.selected-strip.is-open):has(.selected-strip[data-for="pi-09"].is-open)) :is(.h-node[href="#s-pi-09"], .t-row[href="#s-pi-09"]) { --sel-ring: block; --sel-hit: var(--md-sys-color-primary-container); --sel-edge: var(--md-sys-color-primary); --sel-backdrop: var(--md-sys-color-primary-container); --sel-row: var(--md-sys-color-primary-container); }

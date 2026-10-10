@@ -367,7 +367,7 @@
 }
 
 /* M3 polish for the live node panel (/tree/*). CSS-only: markup from
-   production.js is the API contract (see checks/integration.mjs), so no
+   live-viewer.js is the API contract (see checks/integration.mjs), so no
    selectors are renamed and every overflow guard keeps working. Only M3 role
    tokens are used; the one shadow is a black scrim, not a colour. */
 @layer page {

@@ -65,22 +65,26 @@ Adjust to match what actually exists; don't restructure without reason.
 ```
 /
 ├── AGENTS.md
-├── server/
-│   ├── main.py              # FastAPI app; mounts MCP + REST routers
-│   ├── mcp_server.py        # MCP tool definitions
-│   ├── api.py               # REST endpoints for the frontend
-│   ├── db.py                # DB setup + repository functions
-│   ├── models.py            # Tree, Node, BenchmarkResult schemas
-│   ├── evaluator.py         # Runs PI against a benchmark, scores result
-│   ├── benchmarks/          # Benchmark definitions (customer support)
-│   └── tests/
-├── web/                     # Frontend (Vercel)
 ├── app/
-│   └── db/
-│       ├── engine.py        # Engine, sessions, and table creation
-│       ├── models.py        # Tree, Node, and Benchmark tables
-│       └── repository.py    # Database helper functions
-└── scripts/                 # Seed data, local dev helpers
+│   ├── main.py              # FastAPI app; mounts /trees, /showcase + REST/MCP routers
+│   ├── api/                 # REST endpoints for the frontend
+│   ├── core/                # Settings
+│   ├── db/                  # Engine, models, repository (SQLAlchemy + Neon Postgres)
+│   ├── harness/             # Harness import helpers
+│   ├── schemas/             # Shared Pydantic models (MCP + REST)
+│   ├── services/            # PI clients, digest helpers
+│   ├── mcp_server.py        # MCP tool definitions
+│   └── web/                 # Everything the browser sees
+│       ├── templates/       # Live pages: gallery.html (/), tree-detail.html (/tree/*)
+│       ├── static/          # Served at /trees: theme.css, live-viewer.css/js,
+│       │                    # showcase-enhance.js
+│       └── showcase/        # Static Petri showcase source (build.mjs, registry.mjs,
+│           │                # lib/, templates/, data/, checks/)
+│           └── dist/        # GENERATED showcase pages, served at /showcase/
+├── benchmarks/              # Benchmark definitions (customer support)
+├── scripts/                 # One-off helpers (DeepSeek eval)
+├── tests/                   # pytest suite
+└── public/                  # Vercel static assets
 ```
 
 ## 6. Data Model (starting point)
@@ -170,8 +174,8 @@ uv sync
 # Start the FastAPI + MCP server locally
 uv run uvicorn app.main:app --reload --port 5001
 
-# Or use the development entry point
-uv run python main.py
+# Or run the one-off DeepSeek harness eval (needs DEEPSEEK_API_KEY)
+uv run python scripts/deepseek_eval.py
 
 # Create the local Neon Postgres schema
 uv run python -c "from app.db import create_tables; create_tables()"
@@ -182,6 +186,12 @@ uv run ruff check .
 
 # Run tests when test files are present
 uv run pytest
+
+# Rebuild the static showcase (writes app/web/showcase/dist/)
+node app/web/showcase/build.mjs
+
+# Showcase unit + render tests (pure Node, no browser needed)
+node --test app/web/showcase/checks/unit.mjs app/web/showcase/checks/render.mjs
 ```
 
 Local development and Vercel production both use Neon Postgres. Put the local
@@ -308,14 +318,15 @@ Relationships and constraints:
 
 ### 16.1 Production integration (takes precedence over the showcase notes below)
 
-- The live gallery is `/`, rendered from `app/templates/index.html`. Native cards
-  navigate to `/tree/{tree_id}`, rendered from `app/templates/tree.html`. The
+- The live gallery is `/`, rendered from `app/web/templates/gallery.html`. Native cards
+  navigate to `/tree/{tree_id}`, rendered from `app/web/templates/tree-detail.html`. The
   detail page fetches only `/api/v1/trees/{tree_id}` and has a native Back to trees
-  link. FastAPI serves frontend assets under `/trees`; REST contracts are unchanged.
+  link. FastAPI serves live-viewer assets under `/trees` and the static showcase
+  under `/showcase`; REST contracts are unchanged.
 - Keep loading, failure and retry handling on both live pages. Node selection
   retains keyboard focus on the selected link; the live region announces changes.
-- `frontend/trees-section/production.js` restores the integration from commit
-  `54019be`; `production.css` scopes the live viewer's styles to `.live-trees`.
+- `app/web/static/live-viewer.js` restores the integration from commit
+  `54019be`; `live-viewer.css` scopes the live viewer's styles to `.live-trees`.
   Keep both assets linked from the production template. No Node build is required
   to serve the live page in the existing Python container.
 - Live nodes use `pending`, `running`, `complete`, and `failed`, with nullable
@@ -326,16 +337,16 @@ Relationships and constraints:
   The wide lineage SVG is centered in a bounded scroll stage. Do not apply the
   static showcase's acceptance thresholds, basis points, verification keys, or
   Petri CLI instructions to backend data.
-- The static showcase remains `/trees/index.html` or a local `file://` page.
-  `main.js` only enhances it; `build.mjs` composes the static `templates/` modules.
+- The static showcase remains `/showcase/index.html` or a local `file://` page.
+  `showcase-enhance.js` only enhances it; `build.mjs` composes the static `templates/` modules.
   Never overwrite production integration with standalone showcase code.
-- Run `node checks/integration.mjs` from `frontend/trees-section` for read-only
+- Run `node checks/integration.mjs` from `app/web/showcase` for read-only
   same-origin API-contract/browser tests using local fixtures, without database
   access. It covers clipboard payloads, scenario result rendering, sparse-tree
   centering and dropdown pointer behavior. Also run the static build, unit/render
   tests and static checks.
 - Frontend `lib/` modules must be tracked in Git. The root `.gitignore` explicitly
-  exempts them from the generic Python `lib/` ignore rule.
+  exempts `app/web/showcase/lib/` from the generic Python `lib/` ignore rule.
 - Production's live data requires JavaScript, as in the recovered commit. The
   no-JavaScript production shell links to the JSON API/docs instead of showing
   fictional showcase data. The strict no-JavaScript requirements below apply to
@@ -356,15 +367,17 @@ happened once, and each one is easy to reintroduce.
 A **standalone, plain HTML/CSS/JS recreation** of the "Trees" section of an app called
 Petri. No framework, no bundler, no runtime dependencies.
 
-This file expects to sit **beside** the `trees-section/`, `ref/` and `shots/` folders. If
-you move the deliverable somewhere else, move this file with it and fix the paths in §16.2.3 and
-§16.2.4 — the `checks/` scripts contain absolute paths and will need them updated too.
+The showcase source lives under `app/web/showcase/`; its build output lives in
+`app/web/showcase/dist/` (served at `/showcase/`, also opens from `file://`).
+If you move the deliverable somewhere else, move this file with it and fix the
+paths in §16.2.3 and §16.2.4 — the `checks/` scripts contain absolute paths and
+will need them updated too.
 
 | | |
 |---|---|
 | Reference repo (Next.js) | `ref/` — a clone of `https://github.com/Avoisavo/ethonline2026` |
 | Live reference | `https://ethonline2026-two.vercel.app/` |
-| Deliverable | `trees-section/` |
+| Deliverable | `app/web/showcase/` (source) → `dist/` (generated pages) |
 | Screenshots | `shots/` |
 | Work log | `.workbuddy-ai/memory/2026-10-10.md` (read this for the history of *why*) |
 
@@ -381,8 +394,9 @@ the reference and this recreation disagree, the reference usually wins — but s
    interactive.
 2. **No dependencies.** No npm packages, no framework, no bundler, no CDN script. The
    build step is `node build.mjs` using Node's standard library only.
-3. **The output opens from `file://`.** No server required. Every page is written into one
-   flat folder so the stylesheet, the script and the cross-page links are plain siblings.
+3. **The output opens from `file://`.** No server required. Every page is written into
+   the one flat `dist/` folder so the stylesheet, the script and the cross-page links
+   are plain siblings.
 4. **Static HTML, generated at build time.** Pages must be complete and readable before any
    script runs.
 5. **Visually faithful to the reference**, except for the deliberate divergences in §16.2.6.
@@ -392,11 +406,9 @@ the reference and this recreation disagree, the reference usually wins — but s
 #### 16.2.3 Layout
 
 ```
-trees-section/
-  build.mjs                 THE GENERATOR. Emits every page and every per-tree stylesheet.
-  data.mjs                  Tree registry: TREES[] + loadTree(). Showcase or real snapshot.
-  main.js                   The only browser script. Strictly additive (see §16.2.5.4).
-  styles.css                Shared theme. M3 dark, blue seed. @layer tokens…motion.
+app/web/showcase/
+  build.mjs                 THE GENERATOR. Emits dist/ pages and per-tree stylesheets.
+  registry.mjs              Tree registry: TREES[] + loadTree(). Showcase or real snapshot.
   lib/
     layout.mjs              buildForest / tidySlots — port of ref/lib/layout.ts
     glyph.mjs               The per-node status glyph (port of ref/components/Glyph.tsx)
@@ -408,19 +420,23 @@ trees-section/
     petri-export.json       Real `petri export` snapshot (1 tree)
     petri-digest.json       Its digest panel
   checks/                   The verification suite. See §16.2.4.2.
-  index.html                GENERATED — the gallery
-  <slug>.html   × 6         GENERATED — one detail page per tree
-  <slug>.css    × 6         GENERATED — that page's selection rules
+  dist/                     GENERATED — gallery, 6 tree pages + stylesheets,
+                            plus copies of theme.css / showcase-enhance.js so the
+                            showcase opens from file:// with no server.
 ```
+
+The shared `theme.css` and `showcase-enhance.js` live in `app/web/static/`
+(also served to the live viewer at `/trees/`); `build.mjs` copies them into
+`dist/` on every build.
 
 The six slugs: `research--hermes-agent--claude-sonnet-5`,
 `coding--claude-code--claude-opus-5`, `coding--petri-harness-v1--claude-sonnet-5`,
 `finance--pi--claude-haiku-4-5`, `security--codex-cli--gpt-5`,
 `data-analysis--openhands--gemini-2-5-pro`.
 
-**Never hand-edit a generated file.** `index.html`, `<slug>.html` and `<slug>.css` are
-overwritten on every build. The `<slug>.css` files say so in a header comment. Edit
-`build.mjs`, `styles.css`, `main.js` or `data/`, then rebuild.
+**Never hand-edit anything under `dist/`.** Gallery, tree pages and stylesheets
+are overwritten on every build. The `<slug>.css` files say so in a header comment. Edit
+`build.mjs`, `theme.css`, `showcase-enhance.js` or `data/`, then rebuild.
 
 ---
 
@@ -429,11 +445,11 @@ overwritten on every build. The `<slug>.css` files say so in a header comment. E
 ##### 16.2.4.1 Build
 
 ```bash
-cd trees-section
+cd app/web/showcase
 node build.mjs
 ```
 
-Expected: `Wrote index.html, 6 tree pages (…) and 6 tree stylesheets (…).` The byte counts
+Expected: `Wrote dist/index.html, 6 tree pages (…) and 6 tree stylesheets (…).` The byte counts
 move as content changes — only the shape of the message matters.
 
 Plain `node` is fine if it is on PATH. Otherwise use the managed runtime:
@@ -446,7 +462,7 @@ at `C:/Users/liewjayyong/.workbuddy-ai/binaries/node/workspace/node_modules/play
 The scripts resolve it via `createRequire` against that path.
 
 ```bash
-cd trees-section/checks
+cd app/web/showcase/checks
 node verify.mjs        # contrast, font sizes, tap targets; then the JS-on interaction path
 node nojs.mjs          # THE HEADLINE CHECK — the same interactions with JavaScript disabled
 node sweep.mjs         # 7 pages × 9 widths (360…1920): overflow, escaped elements, sticky overlap
@@ -501,7 +517,7 @@ Which version is on show can be decided two ways, and they must never fight:
 
 - **No script** — the figure links to `#s-<short>`, and the generated `<slug>.css` uses
   `:target`.
-- **With script** — `main.js` adds `is-open` to a `.selected-strip`, because `:target` is
+- **With script** — `showcase-enhance.js` adds `is-open` to a `.selected-strip`, because `:target` is
   **not** re-evaluated when the fragment is rewritten in place (see Trap 1).
 
 The generated rules cover both, and the `:target` half disables itself the moment a strip is
@@ -513,7 +529,7 @@ marked:
 ```
 
 The mechanism is **custom properties**, not declarations — one rule covers the wide figure
-and the narrow list, another covers the strip and its record. `styles.css` supplies the
+and the narrow list, another covers the strip and its record. `theme.css` supplies the
 defaults (`--sel-ring` falls back to `none`), so an unchosen version costs nothing.
 
 ##### 16.2.5.4 The progressive-enhancement gate
@@ -526,7 +542,7 @@ runs**:
 html.has-js .icon-btn.needs-js { display: inline-flex; }
 ```
 
-`main.js` adds `html.has-js` before it does anything else. So if the script never loads, the copy
+`showcase-enhance.js` adds `html.has-js` before it does anything else. So if the script never loads, the copy
 buttons and the direction picker are simply absent — never shown-but-inert. The commands
 themselves stay readable as plain text. **Never add a control that looks interactive but
 needs JS without this gate.**
@@ -563,7 +579,7 @@ Each entry: symptom → cause → the fix that works.
 **Symptom.** Clicking a tree node changes the URL but nothing on screen moves.
 **Cause.** The code drove selection off `:target` and only called `replaceState`.
 Rewriting the fragment in place does not re-resolve `:target`.
-**Fix.** `main.js` drives selection with the `is-open` class; the fragment is kept only so
+**Fix.** `showcase-enhance.js` drives selection with the `is-open` class; the fragment is kept only so
 the URL stays shareable. This is what §16.2.5.3 exists for.
 **Trap.** A one-off test *appears* to prove `replaceState` works if it sets the fragment
 during initial script execution — before the first style resolution, the target is simply
@@ -577,7 +593,7 @@ version.
 pointed at `#record`, which matches none of the generated `#s-*:target` rules — so every
 strip collapsed.
 **Fix.** The `s-<short>` id lives on the **record `<article class="rec">`**, so one fragment
-both selects the version and scrolls to it. `main.js` keys selection off
+both selects the version and scrolls to it. `showcase-enhance.js` keys selection off
 `strip.dataset.for`, not `strip.id`, and the "Full record" link is a plain anchor with no
 `preventDefault`. `.rec` carries `scroll-margin-block-start: 64px` to clear the top bar.
 The "nothing chosen yet" test is therefore `body:not(:has(.rec:target))` — **not**
@@ -587,7 +603,7 @@ The "nothing chosen yet" test is therefore `body:not(:has(.rec:target))` — **n
 
 **Symptom.** The fork block's copy button disappears the first time the direction picker
 changes.
-**Cause.** `main.js` does `out.textContent = …`, which **replaces every child**. If the
+**Cause.** `showcase-enhance.js` does `out.textContent = …`, which **replaces every child**. If the
 attribute sits on the wrapper, the button is a child and gets deleted.
 **Fix.** Keep `data-fork-out` on the `<pre>` and the button a *sibling* of it.
 `checks/cmd-box.mjs` asserts both.
@@ -691,7 +707,7 @@ it does not extend the hit area, and tooling cannot measure it. Use real `paddin
 - **No raw colour outside `@layer tokens`.** Use M3 role names (`--md-sys-color-*`),
   `--md-state-*` for state layers, `--shape-*` for radii, `--type-*` for type. If a value is
   not an M3 role, say so in a comment.
-- **Additive JS only.** If `main.js` never loads, the pages still work. Anything that cannot
+- **Additive JS only.** If `showcase-enhance.js` never loads, the pages still work. Anything that cannot
   meet that bar goes behind the `.needs-js` gate.
 - **Prefer one shared rule over two near-identical ones.** The two command blocks share
   `.cmd`; the two strip/record reveals share the generated `--sel-*` properties.
@@ -706,10 +722,10 @@ it does not extend the hit area, and tooling cannot measure it. Use real `paddin
 
 - Add a dependency, framework, bundler or CDN script.
 - Add a build step other than `node build.mjs`.
-- Move a page into a subdirectory. The preview harness maps each directory to its own base
+- Move a page out of `dist/`. The preview harness maps each directory to its own base
   path, so `index.html` and `tree/*.html` would get different bases and every card link
-  would 404. Everything lives in one flat folder for this reason.
-- Hand-edit `index.html`, `<slug>.html` or `<slug>.css`.
+  would 404. Every generated page lives in the one flat `dist/` folder for this reason.
+- Hand-edit anything under `dist/`.
 - Edit anything in `ref/`.
 - Convert the radio-group switch or chips to JS.
 - Put an interactive-looking control in the markup without the `.needs-js` gate.

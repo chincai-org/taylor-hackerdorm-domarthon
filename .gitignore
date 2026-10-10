@@ -16,8 +16,8 @@ eggs/
 .eggs/
 lib/
 # Frontend source modules are not Python build artifacts.
-!frontend/trees-section/lib/
-!frontend/trees-section/lib/**
+!app/web/showcase/lib/
+!app/web/showcase/lib/**
 lib64/
 parts/
 sdist/

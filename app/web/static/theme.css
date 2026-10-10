@@ -1887,7 +1887,7 @@
 
 @layer motion {
 	@media (prefers-reduced-motion: no-preference) {
-		/* The hidden state is a class main.js *adds* (to cards that start below the
+		/* The hidden state is a class showcase-enhance.js *adds* (to cards that start below the
        fold) rather than one it has to remember to remove. So if the script never
        runs, no card is ever hidden — the enhancement can only add, never hide. */
 		.card.will-reveal .card-mini {

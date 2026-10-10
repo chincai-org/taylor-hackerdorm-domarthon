@@ -62,13 +62,12 @@ def test_create_tree_persists_default_harness_and_root(monkeypatch) -> None:
     assert root["id"] == result["root_node_id"]
     assert root["parent_id"] is None
     assert root["status"] == "pending"
-    assert root["harness"]["model"]["model"] == "tencent/hy3"
-    assert [plugin["id"] for plugin in root["harness"]["dsh_plugins"]] == [
-        "core-logger",
-        "llm-adapter",
-        "tool-filesystem",
-        "tool-search",
-    ]
+    assert isinstance(root["harness"], str)
+    assert "model: \"grafilab/deepseek-v4-flash\"" in root["harness"]
+    assert all(
+        plugin_id in root["harness"]
+        for plugin_id in ("core-logger", "llm-adapter", "tool-filesystem", "tool-search")
+    )
 
     with factory() as session:
         persisted = session.get(Tree, result["id"])

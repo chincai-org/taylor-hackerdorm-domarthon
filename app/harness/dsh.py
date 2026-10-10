@@ -1,4 +1,4 @@
-"""DeepSeek Harness (dsh) plugin configs as our Node.harness JSON.
+"""DeepSeek Harness (dsh) plugin configs represented as Node.harness text.
 
 dsh advertises every tunable plugin through:
 - ``dsh --profile <name> --dump-config`` (local ground truth for rows)
@@ -11,12 +11,12 @@ bundles (``dsh-base`` + profile bundle) -> profile ``cordis.patch.yml``
 -> home ``cordis.patch.yml`` -> ``--patch`` overlay. Each row is
 ``{id, name, config}`` and a patch replaces the whole ``config`` by ``id``.
 
-This module stores ONLY the patch layer in ``Node.harness`` so a Workbuddy
+This module renders ONLY the patch layer in ``Node.harness`` so a Workbuddy
 proposal can be applied verbatim with::
 
     dsh --profile headless --patch ./node-<id>.patch.yml
 
-Harness JSON (v1)::
+Internal normalized harness data (v1)::
 
     {
       "version": 1,

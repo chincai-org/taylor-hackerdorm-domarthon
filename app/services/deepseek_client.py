@@ -4,11 +4,11 @@ Uses the ``openai`` SDK against ``https://api.deepseek.com/v1`` by default.
 API key comes from ``DEEPSEEK_API_KEY`` (see ``app/core/config.py``).
 
 Each call spawns one "harness instance": the caller may pass per-request
-plugins via ``harness`` (validated dsh patch-layer JSON, see
+plugins via ``harness`` (validated dsh patch-layer text, see
 ``app/harness/dsh.py``) plus ``system_prompt`` / ``tools`` / ``model``
 overrides. Raw ``cordis.patch.yml`` text is accepted at the route layer
 (``POST /deepseek/chat`` and ``POST /deepseek/stream`` via ``harness_yml``,
-or ``app/harness/importer.coerce_harness``) and converted to the same JSON
+or ``app/harness/importer.coerce_harness``) and converted to the same internal
 before reaching this client. Bare calls (all omitted) keep the old behavior:
 just the user prompt, no system text, no tools.
 

@@ -1,6 +1,6 @@
 """Import real dsh material into a stored harness.
 
-Upload either of these as raw text and get back harness JSON ready for
+Upload either of these as raw text and get back normalized harness data ready for
 ``POST /deepseek/chat`` / ``POST /deepseek/stream`` and for Node storage:
 
 - ``dsh --profile <name> --dump-config`` output (JSON or YAML)
@@ -27,7 +27,6 @@ from app.harness.dsh import (
     HARNESS_KIND,
     HARNESS_VERSION,
     SUPPORTED_DSH_PLUGINS,
-    SUPPORTED_PROFILES,
     is_generic_plugin,
     validate_dsh_harness,
 )
@@ -208,30 +207,30 @@ def import_harness(content: str, profile: str | None = None) -> dict[str, Any]:
 
 
 def coerce_harness(
-    harness: dict[str, Any] | str | None = None,
+    harness: str | None = None,
     harness_yml: str | None = None,
     profile: str | None = None,
 ) -> tuple[dict[str, Any] | None, dict[str, Any]]:
-    """Accept harness as dsh patch-layer JSON *or* cordis.patch.yml text.
+    """Accept harness as raw cordis.patch.yml or dsh dump-config text.
 
     Returns ``(harness_dict_or_None, meta)`` where ``meta`` is
-    ``{kept, dropped, warnings, source}``. ``source`` is one of
-    ``"none" | "json" | "yml"``. Raises ``ValueError`` with an actionable
+    ``{kept, dropped, warnings, source}``. ``source`` is ``"none"`` or
+    ``"yml"``. Raises ``ValueError`` with an actionable
     message when both forms are given, when text is blank/unparseable, or
-    when the dict fails ``validate_dsh_harness``.
+    when the text fails validation.
 
-    ``harness`` may be a dict (validated directly) or a string (treated as
-    cordis.patch.yml / dump-config text, same as ``harness_yml``).
+    The returned dictionary is an internal normalized representation. Callers
+    that persist or return a harness should use ``to_cordis_patch_yml`` so the
+    harness remains text at the boundary.
     ``harness_yml`` is always treated as raw text. ``profile`` overrides the
-    profile detected in the yml document (or in the dict).
+    profile detected in the document.
     """
     if harness is not None and harness_yml is not None:
         raise ValueError("pass either 'harness' or 'harness_yml', not both")
-    if isinstance(harness, str):
-        if harness_yml is not None:  # pragma: no cover - guarded above
+    if harness is not None:
+        if harness_yml is not None:
             raise ValueError("pass either 'harness' or 'harness_yml', not both")
         harness_yml = harness
-        harness = None
 
     if harness_yml is not None:
         if not harness_yml.strip():
@@ -248,13 +247,4 @@ def coerce_harness(
     if harness is None:
         return None, {"kept": [], "dropped": [], "warnings": [], "source": "none"}
 
-    if not isinstance(harness, dict):
-        raise ValueError("harness must be a dsh patch-layer JSON object or yml text")
-    normalized = validate_dsh_harness(harness)
-    if profile is not None:
-        if profile not in SUPPORTED_PROFILES:
-            raise ValueError(
-                f"profile {profile!r} unknown; choose one of {sorted(SUPPORTED_PROFILES)}"
-            )
-        normalized["profile"] = profile
-    return normalized, {"kept": [], "dropped": [], "warnings": [], "source": "json"}
+    raise AssertionError("unreachable")

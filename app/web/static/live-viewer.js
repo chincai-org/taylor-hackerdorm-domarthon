@@ -244,11 +244,10 @@
 
 	function nodePanel(node) {
 		if (!node) return '<p class="muted">This tree has no nodes yet.</p>';
-		const json = (value) => escape(JSON.stringify(value, null, 2));
-		const harness = node.harness ?? {};
+		const harness = node.harness ?? "";
 		const hasResult =
 			node.benchmark_result !== null && node.benchmark_result !== undefined;
-		return `<div class="node-panel-head"><div><p class="eyebrow">Selected node</p><h3 id="live-node-heading" tabindex="-1">${escape(labelOf(node))}</h3></div><span class="tag status-${node.status}">${escape(node.status)}</span></div><dl class="node-facts"><div><dt>Node ID</dt><dd><code>${escape(node.id)}</code></dd></div><div><dt>Score</dt><dd>${score(node.score)}</dd></div><div><dt>Parent</dt><dd><code>${escape(node.parent_id || "Root")}</code></dd></div></dl>${node.error !== null && node.error !== undefined ? `<p class="error-copy">${escape(typeof node.error === "string" ? node.error : (node.error.message ?? "Evaluation failed"))}</p>` : ""}<details class="config-details"><summary>Harness configuration</summary><div class="copyable-panel"><pre><code>${json(harness)}</code></pre>${copyControl(node.id, "harness", "harness configuration")}</div></details>${hasResult ? benchmarkResult(node) : ""}`;
+		return `<div class="node-panel-head"><div><p class="eyebrow">Selected node</p><h3 id="live-node-heading" tabindex="-1">${escape(labelOf(node))}</h3></div><span class="tag status-${node.status}">${escape(node.status)}</span></div><dl class="node-facts"><div><dt>Node ID</dt><dd><code>${escape(node.id)}</code></dd></div><div><dt>Score</dt><dd>${score(node.score)}</dd></div><div><dt>Parent</dt><dd><code>${escape(node.parent_id || "Root")}</code></dd></div></dl>${node.error !== null && node.error !== undefined ? `<p class="error-copy">${escape(typeof node.error === "string" ? node.error : (node.error.message ?? "Evaluation failed"))}</p>` : ""}<details class="config-details"><summary>Harness configuration</summary><div class="copyable-panel"><pre><code>${escape(harness)}</code></pre>${copyControl(node.id, "harness", "harness configuration")}</div></details>${hasResult ? benchmarkResult(node) : ""}`;
 	}
 
 	function selectNode(node) {
@@ -285,7 +284,9 @@
 			}
 			copyButton.disabled = true;
 			try {
-				await navigator.clipboard.writeText(JSON.stringify(value, null, 2));
+				await navigator.clipboard.writeText(
+					typeof value === "string" ? value : JSON.stringify(value, null, 2),
+				);
 				status.textContent = "Copied to clipboard";
 			} catch {
 				status.textContent =

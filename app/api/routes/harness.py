@@ -1,7 +1,5 @@
 """Harness upload/download: real dsh material in and out."""
 
-from typing import Any
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
@@ -23,7 +21,7 @@ class ImportRequest(BaseModel):
 
 
 class ImportResponse(BaseModel):
-    harness: dict[str, Any]
+    harness: str
     kept: list[str] = Field(default_factory=list)
     dropped: list[dict[str, str]] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
@@ -45,25 +43,40 @@ def example_harness_endpoint() -> ImportResponse:
 
     harness = example_verifiable_harness()
     validate_dsh_harness(harness)
-    return ImportResponse(harness=harness, kept=["persona"], dropped=[], warnings=[])
+    return ImportResponse(
+        harness=to_cordis_patch_yml(harness),
+        kept=["persona"],
+        dropped=[],
+        warnings=[],
+    )
 
 
 @router.post("/import", response_model=ImportResponse)
 def import_harness_endpoint(req: ImportRequest) -> ImportResponse:
-    """Upload current dsh config; get back harness JSON for Nodes and /deepseek/*."""
+    """Upload current dsh config; get back harness text for Nodes and /deepseek/*."""
     try:
         result = import_harness(req.content, profile=req.profile)
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
-    return ImportResponse(**result)
+    return ImportResponse(
+        harness=to_cordis_patch_yml(result["harness"]),
+        kept=result["kept"],
+        dropped=result["dropped"],
+        warnings=result["warnings"],
+    )
 
 
 @router.post("/export", response_model=ExportResponse)
-def export_harness_endpoint(harness: dict[str, Any]) -> ExportResponse:
-    """Turn stored harness JSON back into cordis.patch.yml text for real dsh."""
+def export_harness_endpoint(harness: str) -> ExportResponse:
+    """Validate stored harness text and return it as cordis.patch.yml."""
     try:
-        yml = to_cordis_patch_yml(harness)
+        from app.harness.importer import coerce_harness
+
+        normalized, _ = coerce_harness(harness)
+        if normalized is None:
+            raise ValueError("harness must be non-empty text")
+        yml = to_cordis_patch_yml(normalized)
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
-    profile = harness.get("profile", "headless")
+    profile = normalized["profile"]
     return ExportResponse(profile=profile, patch_yml=yml)

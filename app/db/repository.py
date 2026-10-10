@@ -45,7 +45,7 @@ def create_root_node(
     session: Session,
     *,
     tree_id: str,
-    harness: dict[str, Any],
+    harness: str,
     rationale: str | None = None,
 ) -> Node:
     tree = session.get(Tree, tree_id)
@@ -66,7 +66,7 @@ def create_child_node(
     *,
     tree_id: str,
     parent_id: str,
-    harness: dict[str, Any],
+    harness: str,
     rationale: str | None = None,
 ) -> Node:
     parent = session.get(Node, parent_id)

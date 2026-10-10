@@ -16,15 +16,15 @@ Guide for AI coding agents (+ humans). **24h hackathon**: end-to-end > polish, s
 
 ## 2. Core Concepts (exact terms)
 
-| Term | Meaning |
-|---|---|
-| **Session / Tree** | One optimization run. Own benchmark + root node. ID = `tree_id`. |
-| **Node** | One harness version. `node_id`, `parent_id`, `harness`, `benchmark_result`, `status`. |
-| **Harness** | Agent config under optimization (prompt, tool specs, policy text, etc.). |
-| **Benchmark** | Fixed customer-support scenarios + deterministic checks, owned by tree. |
-| **Child nodes** | Prior attempts incl. failures/regressions — signal, not noise. |
-| **Workbuddy** | Optimizer agent calling MCP tools. |
-| **PI** | Agent harness/runtime server uses for benchmark (GraffiLab AI API — confirm name/endpoint). |
+| Term               | Meaning                                                                                     |
+| ------------------ | ------------------------------------------------------------------------------------------- |
+| **Session / Tree** | One optimization run. Own benchmark + root node. ID = `tree_id`.                            |
+| **Node**           | One harness version. `node_id`, `parent_id`, `harness`, `benchmark_result`, `status`.       |
+| **Harness**        | Agent config under optimization (prompt, tool specs, policy text, etc.).                    |
+| **Benchmark**      | Fixed customer-support scenarios + deterministic checks, owned by tree.                     |
+| **Child nodes**    | Prior attempts incl. failures/regressions — signal, not noise.                              |
+| **Workbuddy**      | Optimizer agent calling MCP tools.                                                          |
+| **PI**             | Agent harness/runtime server uses for benchmark (GraffiLab AI API — confirm name/endpoint). |
 
 ## 3. Architecture
 
@@ -88,7 +88,7 @@ Don't restructure without reason.
 
 ```
 Tree:   id, name, description, benchmark_id, root_node_id, status, metadata, created_at
-Node:   id, tree_id, parent_id (nullable for root), harness (JSON/text),
+Node:   id, tree_id, parent_id (nullable for root), harness (TEXT),
         status (pending | running | complete | failed),
         score (float), benchmark_result (JSON), rationale (text), error (JSON), created_at
 Benchmark: id, name, version, scenarios (JSON), created_at
@@ -122,15 +122,15 @@ Scoring:
 
 Workbuddy flow: user gives `tree_id` + `node_id`, prompts **"Improve this node"**. Call order ≈ table order.
 
-| Tool | Purpose |
-|---|---|
-| `list_trees()` | Sessions (id, name, best score, node count). |
-| `get_tree(tree_id)` | Tree summary + structure (node ids, parents, scores). |
-| `get_node(tree_id, node_id)` | Harness, benchmark results (incl. per-scenario failures), rationale. |
-| `get_children(tree_id, node_id)` | Prior attempts: harness diffs/results/rationale. |
-| `get_benchmark(tree_id)` | Benchmark description → what gets measured. |
+| Tool                                                        | Purpose                                                                   |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `list_trees()`                                              | Sessions (id, name, best score, node count).                              |
+| `get_tree(tree_id)`                                         | Tree summary + structure (node ids, parents, scores).                     |
+| `get_node(tree_id, node_id)`                                | Harness, benchmark results (incl. per-scenario failures), rationale.      |
+| `get_children(tree_id, node_id)`                            | Prior attempts: harness diffs/results/rationale.                          |
+| `get_benchmark(tree_id)`                                    | Benchmark description → what gets measured.                               |
 | `create_child_node(tree_id, parent_id, harness, rationale)` | Create child, trigger eval, return `node_id` + status (+ result if fast). |
-| `get_node_status(tree_id, node_id)` | Poll eval status/result. |
+| `get_node_status(tree_id, node_id)`                         | Poll eval status/result.                                                  |
 
 Rules:
 - **Concise structured JSON**. Truncate big payloads; offer drill-down.
@@ -193,10 +193,10 @@ node --test app/web/showcase/checks/unit.mjs app/web/showcase/checks/render.mjs
 - `POST /api/v1/deepseek/chat` → one JSON reply (`reply`, `tool_calls`, harness echo).
 - `POST /api/v1/deepseek/stream` → same result as SSE (`curl -N` / no-buffer keeps live).
 - Both take `{ prompt, harness_yml?, harness?, system_prompt?, tools?, model?, timeout? }`.
-  Harness as raw `cordis.patch.yml` text in `harness_yml` (preferred for yml), or dsh
-  patch-layer JSON in `harness`. Mutually exclusive; omit both → bare prompt-only.
-- SSE order: first event always `{"harness": {...}}` (normalized harness, `patch_yml`,
-  model, applied/ignored plugins, warnings) → `{"delta"}` chunks → optional
+  Harness is raw `cordis.patch.yml` text in `harness` or `harness_yml`. Mutually
+  exclusive; omit both → bare prompt-only.
+- SSE order: first event always `{"harness": "..."}` (harness text plus metadata)
+  → `{"delta"}` chunks → optional
   `{"tool_calls"}` → `{"status": "done"}` or `{"error"}`.
 - Needs server-side `DEEPSEEK_API_KEY` (`GET /api/v1/deepseek/health` reports `available`;
   else chat/stream → `503`).
@@ -300,7 +300,7 @@ nodes
 id                VARCHAR(36) PRIMARY KEY
 tree_id           VARCHAR(36) NOT NULL REFERENCES trees(id)
 parent_id         VARCHAR(36) NULL
-harness           JSON NOT NULL
+harness           TEXT NOT NULL
 status            VARCHAR(32) NOT NULL DEFAULT 'pending'
 score             FLOAT NULL
 benchmark_result  JSON NULL
@@ -316,7 +316,7 @@ Relationships/constraints:
 - Node → one tree via `nodes.tree_id`.
 - Root: `parent_id = NULL`; child: `parent_id` = parent. No DB FK on parent — repo enforces creation/validation.
 - `trees.root_node_id` nullable while tree being created.
-- JSON fields: scenarios, harness defs, results, tree metadata, eval errors.
+- JSON fields: scenarios, results, tree metadata, eval errors. Harnesses are text.
 - Status ∈ `pending`, `running`, `complete`, `failed`.
 - `ix_nodes_tree_parent` (`tree_id`, `parent_id`) → traversal.
 - `ix_nodes_tree_status` (`tree_id`, `status`) → status filter.
@@ -343,7 +343,7 @@ Relationships/constraints:
 - `app/web/static/live-viewer.js` restores integration from commit `54019be`;
   `live-viewer.css` scopes live styles to `.live-trees`. Keep both linked from prod template.
   No Node build needed to serve live page in Python container.
-- Live nodes: `pending`, `running`, `complete`, `failed`; nullable raw scores, harness JSON,
+- Live nodes: `pending`, `running`, `complete`, `failed`; nullable raw scores, harness text,
   rationale, results, errors. Harness + result payloads have copy controls. Scenario-array
   results → passed/failed/unscored cards; summary-only → labeled facts. No raw result JSON
   in normal detail UI. Copy payload verbatim. Wide lineage SVG centered in bounded scroll
@@ -378,13 +378,13 @@ Source: `app/web/showcase/`; build output: `app/web/showcase/dist/` (served `/sh
 opens `file://`). Move deliverable → move this guidance too + fix paths in §16.2.3/§16.2.4
 (`checks/` scripts contain absolute paths).
 
-| | |
-|---|---|
+|                          |                                                               |
+| ------------------------ | ------------------------------------------------------------- |
 | Reference repo (Next.js) | `ref/` — clone of `https://github.com/Avoisavo/ethonline2026` |
-| Live reference | `https://ethonline2026-two.vercel.app/` |
-| Deliverable | `app/web/showcase/` (source) → `dist/` (generated pages) |
-| Screenshots | `shots/` |
-| Work log | `.workbuddy-ai/memory/2026-10-10.md` (history of *why*) |
+| Live reference           | `https://ethonline2026-two.vercel.app/`                       |
+| Deliverable              | `app/web/showcase/` (source) → `dist/` (generated pages)      |
+| Screenshots              | `shots/`                                                      |
+| Work log                 | `.workbuddy-ai/memory/2026-10-10.md` (history of *why*)       |
 
 `ref/` = **read-only source of truth for behaviour/geometry**. Never edit. Reference usually
 wins on disagreement — except deliberate divergences in §16.2.6.
@@ -478,15 +478,15 @@ failure. Others print failures yet exit `0`. Zero exit ≠ pass.
 
 Layout/CSS/markup change → all green:
 
-| Check | Expected |
-|---|---|
-| `verify.mjs` | `contrast 0`, `<12px 0`, `tap<24 0` all three pages; selection/chips/switch correct |
-| `nojs.mjs` | node click, narrow list-row click, "Full record" all swap strip **and** panel; 6 gallery links |
-| `sweep.mjs` | `0 failing viewport/page combinations out of 63` |
-| `palette.mjs` | `All non-failure chrome sits in the blue family.` |
-| `clipboard.mjs` | clipboard matches `data-copy`; `0 copy buttons rendered with no script` |
-| `copy-fallback.mjs` | tick shown via fallback; glyph drawn 16×16 |
-| `cmd-box.mjs` | `0 failure(s)` |
+| Check               | Expected                                                                                       |
+| ------------------- | ---------------------------------------------------------------------------------------------- |
+| `verify.mjs`        | `contrast 0`, `<12px 0`, `tap<24 0` all three pages; selection/chips/switch correct            |
+| `nojs.mjs`          | node click, narrow list-row click, "Full record" all swap strip **and** panel; 6 gallery links |
+| `sweep.mjs`         | `0 failing viewport/page combinations out of 63`                                               |
+| `palette.mjs`       | `All non-failure chrome sits in the blue family.`                                              |
+| `clipboard.mjs`     | clipboard matches `data-copy`; `0 copy buttons rendered with no script`                        |
+| `copy-fallback.mjs` | tick shown via fallback; glyph drawn 16×16                                                     |
+| `cmd-box.mjs`       | `0 failure(s)`                                                                                 |
 
 ---
 
@@ -544,15 +544,15 @@ interactive-looking control needing JS without this gate.**
 
 **Intentional.** Never "fix" back without asking.
 
-| Area | Ours | Reference |
-|---|---|---|
-| Colour | M3 dark seeded from **blue** | M3 baseline purple (`#6750A4`) |
-| `tertiary` | cyan (`#a2d2df`) | M3 pink |
-| `.record-info` | `position: sticky` | static (leaves tall void) |
-| `.chips` | bare M3 filter-chip group, 32px, gap 8 | nested sunk panel, 34px, gap 4 |
-| Radii | 8px / 12px (`--shape-sm` etc.) | fixed 10px |
-| Copy control | 32px **icon button** with clipboard glyph, **inside** command box both blocks | text "Copy"; inside in `.checkit-cmd`, **below** command in `.np-block.fork` |
-| `build.mjs` output | flat folder (`index.html`, `<slug>.html`) | Next.js routes |
+| Area               | Ours                                                                          | Reference                                                                    |
+| ------------------ | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Colour             | M3 dark seeded from **blue**                                                  | M3 baseline purple (`#6750A4`)                                               |
+| `tertiary`         | cyan (`#a2d2df`)                                                              | M3 pink                                                                      |
+| `.record-info`     | `position: sticky`                                                            | static (leaves tall void)                                                    |
+| `.chips`           | bare M3 filter-chip group, 32px, gap 8                                        | nested sunk panel, 34px, gap 4                                               |
+| Radii              | 8px / 12px (`--shape-sm` etc.)                                                | fixed 10px                                                                   |
+| Copy control       | 32px **icon button** with clipboard glyph, **inside** command box both blocks | text "Copy"; inside in `.checkit-cmd`, **below** command in `.np-block.fork` |
+| `build.mjs` output | flat folder (`index.html`, `<slug>.html`)                                     | Next.js routes                                                               |
 
 **Copy placement** stands out: reference itself inconsistent (table above). Ours inside both
 places. Cost: button eats ~34px command width (300 → 266px) → pushes fork command to wrap

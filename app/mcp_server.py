@@ -121,25 +121,21 @@ def checkout_tree(tree_id: str) -> dict[str, Any]:
 def create_child_node(
     tree_id: str,
     parent_id: str,
-    harness: dict[str, Any] | str | None = None,
+    harness: str | None = None,
     rationale: str | None = None,
     harness_yml: str | None = None,
     harness_profile: str | None = None,
 ) -> dict[str, Any]:
     """Store a validated DeepSeek harness as a new child node.
 
-    Pass the harness as dsh patch-layer JSON (``harness`` dict) **or** as raw
-    ``cordis.patch.yml`` text (``harness_yml`` string, or a string in
-    ``harness``). Yml text is converted server-side via the importer, so a
-    Workbuddy proposal can paste ``dsh --profile <name> --dump-config`` output
-    or a patch document verbatim. Evaluation is deliberately skipped until the
-    test runner is implemented; the node is stored as pending and no score is
-    invented.
+    Pass the harness as raw ``cordis.patch.yml`` text. The text is validated
+    server-side via the importer and stored unchanged as text. Evaluation is
+    deliberately skipped until the test runner is implemented; the node is
+    stored as pending and no score is invented.
     """
     if harness is None and harness_yml is None:
         raise ValueError(
-            "Missing harness. Pass 'harness' (dsh patch-layer JSON dict) or "
-            "'harness_yml' (raw cordis.patch.yml text)."
+            "Missing harness. Pass 'harness' (raw cordis.patch.yml text)."
         )
     try:
         normalized_harness, meta = coerce_harness(harness, harness_yml, profile=harness_profile)
@@ -165,7 +161,7 @@ def create_child_node(
             session,
             tree_id=tree_id,
             parent_id=parent_id,
-            harness=normalized_harness,
+            harness=patch_yml,
             rationale=rationale,
         )
         return {
@@ -173,7 +169,7 @@ def create_child_node(
             "tree_id": node.tree_id,
             "parent_id": node.parent_id,
             "status": node.status,
-            "harness": node.harness,
+            "harness": patch_yml,
             "patch_yml": patch_yml,
             "harness_source": meta.get("source", "none"),
             "warnings": meta.get("warnings", []),

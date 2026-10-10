@@ -61,7 +61,7 @@ class Node(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_id)
     tree_id: Mapped[str] = mapped_column(ForeignKey("trees.id"), nullable=False)
     parent_id: Mapped[str | None] = mapped_column(String(36))
-    harness: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    harness: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String(32), default="pending", nullable=False)
     score: Mapped[float | None] = mapped_column(Float)
     benchmark_result: Mapped[dict[str, Any] | None] = mapped_column(JSON)

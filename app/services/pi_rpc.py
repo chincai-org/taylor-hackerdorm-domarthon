@@ -260,7 +260,7 @@ class PiRpcWrapper:
         logger.error("Pi empty reply; stderr tail: %r", stderr_tail)
         raise self._empty_reply_error(state, stderr_tail)
 
-    async def stream_prompt(self, prompt: str) -> AsyncGenerator[str, None]:
+async def stream_prompt(self, prompt: str) -> AsyncGenerator[str, None]:
         """Yield Server-Sent Event lines streaming Pi token deltas."""
         if not prompt or not prompt.strip():
             raise ValueError("prompt must be a non-empty string")
@@ -271,6 +271,9 @@ class PiRpcWrapper:
         command = {"id": state.request_id, "type": "prompt", "message": prompt}
         proc.stdin.write(json.dumps(command).encode("utf-8") + b"\n")
         await proc.stdin.drain()
+        
+        # FIX 1: Close stdin so the Pi CLI knows no more commands are coming
+        proc.stdin.close()
 
         try:
             while True:
@@ -301,8 +304,13 @@ class PiRpcWrapper:
                     # If no deltas ever streamed, emit the authoritative text.
                     if not before and state.final_text:
                         yield f"data: {json.dumps({'delta': state.final_text})}\n\n"
+                    
+                    # FIX 2: Force break the loop as soon as the assistant's message ends
+                    break
+                    
                 elif self._is_settled(record):
                     break
+            
             if not state.combined_text().strip():
                 err = self._empty_reply_error(state, "")
                 yield f"data: {json.dumps({'error': str(err)})}\n\n"

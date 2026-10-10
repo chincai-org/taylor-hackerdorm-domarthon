@@ -20,7 +20,7 @@ Harness JSON (v1)::
 
     {
       "version": 1,
-      "kind": "dsh-customer-support",
+      "kind": "dsh-default",
       "profile": "headless",          # base composition we patch against
       "system_prompt": "...",         # convenience mirror of dsh-persona prefix
       "model": {"provider": ..., "model": ...},
@@ -30,6 +30,10 @@ Harness JSON (v1)::
         ...
       ]
     }
+
+``kind`` is intentionally general (not task-specific): the same harness
+shape works for any benchmark. The legacy ``dsh-customer-support`` kind is
+still accepted on read for existing nodes.
 
 Only plugins in ``SUPPORTED_DSH_PLUGINS`` are accepted, and each ``config``
 is checked against the allowlist extracted from the official config catalog.
@@ -46,12 +50,12 @@ from typing import Any
 
 # Plugin name -> metadata. ``allowed_config_keys`` is the settable subset from
 # the official config catalog (verbatim field names). ``required`` lists keys
-# dsh fails plugin load without. Keep this list customer-support-scoped:
+# dsh fails plugin load without. Keep this list general-purpose:
 # prompt/model/tools/policy/safety/context — not browsers, desktops, or IDEs.
 # Source revisions: config-catalog.md @ deepseek-ai/deepseek-harness master.
 SUPPORTED_DSH_PLUGINS: dict[str, dict[str, Any]] = {
     "@deepseek-ai/dsh-persona": {
-        "description": "Customer-support persona text (deployment:persona-prefix).",
+        "description": "Agent persona text (deployment:persona-prefix).",
         "allowed_config_keys": {"prefix", "suffix", "complete", "includeRuntimeContext"},
         "required": {"prefix"},
     },
@@ -218,7 +222,10 @@ SUPPORTED_PROFILES = {"headless", "web", "sdk", "sdk-minimal", "acp"}
 BASE_BUNDLES = ("dsh-base",)
 
 HARNESS_VERSION = 1
-HARNESS_KIND = "dsh-customer-support"
+# General harness kind (not task-specific). Previously "dsh-customer-support";
+# that value is still accepted on read for existing nodes.
+HARNESS_KIND = "dsh-default"
+LEGACY_HARNESS_KINDS = frozenset({"dsh-customer-support"})
 
 
 def list_supported_plugins() -> list[dict[str, Any]]:
@@ -239,12 +246,18 @@ def _fail(msg: str) -> ValueError:
 
 
 def validate_dsh_harness(data: dict[str, Any]) -> dict[str, Any]:
-    """Validate a harness dict; return a normalized copy or raise ValueError."""
+    """Validate a harness dict; return a normalized copy or raise ValueError.
+
+    ``version`` must equal ``HARNESS_VERSION`` (schema version of this
+    wrapper, not the dsh binary). ``kind`` must be the general
+    ``HARNESS_KIND``; legacy task-specific kinds are accepted on read and
+    normalized to the general kind so old nodes keep validating.
+    """
     if not isinstance(data, dict):
         raise _fail("harness must be a JSON object")
     if data.get("version") != HARNESS_VERSION:
         raise _fail(f"harness.version must be {HARNESS_VERSION}")
-    if data.get("kind") != HARNESS_KIND:
+    if data.get("kind") not in ({HARNESS_KIND} | set(LEGACY_HARNESS_KINDS)):
         raise _fail(f"harness.kind must be {HARNESS_KIND!r}")
 
     profile = data.get("profile", "headless")
@@ -296,18 +309,20 @@ def validate_dsh_harness(data: dict[str, Any]) -> dict[str, Any]:
         normalized_plugins.append({"id": pid, "name": name, "config": dict(config)})
 
     out = dict(data)
+    out["kind"] = HARNESS_KIND
     out["profile"] = profile
     out["dsh_plugins"] = normalized_plugins
     return out
 
 
-def default_customer_support_harness() -> dict[str, Any]:
-    """Bare seed harness: no default plugins.
+def default_harness() -> dict[str, Any]:
+    """Bare general seed harness: no default plugins.
 
     Every call starts with an empty patch layer — plugins are added per call
     via the ``harness`` field on ``POST /deepseek/chat`` and
     ``POST /deepseek/stream``. This returns the minimal valid harness so
     callers have a starting document to append ``dsh_plugins`` entries to.
+    Works for any benchmark/task, not just one domain.
     """
     return {
         "version": HARNESS_VERSION,
@@ -317,6 +332,11 @@ def default_customer_support_harness() -> dict[str, Any]:
         "model": {"provider": "deepseek-official", "model": "deepseek-chat"},
         "dsh_plugins": [],
     }
+
+
+def default_customer_support_harness() -> dict[str, Any]:
+    """Legacy alias for :func:`default_harness` (kept for back-compat)."""
+    return default_harness()
 
 
 def example_verifiable_harness() -> dict[str, Any]:
@@ -340,9 +360,9 @@ def example_verifiable_harness() -> dict[str, Any]:
                 "name": "@deepseek-ai/dsh-persona",
                 "config": {
                     "prefix": (
-                        "You are a customer-support agent. Start every reply "
+                        "You are a helpful AI agent. Start every reply "
                         "with the literal word VERIFIED on its own line, "
-                        "then answer the customer normally."
+                        "then answer normally."
                     ),
                 },
             },

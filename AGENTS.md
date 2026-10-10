@@ -110,9 +110,10 @@ Each scenario:
 
 Scoring (implemented in `app/services/evaluator.py`, LLM-judge only):
 - Direct GraffiLab API call per scenario (no harness rollout, no tool loop).
-- Fixed rubric, binary pass/fail plus a 0-100 score, temperature 0, strict
+- Fixed rubric, binary pass/fail plus a 0-100 score, temperature 0, harsh
   JSON verdict `{"passed": boolean, "score": number, "reason": string}`
-  (fence-tolerant parse; missing fields derive from each other, pass = 60+).
+  (fence-tolerant parse; missing fields derive conservatively, pass = 85+;
+  97-100 flawless only, forbidden action caps at 20, wrong final action at 59).
 - Judge model = `JUDGE_MODEL` override, else the provider model.
 - Score = mean of the per-scenario 0-100 scores (float, rounded to 2dp).
 - Scenarios are **optional**: an empty benchmark falls back to one generic

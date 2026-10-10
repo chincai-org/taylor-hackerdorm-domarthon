@@ -187,9 +187,7 @@ def apply_suggested_changes(
             raise ValueError(f"add_plugins[{index}].config must be an object")
         if plugin_id in _plugins_by_id(child):
             raise ValueError(f"add_plugins[{index}] duplicates existing plugin id {plugin_id!r}")
-        child["dsh_plugins"].append(
-            {"id": plugin_id, "name": name, "config": deepcopy(config)}
-        )
+        child["dsh_plugins"].append({"id": plugin_id, "name": name, "config": deepcopy(config)})
 
     removals = suggested_changes.get("remove_plugins", [])
     if not isinstance(removals, list) or not all(isinstance(item, str) for item in removals):

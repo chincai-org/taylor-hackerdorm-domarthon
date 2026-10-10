@@ -179,9 +179,7 @@ def read_trees() -> dict[str, Any]:
         result = []
         for tree in trees:
             nodes = list(
-                session.query(Node)
-                .filter(Node.tree_id == tree.id)
-                .order_by(Node.created_at)
+                session.query(Node).filter(Node.tree_id == tree.id).order_by(Node.created_at)
             )
             result.append(_tree(tree, nodes, get_benchmark(session, tree_id=tree.id)))
         return {"data": result, "total": len(result)}
@@ -193,9 +191,5 @@ def read_tree(tree_id: str) -> dict[str, Any]:
         tree = get_tree(session, tree_id)
         if tree is None:
             raise HTTPException(status_code=404, detail="Tree not found")
-        nodes = list(
-            session.query(Node)
-            .filter(Node.tree_id == tree.id)
-            .order_by(Node.created_at)
-        )
+        nodes = list(session.query(Node).filter(Node.tree_id == tree.id).order_by(Node.created_at))
         return _tree(tree, nodes, get_benchmark(session, tree_id=tree.id))

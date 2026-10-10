@@ -110,9 +110,7 @@ def get_tree_nodes(session: Session, *, tree_id: str) -> list[Node]:
     """Return every node in a tree in stable creation order."""
     return list(
         session.scalars(
-            select(Node)
-            .where(Node.tree_id == tree_id)
-            .order_by(Node.created_at, Node.id)
+            select(Node).where(Node.tree_id == tree_id).order_by(Node.created_at, Node.id)
         )
     )
 

@@ -351,12 +351,21 @@ def test_judge_reply_parsing() -> None:
     _, low, _ = _parse_judge_reply('{"passed": false, "score": -5, "reason": "x"}')
     assert low == 0.0
 
-    # Missing fields derive from each other (pass threshold 60).
+    # Inconsistent flag+score: pass requires both (hard rubric).
+    inconsistent_pass, _, _ = _parse_judge_reply('{"passed": true, "score": 80, "reason": "x"}')
+    assert inconsistent_pass is False
+
+    # Missing fields derive conservatively (pass threshold 85).
     derived_pass, derived_score, _ = _parse_judge_reply('{"score": 70, "reason": "x"}')
-    assert derived_pass is True
+    assert derived_pass is False
     assert derived_score == 70.0
+    derived_pass, derived_score, _ = _parse_judge_reply('{"score": 90, "reason": "x"}')
+    assert derived_pass is True
+    assert derived_score == 90.0
     _, fallback_score, _ = _parse_judge_reply('{"passed": false, "reason": "x"}')
     assert fallback_score == 0.0
+    _, fallback_pass_score, _ = _parse_judge_reply('{"passed": true, "reason": "x"}')
+    assert fallback_pass_score == 85.0
 
     passed, score, reason = _parse_judge_reply("not json at all")
     assert passed is False
@@ -392,7 +401,7 @@ def test_evaluator_calls_grafilab_directly_with_harness_text(monkeypatch) -> Non
             calls["temperature"] = kwargs.get("temperature")
             calls["system_text"] = kwargs.get("system_text")
             if len(prompts) == 1:
-                return {"reply": '{"passed": true, "score": 80, "reason": "judged"}'}
+                return {"reply": '{"passed": true, "score": 90, "reason": "judged"}'}
             return {"reply": '{"passed": false, "score": 40, "reason": "judged"}'}
 
         async def run_prompt_agent(self, *args: object, **kwargs: object) -> dict:
@@ -415,10 +424,10 @@ def test_evaluator_calls_grafilab_directly_with_harness_text(monkeypatch) -> Non
     assert isinstance(prompts, list) and len(prompts) == 2
     assert all(VALID_PATCH_YML.strip() in prompt for prompt in prompts)
     assert all("0-100" in prompt for prompt in prompts)
-    assert score == 60.0
+    assert score == 65.0
     assert result["passed"] == 1
     assert result["total"] == 2
-    assert result["scenarios"][0]["score"] == 80.0
+    assert result["scenarios"][0]["score"] == 90.0
     assert result["scenarios"][1]["score"] == 40.0
     assert result["judge_model"] == config.settings.GRAFFILAB_MODEL
 
@@ -454,6 +463,7 @@ def test_evaluator_empty_scenarios_falls_back_to_generic_review(monkeypatch) -> 
     assert result["scenarios"][0]["scenario_id"] == "generic-harness-review"
     assert result["scenarios"][0]["score"] == 90.0
 
+
 def test_create_child_rejects_non_complete_parents(monkeypatch) -> None:
     for status in ("pending", "running", "failed"):
         factory, _ = _session_factory()
@@ -479,6 +489,7 @@ def test_create_child_rejects_non_complete_parents(monkeypatch) -> None:
         with factory() as session:
             children = session.query(Node).filter(Node.parent_id == "root-1").all()
             assert children == []
+
 
 def test_create_child_rejects_full_harness_payload(monkeypatch) -> None:
     factory, _ = _session_factory()

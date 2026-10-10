@@ -94,7 +94,7 @@ def test_create_tree_persists_default_harness_and_root(monkeypatch) -> None:
     assert root["benchmark_result"] is not None
     assert root["benchmark_result"]["generic"] is True
     assert isinstance(root["harness"], str)
-    assert "model: \"grafilab/deepseek-v4-flash\"" in root["harness"]
+    assert 'model: "grafilab/deepseek-v4-flash"' in root["harness"]
     assert all(
         plugin_id in root["harness"]
         for plugin_id in ("core-logger", "llm-adapter", "tool-filesystem", "tool-search")

@@ -29,12 +29,18 @@ from app.services.deepseek_client import DeepSeekClient, DeepSeekNotAvailableErr
 logger = logging.getLogger(__name__)
 
 JUDGE_SYSTEM = (
-    "You are a strict, deterministic customer-support benchmark judge. "
+    "You are a harsh, deterministic customer-support benchmark judge. "
     "You receive a harness configuration and one benchmark scenario. "
     "Decide whether the harness would handle the scenario correctly and "
-    "score it from 0 to 100: 90-100 fully satisfies expectations, 70-89 "
-    "satisfies with minor gaps, 50-69 partially satisfies, 0-49 fails. "
-    "Mark passed true exactly when the score is 60 or higher. "
+    "score it from 0 to 100: 97-100 flawless with zero gaps, 85-96 "
+    "satisfies with only trivial gaps, 60-84 partially satisfies, 0-59 fails. "
+    "Be strict: award 100 only for perfect, production-grade handling. "
+    "Any forbidden action caps the score at 20 and fails. "
+    "Wrong final action caps at 59. Missing an expected tool caps at 79. "
+    "Invented policy or guaranteed outcomes cap at 39. "
+    "Missing escalation for billing/safety/unresolved issues caps at 79. "
+    "Mark passed true exactly when the score is 85 or higher. "
+    "When in doubt, score lower. "
     "Return ONLY a JSON object with exactly three keys: "
     '{"passed": boolean, "score": number, "reason": string}. '
     "No markdown, no extra text."
@@ -90,8 +96,11 @@ def _judge_prompt(patch_yml: str, scenario: dict[str, Any]) -> str:
             "customer-support persona, asks for missing details or escalates "
             "billing/safety/unresolved issues to humans, and never promises "
             "guaranteed outcomes or invents policy. "
-            "Score it 0-100 (90+ exemplary, 70+ solid, 50+ partial, below 50 "
-            "failing) with passed true exactly when the score is 60 or higher. "
+            "Be harsh: 97-100 flawless only, 85-96 trivial gaps only, 60-84 "
+            "partial, 0-59 failing. Missing escalation caps at 79, invented "
+            "policy or guaranteed outcomes cap at 39. "
+            "Score it 0-100 with passed true exactly when the score is 85 or "
+            "higher; when in doubt score lower. "
             'Reply with ONLY {"passed": true/false, "score": 0-100, "reason": "..."}.',
         ]
         return "\n".join(lines)
@@ -123,14 +132,18 @@ def _judge_prompt(patch_yml: str, scenario: dict[str, Any]) -> str:
         "intent/action for the customer message, route through the expected "
         "tools when given, take the expected final action when given, and "
         "avoid every forbidden action. "
-        "Score it 0-100 (90+ exemplary, 70+ solid, 50+ partial, below 50 "
-        "failing) with passed true exactly when the score is 60 or higher. "
+        "Be harsh: 97-100 flawless only, 85-96 trivial gaps only, 60-84 "
+        "partial, 0-59 failing. Any forbidden action caps at 20 and fails. "
+        "Wrong final action caps at 59. Missing an expected tool caps at 79. "
+        "Invented policy or guaranteed outcomes cap at 39. "
+        "Score it 0-100 with passed true exactly when the score is 85 or "
+        "higher; when in doubt score lower. "
         'Reply with ONLY {"passed": true/false, "score": 0-100, "reason": "..."}.',
     ]
     return "\n".join(lines)
 
 
-PASS_THRESHOLD = 60.0
+PASS_THRESHOLD = 85.0
 
 
 def _clamp_score(value: object) -> float | None:
@@ -155,10 +168,11 @@ def _parse_judge_reply(text: str) -> tuple[bool, float, str]:
         data = json.loads(cleaned)
     except (json.JSONDecodeError, ValueError):
         # Fall back to keyword scan so one malformed judge reply does not
-        # fail the whole node evaluation.
+        # fail the whole node evaluation. Conservative: never award more
+        # than the pass threshold on unparseable replies.
         lowered = cleaned.lower()
         if '"passed": true' in lowered or '"passed":true' in lowered:
-            return True, 100.0, cleaned[:500] or "judge keyword fallback: passed"
+            return True, PASS_THRESHOLD, cleaned[:500] or "judge keyword fallback: passed"
         return False, 0.0, (cleaned[:500] or "judge_parse_error: empty judge reply")
     if not isinstance(data, dict):
         return False, 0.0, "judge_parse_error: judge reply was not a JSON object"
@@ -169,9 +183,13 @@ def _parse_judge_reply(text: str) -> tuple[bool, float, str]:
     if not isinstance(passed, bool):
         # Derive the flag from the score when the judge omits it.
         passed = (score if score is not None else 0.0) >= PASS_THRESHOLD
+    elif score is not None:
+        # Enforce consistency: a pass requires both the flag and a score
+        # at or above threshold, so a generous flag alone cannot pass.
+        passed = passed and score >= PASS_THRESHOLD
     if score is None:
-        # Derive a score from the flag when the judge omits it.
-        score = 100.0 if passed else 0.0
+        # Derive a conservative score from the flag when the judge omits it.
+        score = PASS_THRESHOLD if passed else 0.0
     return passed, score, reason
 
 

@@ -108,25 +108,34 @@ Each scenario:
 - **Expected final action** (refund demand → `issue_refund`; policy violation → `deny_with_explanation`).
 - Optional **forbidden actions** (e.g. refund outside policy).
 
-Scoring (implemented in `app/services/evaluator.py`, rollout-then-judge, rubric v2):
-- Per scenario: roll out the harness via `POST {CANDIDATE_BASE_URL}/api/v1/deepseek/chat`
-  (`{prompt, harness_yml, max_steps, model}` pinned to the judge model), then one
-  GraffiLab judge call (temperature 0) over harness + expectations + actual output.
+Scoring (implemented in `app/services/evaluator.py`, one-shot rollout-then-judge, rubric v3 low-skew):
+- One-shot batch per node: the tree's dataset is loaded from the database
+  (`benchmarks.scenarios` via `load_benchmark_scenarios` /
+  `evaluate_tree_harness_sync`), all scenario questions are combined into ONE
+  prompt (`_batch_candidate_prompt`) and POSTed once with the harness text via
+  `POST {CANDIDATE_BASE_URL}/api/v1/deepseek/chat`
+  (`{prompt, harness_yml, max_steps, model}` pinned to the judge model), then a
+  single GraffiLab judge call (temperature 0) carries the harness + ALL
+  expectations + the full combined output, returning per-scenario verdicts
+  `{"scenarios": [{"scenario_id", "passed", "score", "reason"}...]}`.
 - Fixed rubric (single source of truth: `_rubric_text()`; system prompt and every
-  judge prompt embed the same text): bands 97-100 flawless / 85-96 satisfies /
-  60-84 partial / 0-59 fail; independent caps applied as minimum — forbidden action 20,
-  wrong final action 59, missing expected tool 79, invented policy/guaranteed outcome 39,
-  missing escalation (billing/safety/unresolved) 79. Binary pass/fail plus 0-100 score,
-  harsh JSON verdict `{"passed": boolean, "score": number, "reason": string}`
-  (fence-tolerant parse; unparseable verdicts fail at 0 and never pass; missing fields
-  derive conservatively, pass = score 85+ with `passed: true`).
+  judge prompt embed the same text): bands 99-100 flawless (essentially perfect
+  only) / 92-98 satisfies (narrow pass band) / 50-91 partial / 0-49 fail, deliberately
+  skewed low — most real outputs should land well below 50; independent caps applied
+  as minimum — forbidden action 10, wrong final action 30, missing expected tool 40,
+  invented policy/guaranteed outcome 15, missing escalation (billing/safety/unresolved) 40.
+  Binary pass/fail plus 0-100 score, harsh per-scenario verdicts
+  (fence-tolerant parse; unparseable verdicts fail those scenarios at 0 and never
+  pass; missing fields derive conservatively, pass = score 92+ with `passed: true`).
 - Judge model = `JUDGE_MODEL` override, else the provider model; judge temperature =
   `JUDGE_TEMPERATURE` (0). Rollout uses the candidate API's default sampling (no
   temperature pin available) — scores are comparable, not bit-identical.
 - Score = mean of the per-scenario 0-100 scores (float, rounded to 2dp).
-- Rollout error fails only its scenario (`candidate_error`, judge not called); judge
-  transport error (`judge_error`), unparseable verdict (`judge_parse_error`), and total-budget
-  exhaustion (`eval_total_timeout`, finished scenarios keep verdicts) all fail at 0.
+- Rollout error fails every scenario (`candidate_error`, judge not called, saves
+  quota); judge transport error (`judge_error`), unparseable verdict
+  (`judge_parse_error`), and total-budget exhaustion (`eval_total_timeout`) all
+  fail unfinished scenarios at 0. Results record `"batched": true` plus the shared
+  batch prompt/reply so scores stay comparable across runs.
 - Scenarios are **optional**: an empty benchmark falls back to one generic
   harness review (persona, escalation, no guaranteed outcomes), marked
   `"generic": true` on the result so Workbuddy knows it is not scenario-backed.
@@ -160,23 +169,23 @@ Rules:
 - `create_child_node` verifies the derived parent revision against the current database harness; no schema field is required.
 - `suggested_changes` is parent-relative, not a full harness file; unmentioned fields are preserved and the server caps the payload at 120 lines.
 - `create_child_node` validates parent exists and belongs to the tree. Eval is
-  synchronous (blocks with per-scenario + total timeouts); no poll tool.
+  synchronous (blocks with batch + total timeouts); no poll tool.
 - No stuck `running`; mark `failed` on error/timeout.
 - Errors clear + actionable (what wrong, what next).
 
 ## 9. Evaluation Flow (server-side)
 
 1. `create_child_node` inserts node `status=pending` (root nodes: `POST /api/v1/trees`).
-2. Evaluator sets `running`, rolls out the harness per scenario via the candidate
-   API, then judges each rollout via GraffiLab (one JSON verdict per scenario;
-   generic review when scenarios are empty).
+2. Evaluator sets `running`, rolls out the harness in one shot via the candidate
+   API (all scenario questions in ONE prompt), then judges once via GraffiLab
+   (one verdict per scenario; generic review when scenarios are empty).
 3. Writes `score` + `result`, sets `complete` (or `failed` + error).
 4. Frontend + MCP read updated node.
 
-- Per-scenario + total timeouts (`JUDGE_TIMEOUT_S`, `EVAL_CANDIDATE_TIMEOUT_S`,
+- Batch + total timeouts (`JUDGE_TIMEOUT_S`, `EVAL_CANDIDATE_TIMEOUT_S`,
   `EVAL_TOTAL_TIMEOUT_S`) → protects API quota (hackathon budget!). Total-budget
   exhaustion fails only unfinished scenarios; finished verdicts are kept.
-- Deterministic where possible (judge temperature 0, fixed rubric v2 recorded on
+- Deterministic where possible (judge temperature 0, fixed rubric v3 recorded on
   every result; rollout inherits candidate default sampling).
 
 ## 10. Frontend Requirements

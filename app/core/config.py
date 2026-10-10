@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     GRAFFILAB_MODEL: str = "grafilab/deepseek-v4-flash"
 
     # LLM judge settings (used to score new nodes right after creation).
-    # Scoring contract: temperature 0, rubric v2 in app/services/evaluator.py.
+    # Scoring contract: temperature 0, rubric v3 in app/services/evaluator.py.
     JUDGE_MODEL: str | None = None
     JUDGE_TIMEOUT_S: float = 30.0
     JUDGE_TEMPERATURE: float = 0.0
@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     EVAL_CANDIDATE_TIMEOUT_S: float = 60.0
     EVAL_TOTAL_TIMEOUT_S: float = 90.0
 
-    # Candidate rollout: the harness under test is executed once per scenario
+    # Candidate rollout: the harness under test is executed once per node
     # via POST {base}/api/v1/deepseek/chat with {prompt, harness_yml}. The
     # rollout reply is then sent to the Grafilab judge for scoring.
     CANDIDATE_BASE_URL: str = "https://taylor-hackerdorm-domarthon-production.up.railway.app"

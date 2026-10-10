@@ -66,11 +66,13 @@ fields such as version, kind, profile, or dsh_plugins. Send only a JSON object
 with the changes to apply: existing plugin config updates go in `plugins`, new
 rows in `add_plugins`, removals in `remove_plugins`, and top-level prompt/model
 updates in `system_prompt` / `model`. The server preserves every unmentioned
-parent field, rejects suggestions longer than 120 lines, then rolls out the
-child per benchmark scenario via the candidate API and judges each rollout
-with Grafilab (temperature 0, JSON verdict per scenario; empty benchmark falls
-back to one generic rollout + review). The returned node is `complete` with a
-score, or `failed` with an error.
+parent field, rejects suggestions longer than 120 lines, then evaluates the
+child in one shot: the tree's benchmark dataset is loaded from the database,
+all scenario questions are combined into ONE candidate prompt POSTed once with
+the child harness, and the full combined output plus ALL scenario expectations
+goes to Grafilab in a single judge call (temperature 0, per-scenario verdicts;
+empty benchmark falls back to one generic rollout + review). The returned node
+is `complete` with a score, or `failed` with an error.
 """
 
 mcp_server = MCPServer(
@@ -233,11 +235,13 @@ def create_child_node(
     Existing plugin rows are partially updated through ``plugins``; use
     ``add_plugins`` and ``remove_plugins`` for row additions/removals. All
     unmentioned parent data is retained and the suggestion payload must stay
-    within 120 lines. The server materializes the child patch, rolls it out
-    per benchmark scenario via the candidate API, then judges each rollout
-    with Grafilab (temperature 0, JSON verdict per scenario). The call blocks
-    until rollout + judging finishes; the returned node is ``complete`` with
-    a score, or ``failed`` with an error.
+    within 120 lines. The server materializes the child patch, loads the
+    tree's benchmark dataset from the database, combines all scenario
+    questions into ONE candidate prompt POSTed once with the child harness,
+    then sends the full combined output plus ALL expectations to Grafilab in
+    a single judge call (temperature 0, per-scenario verdicts). The call
+    blocks until rollout + judging finishes; the returned node is ``complete``
+    with a score, or ``failed`` with an error.
     """
     if not isinstance(parent_revision, str) or not parent_revision.strip():
         raise ValueError(
@@ -292,10 +296,6 @@ def create_child_node(
         node_tree_id = node.tree_id
         node_parent_id = node.parent_id
         node_rationale = node.rationale
-        benchmark = repository.get_benchmark(session, tree_id=tree_id)
-        scenarios: list[dict[str, Any]] = []
-        if benchmark is not None and isinstance(benchmark.scenarios, list):
-            scenarios = [s for s in benchmark.scenarios if isinstance(s, dict)]
 
     # Scenarios are optional: an empty benchmark falls back to one generic
     # harness review inside the evaluator, so the node still gets a score.
@@ -308,9 +308,11 @@ def create_child_node(
         )
 
     try:
-        from app.services.evaluator import evaluate_harness_sync
+        from app.services.evaluator import evaluate_tree_harness_sync
 
-        score, benchmark_result = evaluate_harness_sync(patch_yml, scenarios)
+        # DB-backed one-shot: dataset re-read from benchmarks.scenarios,
+        # all questions in one candidate POST, full context to one judge call.
+        score, benchmark_result = evaluate_tree_harness_sync(tree_id, patch_yml)
     except Exception as exc:  # noqa: BLE001 - node must land failed, never stuck running
         error = {"code": type(exc).__name__, "message": str(exc)[:500]}
         with session_scope() as session:

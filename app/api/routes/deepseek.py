@@ -52,8 +52,7 @@ class ChatRequest(BaseModel):
     )
     harness: str | None = Field(
         default=None,
-        description="Raw cordis.patch.yml text. Mutually exclusive with "
-        "'harness_yml'.",
+        description="Raw cordis.patch.yml text. Mutually exclusive with 'harness_yml'.",
     )
     harness_yml: str | None = Field(
         default=None,
@@ -66,12 +65,29 @@ class ChatRequest(BaseModel):
         description="Profile override for 'harness_yml' (else read from the "
         "document, else headless)",
     )
+    max_steps: int = Field(
+        default=5,
+        ge=1,
+        le=10,
+        description="Agent loop cap (model -> execute -> feed back). 1 = single-shot.",
+    )
+    auto_tools: bool = Field(
+        default=True,
+        description="Derive executable tools from harness rows (fs/web).",
+    )
 
 
 class ChatResponse(BaseModel):
     reply: str
     tool_calls: list[dict[str, Any]] = Field(
-        default_factory=list, description="Tool calls the model made (not executed server-side)"
+        default_factory=list,
+        description="Tool calls made (executed server-side when steps present)",
+    )
+    steps: list[dict[str, Any]] = Field(
+        default_factory=list, description="Agent loop trace: [{tool_calls, tool_results}] per step"
+    )
+    executed_tools: list[str] = Field(
+        default_factory=list, description="Tool families executed from harness (e.g. ['fs', 'web'])"
     )
     model: str | None = None
     applied_plugins: list[str] = Field(default_factory=list)
@@ -102,7 +118,37 @@ def _resolve(req: ChatRequest) -> dict[str, Any]:
             patch_yml = to_cordis_patch_yml(harness)
         except ValueError as e:  # pragma: no cover - coerce already validated
             raise HTTPException(status_code=422, detail=str(e)) from e
-    return {**rt, "harness": harness, "patch_yml": patch_yml, **meta}
+    # Merge harness-derived executable tools (fs/web families) under explicit tools.
+    from app.services.tool_runtime import tools_for_harness
+
+    auto_tools_list, families = tools_for_harness(harness) if req.auto_tools else ([], [])
+    seen = {t.get("function", {}).get("name") for t in (req.tools or [])}
+    merged = list(req.tools or []) + [
+        t for t in auto_tools_list if t.get("function", {}).get("name") not in seen
+    ]
+    # A harness row that now executes is no longer "ignored" — surface it.
+    applied = list(rt.get("applied_plugins", []))
+    ignored = [
+        p
+        for p in rt.get("ignored_plugins", [])
+        if p not in ("dsh-plugin-fs", "dsh-plugin-web-search")
+    ]
+    for fam in families:
+        applied.append(f"auto-tools:{fam}")
+    policy = list(rt.get("policy_notes", []))
+    if families:
+        policy.append(f"auto-tools={','.join(families)} max_steps={req.max_steps}")
+    resolved = {**rt, "harness": harness, "patch_yml": patch_yml, **meta}
+    resolved.update(
+        {
+            "applied_plugins": applied,
+            "ignored_plugins": ignored,
+            "policy_notes": policy,
+            "effective_tools": merged or None,
+            "executed_tools": families,
+        }
+    )
+    return resolved
 
 
 @router.get("/health")
@@ -118,19 +164,20 @@ def deepseek_health() -> dict[str, str | bool]:
 
 @router.post("/chat", response_model=ChatResponse)
 async def chat_with_deepseek(req: ChatRequest) -> ChatResponse:
-    """Send a prompt to DeepSeek and return the complete reply."""
+    """Send a prompt to DeepSeek; autonomous tool loop up to max_steps."""
     rt = _resolve(req)
     try:
         # Per-request timeout override: build a scoped client.
         client = _get_client()
         if req.timeout is not None:
             client.default_timeout = req.timeout
-        result = await client.run_prompt_single(
+        result = await client.run_prompt_agent(
             req.prompt,
             timeout=req.timeout,
             system_text=rt["system_text"],
             model=rt["model"],
-            tools=req.tools,
+            tools=rt.get("effective_tools"),
+            max_steps=req.max_steps,
         )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
@@ -145,6 +192,8 @@ async def chat_with_deepseek(req: ChatRequest) -> ChatResponse:
     return ChatResponse(
         reply=result["reply"],
         tool_calls=result["tool_calls"],
+        steps=result.get("steps", []),
+        executed_tools=rt.get("executed_tools", []),
         model=rt["model"] or settings.DEEPSEEK_MODEL,
         applied_plugins=rt["applied_plugins"],
         ignored_plugins=rt["ignored_plugins"],
@@ -159,11 +208,11 @@ async def chat_with_deepseek(req: ChatRequest) -> ChatResponse:
 
 @router.post("/stream")
 async def stream_with_deepseek(req: ChatRequest) -> StreamingResponse:
-    """Stream DeepSeek token deltas as Server-Sent Events.
+    """Stream an autonomous agent loop as Server-Sent Events.
 
     First event is always ``{"harness": "..."}`` containing the per-call
-    harness text and metadata, then ``{"delta"}``
-    chunks, an optional ``{"tool_calls": [...]}`` event, then
+    harness text and metadata, then per-step ``{"step"}`` / ``{"tool_calls"}``
+    / ``{"tool_result"}`` events, ``{"delta"}`` for the final reply, then
     ``{"status": "done"}`` or ``{"error"}``.
     """
     import json
@@ -189,11 +238,12 @@ async def stream_with_deepseek(req: ChatRequest) -> StreamingResponse:
             )
         }
         yield f"data: {json.dumps({'harness': rt['patch_yml'], **metadata})}\n\n"
-        async for line in _get_client().stream_prompt(
+        async for line in _get_client().stream_prompt_agent(
             req.prompt,
             system_text=rt["system_text"],
             model=rt["model"],
-            tools=req.tools,
+            tools=rt.get("effective_tools"),
+            max_steps=req.max_steps,
         ):
             yield line
 

@@ -133,6 +133,102 @@ class DeepSeekClient:
             f"DeepSeek model '{self.model}' returned no text or tool call."
         )
 
+    async def run_prompt_agent(
+        self,
+        prompt: str,
+        timeout: float | None = None,
+        *,
+        system_text: str | None = None,
+        model: str | None = None,
+        tools: list[dict[str, Any]] | None = None,
+        max_steps: int = 5,
+    ) -> dict[str, Any]:
+        """Run an autonomous tool loop: model -> execute -> feed back, up to max_steps.
+
+        Each iteration that returns ``tool_calls`` executes them locally via
+        ``app.services.tool_runtime`` (sandboxed, never raises) and appends
+        ``{"role": "tool", ...}`` results before calling the model again.
+        Returns ``{"reply", "tool_calls" (all), "steps": [...]}`` where each
+        step is ``{"tool_calls": [...], "tool_results": [...]}``.
+        ``max_steps=1`` behaves like :meth:`run_prompt_single`.
+        """
+        import json as _json
+
+        from app.services.tool_runtime import execute as _execute
+
+        if not prompt or not prompt.strip():
+            raise ValueError("prompt must be a non-empty string")
+        max_steps = max(1, min(int(max_steps or 1), 10))
+        messages: list[dict[str, Any]] = []
+        if system_text and system_text.strip():
+            messages.append({"role": "system", "content": system_text.strip()})
+        messages.append({"role": "user", "content": prompt})
+        create_kwargs_base: dict[str, Any] = {"model": model or self.model}
+        if tools:
+            create_kwargs_base["tools"] = tools
+            create_kwargs_base["tool_choice"] = "auto"
+        client = self._client(timeout)
+        all_calls: list[dict[str, Any]] = []
+        steps: list[dict[str, Any]] = []
+        try:
+            for _ in range(max_steps):
+                resp = await client.chat.completions.create(messages=messages, **create_kwargs_base)
+                message = resp.choices[0].message if resp.choices else None
+                text = (message.content or "").strip() if message and message.content else ""
+                tool_calls = self._parse_tool_calls(message) if message is not None else []
+                if not tool_calls:
+                    if text or all_calls:
+                        return {"reply": text, "tool_calls": all_calls, "steps": steps}
+                    raise DeepSeekEmptyReplyError(
+                        f"DeepSeek model '{self.model}' returned no text or tool call."
+                    )
+                all_calls.extend(tool_calls)
+                results: list[dict[str, Any]] = []
+                for tc in tool_calls:
+                    out = _execute(tc.get("name", ""), tc.get("arguments", {}))
+                    results.append(
+                        {
+                            "tool_call_id": tc.get("id", ""),
+                            "name": tc.get("name", ""),
+                            "result": out,
+                        }
+                    )
+                steps.append({"tool_calls": tool_calls, "tool_results": results})
+                messages.append(
+                    {
+                        "role": "assistant",
+                        "content": text or None,
+                        "tool_calls": [
+                            {
+                                "id": tc.get("id", ""),
+                                "type": "function",
+                                "function": {
+                                    "name": tc.get("name", ""),
+                                    "arguments": _json.dumps(tc.get("arguments", {})),
+                                },
+                            }
+                            for tc in tool_calls
+                        ],
+                    }
+                )
+                for tc, res in zip(tool_calls, results):
+                    messages.append(
+                        {
+                            "role": "tool",
+                            "tool_call_id": tc.get("id", ""),
+                            "content": _json.dumps(res["result"]),
+                        }
+                    )
+            # Out of steps: ask once more for a final text-only summary.
+            resp = await client.chat.completions.create(
+                model=create_kwargs_base["model"], messages=messages
+            )
+            message = resp.choices[0].message if resp.choices else None
+            text = (message.content or "").strip() if message and message.content else ""
+            return {"reply": text, "tool_calls": all_calls, "steps": steps}
+        finally:
+            await client.close()
+
     async def stream_prompt(
         self,
         prompt: str,
@@ -207,3 +303,55 @@ class DeepSeekClient:
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
         finally:
             await client.close()
+
+    async def stream_prompt_agent(
+        self,
+        prompt: str,
+        *,
+        system_text: str | None = None,
+        model: str | None = None,
+        tools: list[dict[str, Any]] | None = None,
+        max_steps: int = 5,
+    ) -> AsyncGenerator[str, None]:
+        """Stream an autonomous tool loop as SSE.
+
+        Reuses :meth:`run_prompt_agent` (non-streaming per step for
+        reliability) but yields incremental events so the existing stream
+        contract keeps working: ``{"step"}`` / ``{"tool_calls"}`` /
+        ``{"tool_result"}`` per iteration, then ``{"delta"}`` for the final
+        reply and ``{"status": "done"}``.
+        """
+        import json
+
+        if not prompt or not prompt.strip():
+            raise ValueError("prompt must be a non-empty string")
+        try:
+            self.check_configured()
+        except DeepSeekNotAvailableError as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            return
+        try:
+            result = await self.run_prompt_agent(
+                prompt,
+                system_text=system_text,
+                model=model,
+                tools=tools,
+                max_steps=max_steps,
+            )
+        except Exception as e:  # noqa: BLE001 - streamed to client as SSE error
+            logger.exception("DeepSeek agent loop failed")
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+            return
+        for i, step in enumerate(result.get("steps", []), start=1):
+            yield f"data: {json.dumps({'step': i, 'tool_calls': step['tool_calls']})}\n\n"
+            for tr in step.get("tool_results", []):
+                yield f"data: {json.dumps({'tool_result': tr})}\n\n"
+        if result.get("tool_calls"):
+            yield f"data: {json.dumps({'tool_calls': result['tool_calls']})}\n\n"
+        reply = result.get("reply", "")
+        if reply:
+            yield f"data: {json.dumps({'delta': reply})}\n\n"
+        if not reply and not result.get("tool_calls"):
+            yield f"data: {json.dumps({'error': 'DeepSeek returned no text'})}\n\n"
+        else:
+            yield f"data: {json.dumps({'status': 'done'})}\n\n"

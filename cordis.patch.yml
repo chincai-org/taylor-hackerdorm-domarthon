@@ -7,9 +7,10 @@
   - id: llm-adapter
     name: '@deepseek-ai/dsh-plugin-openai'
     config:
-      baseURL: 'https://api.deepseek.com'
+      baseURL: 'https://llm.grafilab.ai/v1'
       apiKey: '${ENV:DEEPSEEK_API_KEY}'
       model: 'grafilab/deepseek-v4-flash'
+      forceToolCalling: true
       
   - id: tool-filesystem
     name: '@deepseek-ai/dsh-plugin-fs'

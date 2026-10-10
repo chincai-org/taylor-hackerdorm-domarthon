@@ -69,7 +69,7 @@ Don't restructure without reason.
 │   ├── db/                  # Engine, models, repository (SQLAlchemy + Neon Postgres)
 │   ├── harness/             # Harness import helpers
 │   ├── schemas/             # Shared Pydantic models (MCP + REST)
-│   ├── services/            # PI clients, digest helpers
+│   ├── services/            # PI clients, digest helpers, tool runtime (agent loop)
 │   ├── mcp_server.py        # MCP tool definitions
 │   └── web/                 # Everything browser sees
 │       ├── templates/       # Live pages: base.html, gallery.html (/),
@@ -179,16 +179,38 @@ uv run ruff check .
 uv run pytest
 ```
 
-### DeepSeek agent API (prompt + harness, streamed over SSE)
+### DeepSeek agent API (autonomous tool loop, streamed over SSE)
 
-- `POST /api/v1/deepseek/chat` → one JSON reply (`reply`, `tool_calls`, harness echo).
+- `POST /api/v1/deepseek/chat` → one JSON reply (`reply`, `tool_calls`, `steps`, harness echo).
 - `POST /api/v1/deepseek/stream` → same result as SSE (`curl -N` / no-buffer keeps live).
-- Both take `{ prompt, harness_yml?, harness?, system_prompt?, tools?, model?, timeout? }`.
+- Both take `{ prompt, harness_yml?, harness?, system_prompt?, tools?, model?,
+  timeout?, max_steps?, auto_tools? }`.
   Harness is raw `cordis.patch.yml` text in `harness` or `harness_yml`. Mutually
   exclusive; omit both → bare prompt-only.
-- SSE order: first event always `{"harness": "..."}` (harness text plus metadata)
-  → `{"delta"}` chunks → optional
-  `{"tool_calls"}` → `{"status": "done"}` or `{"error"}`.
+- `max_steps` (default 5, 1–10): agent-loop cap — model → execute tools →
+  feed `role:tool` results back → repeat until text-only reply or cap.
+  `1` = old single-shot. `auto_tools` (default true) derives executable tools
+  from harness rows; explicit `tools` always merge on top (no dedup clobber).
+- Harness rows *enable* tool families (schemas fixed server-side in
+  `app/services/tool_runtime.py`): `dsh-plugin-fs` / `dsh-fs*` → `fs_list`,
+  `fs_read` (sandboxed to `./workspace`, traversal blocked, caps); 
+  `dsh-plugin-web-search` / `dsh-tool-web*` → `web_search`, `web_fetch`
+  (stdlib `urllib`, short timeout, truncated text). Enabled families move from
+  `ignored_plugins` to `applied_plugins` as `auto-tools:fs` / `auto-tools:web`
+  + `policy_notes: "auto-tools=fs,web max_steps=N"`. Truly inert rows (e.g.
+  `cordisjs:plugin-logger`) stay `ignored`. Executors never raise — failures
+  become `{"error": ...}` so the loop can recover. `dsh-plugin-openai` allows
+  only `{baseURL, apiKey, apiKeyEnv, model}`; extras (e.g. `forceToolCalling`)
+  are dropped with a `warnings` entry. Harness `baseURL` is echo-only
+  (`policy_notes`); the call uses server `DEEPSEEK_BASE_URL`.
+- Chat reply: `tool_calls` = all calls across steps (executed server-side),
+  `steps` = per-step `{tool_calls, tool_results}`, `executed_tools` = families
+  (e.g. `["fs","web"]`).
+- SSE order: first event always `{"harness": "..."}` (harness text + `model`,
+  `applied_plugins`, `ignored_plugins`, `policy_notes`, `warnings`, `dropped`)
+  → per step `{"step": N, "tool_calls": [...]}` + one `{"tool_result": {...}}`
+  per call → aggregate `{"tool_calls": [...]}` → `{"delta": final reply}` →
+  `{"status": "done"}` or `{"error"}`.
 - Needs server-side `DEEPSEEK_API_KEY` (`GET /api/v1/deepseek/health` reports `available`;
   else chat/stream → `503`).
 
@@ -207,7 +229,27 @@ curl -N -X POST https://taylor-hackerdorm-domarthon-production.up.railway.app/ap
 `jq --rawfile yml` reads `cordis.patch.yml` as raw string into `$yml`, builds
 `{prompt, harness_yml}` into `/tmp/body.json`; `curl -N` POSTs to prod host (local:
 `http://127.0.0.1:5001/api/v1/deepseek/stream`). Swap `prompt` / `yml` for other
-scenarios/harnesses.
+scenarios/harnesses. `max_steps` defaults to 5 (autonomous loop); add
+`max_steps: 1` for single-shot or `auto_tools: false` to disable harness tools.
+
+Observed SSE transcript (trimmed — `web_search` hit rate limits, `web_fetch`
+of the pasted GitHub URL succeeded, model then answered from tool output):
+
+```text
+data: {"harness": "# Generated from Node.harness ...", "model": "grafilab/deepseek-v4-flash",
+        "applied_plugins": ["dsh-plugin-openai", "auto-tools:fs", "auto-tools:web"],
+        "ignored_plugins": ["cordisjs:plugin-logger"],
+        "policy_notes": ["harness baseURL=https://llm.grafilab.ai/v1",
+                         "auto-tools=fs,web max_steps=5"],
+        "warnings": ["llm-adapter: dropped unsupported config key 'forceToolCalling'"], ...}
+data: {"step": 1, "tool_calls": [{"name": "web_search", "arguments": {"query": "..."}}, ...]}
+data: {"tool_result": {"name": "web_search", "result": {"answer": "", ...}}}
+data: {"step": 2, "tool_calls": [{"name": "web_fetch", "arguments": {"url": "https://github.com/lhldev/cneuron"}}]}
+data: {"tool_result": {"name": "web_fetch", "result": {"url": "...", "content": "GitHub - lhldev/cneuron: Lightweight MLP library in C. ..."}}}
+data: {"tool_calls": [...all three...]}
+data: {"delta": "I found the repository **lhldev/cneuron** ... Lightweight MLP library in C ..."}
+data: {"status": "done"}
+```
 
 Local + Vercel both use Neon Postgres. Local pooled string in `.env.development.local`;
 Vercel provides own `DATABASE_URL`. Same DB code both envs, only credentials differ.

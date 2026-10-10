@@ -271,9 +271,6 @@ class PiRpcWrapper:
         command = {"id": state.request_id, "type": "prompt", "message": prompt}
         proc.stdin.write(json.dumps(command).encode("utf-8") + b"\n")
         await proc.stdin.drain()
-        
-        # FIX 1: Close stdin so the Pi CLI knows no more commands are coming
-        proc.stdin.close()
 
         try:
             while True:
@@ -304,13 +301,17 @@ class PiRpcWrapper:
                     # If no deltas ever streamed, emit the authoritative text.
                     if not before and state.final_text:
                         yield f"data: {json.dumps({'delta': state.final_text})}\n\n"
-                    
-                    # FIX 2: Force break the loop as soon as the assistant's message ends
-                    break
-                    
+                    # Pi stays alive waiting for more prompts on open stdin,
+                    # so stop after the assistant message instead of waiting
+                    # for agent_settled (which may never come). Only break on
+                    # the assistant message; ignore user/tool echoes.
+                    message = record.get("message") or {}
+                    if message.get("role") == "assistant":
+                        break
+
                 elif self._is_settled(record):
                     break
-            
+
             if not state.combined_text().strip():
                 err = self._empty_reply_error(state, "")
                 yield f"data: {json.dumps({'error': str(err)})}\n\n"

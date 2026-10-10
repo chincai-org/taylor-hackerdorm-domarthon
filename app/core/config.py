@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Vercel + FastAPI"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
+    DATABASE_URL: str | None = None
+    LOCAL_DATABASE_PATH: str = "data/local.db"
 
 
 settings = Settings()

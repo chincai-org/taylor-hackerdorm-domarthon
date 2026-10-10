@@ -52,7 +52,7 @@ We are building a system where **one AI optimizes the harness of another AI**, i
 ## 4. Tech Stack
 
 - **Backend:** Python, FastAPI, official MCP Python SDK (`mcp`) mounted alongside FastAPI.
-- **Database:** simple + local-friendly. Default to **SQLite** (via SQLModel or plain `sqlite3`) unless the team decides otherwise. Keep DB access behind a small repository module so swapping is cheap.
+- **Database:** SQLAlchemy models and repository helpers with SQLite by default for local development and Neon Postgres for Vercel. Store harnesses, benchmark scenarios, and results in JSON fields; keep DB access behind `app/db/repository.py`.
 - **Frontend:** hosted on **Vercel**. Tree visualization (e.g., React Flow / d3 / simple SVG). Prefer whatever the team already scaffolded.
 - **Evaluation runtime:** PI via the GraffiLab AI API.
 
@@ -75,17 +75,22 @@ Adjust to match what actually exists; don't restructure without reason.
 │   ├── benchmarks/          # Benchmark definitions (customer support)
 │   └── tests/
 ├── web/                     # Frontend (Vercel)
+├── app/
+│   └── db/
+│       ├── engine.py        # Engine, sessions, and table creation
+│       ├── models.py        # Tree, Node, and Benchmark tables
+│       └── repository.py    # Database helper functions
 └── scripts/                 # Seed data, local dev helpers
 ```
 
 ## 6. Data Model (starting point)
 
 ```
-Tree:   id, name, created_at, benchmark_id
+Tree:   id, name, description, benchmark_id, root_node_id, status, metadata, created_at
 Node:   id, tree_id, parent_id (nullable for root), harness (JSON/text),
         status (pending | running | complete | failed),
-        score (float), result (JSON), rationale (text), created_at
-Benchmark: id, name, scenarios (JSON)
+        score (float), benchmark_result (JSON), rationale (text), error (JSON), created_at
+Benchmark: id, name, version, scenarios (JSON), created_at
 ```
 
 - The **root node** of every tree has a seed harness and is evaluated on creation.
@@ -156,27 +161,36 @@ Guidelines:
 
 ## 11. Development Commands
 
-> Update these to match the real setup once scaffolding exists.
-
 ```bash
-# Backend
-cd server
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
+# Install/sync Python dependencies
+uv sync
 
-# Frontend
-cd web
-npm install
-npm run dev
+# Start the FastAPI + MCP server locally
+uv run uvicorn app.main:app --reload --port 5001
 
-# Tests
-cd server && pytest
+# Or use the development entry point
+uv run python main.py
+
+# Create the local SQLite schema
+uv run python -c "from app.db import create_tables; create_tables()"
+
+# Format and lint
+uv run ruff format .
+uv run ruff check .
+
+# Run tests when test files are present
+uv run pytest
 ```
+
+Local development uses SQLite at `data/local.db` by default. Set
+`LOCAL_DATABASE_PATH` to use another local SQLite file. For Vercel/Neon,
+set `DATABASE_URL` to the pooled Postgres connection string before starting
+the application; do not use SQLite as the production database.
 
 Environment variables (never commit secrets; provide `.env.example`):
 - `GRAFFILAB_API_KEY` (confirm name) — PI evaluation API
-- `DATABASE_URL` — defaults to local SQLite file
+- `DATABASE_URL` — optional production database URL; use Neon Postgres on Vercel
+- `LOCAL_DATABASE_PATH` — local SQLite path, default `data/local.db`
 - `NEXT_PUBLIC_API_URL` / equivalent — frontend → server base URL
 
 ## 12. Coding Conventions
@@ -213,7 +227,19 @@ Environment variables (never commit secrets; provide `.env.example`):
 - [ ] Server deployed/reachable by Workbuddy; frontend deployed on Vercel.
 - [ ] README/demo script showing the full loop.
 
-## 15. Open Questions (resolve early, then update this file)
+## 15. Database Plan
+
+- Production uses **Neon Postgres** through Vercel's `DATABASE_URL`.
+- Local development uses SQLite at `data/local.db` when `DATABASE_URL` is unset.
+- SQLAlchemy is the shared database layer; SQLite and Postgres use the same models and repository functions.
+- `trees` store optimization sessions, `benchmarks` store immutable scenario sets, and `nodes` store the general tree using `tree_id` plus `parent_id`.
+- Harnesses, benchmark scenarios, benchmark results, metadata, and evaluation errors are JSON fields.
+- `create_root_node` enforces one root per tree; `create_child_node` validates that the parent belongs to the requested tree.
+- Nodes are retained, including failed and regressed attempts. Evaluation updates status, score, result, and error through `update_node_evaluation`.
+- The local SQLite file is ignored by Git and must not be used as Vercel production storage because serverless filesystems are ephemeral.
+- Database schema creation is exposed through `create_tables()` for local setup. Production migrations should be added before schema changes are deployed.
+
+## 16. Open Questions (resolve early, then update this file)
 
 - Final database choice (SQLite default).
 - Exact GraffiLab AI / PI API shape, auth, and rate limits.

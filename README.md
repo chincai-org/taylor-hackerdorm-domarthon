@@ -87,7 +87,19 @@ Start the server with `uv run python main.py` or:
 uv run uvicorn app.main:app --reload --port 5001
 ```
 
+When deployed on Vercel, the production endpoint is (note the required trailing slash):
+
+```text
+https://taylor-hackerdorm-domarthon-tanzhiheng86gmailcoms-projects.vercel.app/mcp/
+```
+
 The template currently exposes one example tool, `get_support_item`. Replace
 or add tools in [app/mcp_server.py](app/mcp_server.py). The endpoint uses the
 official Python MCP SDK and stateless HTTP sessions, making it suitable for
 local development and simple deployments.
+
+> **Note:** The Vercel project must NOT have Deployment Protection covering
+> production ("All Deployments" / "Only Production Deployments"), otherwise
+> MCP clients receive a Vercel SSO redirect instead of the SSE stream and
+> fail with "Invalid content type, expected text/event-stream". Use
+> "Only Preview Deployments" or disabled protection.

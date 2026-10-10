@@ -49,7 +49,7 @@ def _session_factory() -> tuple[sessionmaker[Session], object]:
     return sessionmaker(bind=engine, expire_on_commit=False), engine
 
 
-def _seed(session: Session) -> None:
+def _seed(session: Session, *, root_status: str = "complete") -> None:
     session.add(Benchmark(id="benchmark-1", name="support", scenarios=[{"id": "login"}]))
     session.add(
         Tree(
@@ -65,7 +65,9 @@ def _seed(session: Session) -> None:
             id="root-1",
             tree_id="tree-1",
             harness=VALID_PATCH_YML,
-            status="pending",
+            status=root_status,
+            score=42.0 if root_status == "complete" else None,
+            benchmark_result={"scenarios": []} if root_status == "complete" else None,
             rationale="Baseline",
         )
     )
@@ -195,6 +197,33 @@ def test_create_child_applies_only_suggested_changes(monkeypatch) -> None:
         assert child.harness == result["patch_yml"]
         assert child.score is None
         assert child.benchmark_result is None
+
+
+def test_create_child_rejects_non_complete_parents(monkeypatch) -> None:
+    for status in ("pending", "running", "failed"):
+        factory, _ = _session_factory()
+        with factory() as session:
+            _seed(session, root_status=status)
+        _patch_mcp_scope(monkeypatch, factory)
+
+        parent = mcp_server.get_node("tree-1", "root-1")
+        try:
+            mcp_server.create_child_node(
+                "tree-1",
+                "root-1",
+                parent["parent_revision"],
+                suggested_changes={"plugins": []},
+            )
+        except ValueError as exc:
+            message = str(exc)
+            assert f"status is '{status}'" in message
+            assert "Only complete nodes can have children" in message
+        else:
+            raise AssertionError(f"{status} parent was accepted")
+
+        with factory() as session:
+            children = session.query(Node).filter(Node.parent_id == "root-1").all()
+            assert children == []
 
 
 def test_create_child_rejects_full_harness_payload(monkeypatch) -> None:

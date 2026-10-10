@@ -72,6 +72,11 @@ def create_child_node(
     parent = session.get(Node, parent_id)
     if parent is None or parent.tree_id != tree_id:
         raise ValueError("Parent node does not exist in the requested tree")
+    if parent.status != "complete":
+        raise ValueError(
+            f"Parent node '{parent_id}' cannot have children while its status is "
+            f"'{parent.status}'. Only complete nodes can have children."
+        )
 
     node = Node(
         tree_id=tree_id,

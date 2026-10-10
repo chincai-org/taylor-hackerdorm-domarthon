@@ -135,7 +135,7 @@ Rules:
 - `get_node` is the required parent-read step before creating a child; pass its `parent_revision` unchanged to `create_child_node`.
 - `create_child_node` verifies the derived parent revision against the current database harness; no schema field is required.
 - `suggested_changes` is parent-relative, not a full harness file; unmentioned fields are preserved and the server caps the payload at 120 lines.
-- `create_child_node` validates parent exists and belongs to the tree.
+- `create_child_node` validates parent exists, belongs to the tree, and has status `complete`; pending, running, and failed nodes cannot receive children.
 - Eval slow → async + poll, or block with sane timeout. No stuck `running`; mark `failed` on error/timeout.
 - Errors clear + actionable (what wrong, what next).
 

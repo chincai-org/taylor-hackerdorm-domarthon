@@ -55,8 +55,10 @@ Canonical workflow (follow this order):
    parent content you intend to improve.
 4. Choose parent_id from get_node().node_id or checkout_tree().nodes[].id. Use
    the actual UUID; never send a display position such as n000 or the word root.
-5. Pass get_node().parent_revision back to create_child_node unchanged.
-6. Call create_child_node(tree_id, parent_id, parent_revision, suggested_changes,
+5. The selected parent must have status `complete`; pending, running, and failed
+   nodes cannot receive children.
+6. Pass get_node().parent_revision back to create_child_node unchanged.
+7. Call create_child_node(tree_id, parent_id, parent_revision, suggested_changes,
    rationale).
 
 create_child_node is parent-relative. Do not send a full harness, raw YAML, or
@@ -136,6 +138,10 @@ def _load_tree_digest(tree_id: str) -> dict[str, Any]:
                 "Pass the actual node id from nodes[].id to get_node and "
                 "create_child_node; do not pass nodes[].position or 'root'."
             ),
+            "parent_status_rule": (
+                "Only nodes with status 'complete' can receive children; "
+                "pending, running, and failed nodes are not valid parents."
+            ),
             "create_child_node": {
                 "tree_id": tree_id,
                 "parent_id": "<get_node().node_id>",
@@ -199,6 +205,11 @@ def get_node(tree_id: str, node_id: str) -> dict[str, Any]:
             "next_step": (
                 "Pass this node_id as parent_id and this parent_revision unchanged; "
                 "then call create_child_node with only parent-relative suggested_changes."
+                if node.status == "complete"
+                else (
+                    f"Do not use this node as a parent while its status is "
+                    f"'{node.status}'. Wait for evaluation to reach 'complete'."
+                )
             ),
         }
 
@@ -219,7 +230,8 @@ def create_child_node(
     Existing plugin rows are partially updated through ``plugins``; use
     ``add_plugins`` and ``remove_plugins`` for row additions/removals. All
     unmentioned parent data is retained and the suggestion payload must stay
-    within 120 lines.
+    within 120 lines. The parent node must have status ``complete``; nodes that
+    are pending, running, or failed cannot receive children.
     """
     if not isinstance(parent_revision, str) or not parent_revision.strip():
         raise ValueError(
@@ -237,6 +249,11 @@ def create_child_node(
             raise ValueError(
                 f"Parent node '{parent_id}' was not found in tree '{tree_id}'. "
                 "Use get_node() or checkout_tree() and select a node from that tree."
+            )
+        if parent.status != "complete":
+            raise ValueError(
+                f"Parent node '{parent_id}' cannot have children while its status is "
+                f"'{parent.status}'. Only complete nodes can have children."
             )
 
         current_revision = _parent_revision(parent.harness)

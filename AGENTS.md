@@ -119,15 +119,15 @@ Scoring:
 
 Workbuddy flow: user gives `tree_id` + `node_id`, prompts **"Improve this node"**. Call order ≈ table order.
 
-| Tool                                                        | Purpose                                                                   |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `list_trees()`                                              | Sessions (id, name, best score, node count).                              |
-| `get_tree(tree_id)`                                         | Tree summary + structure (node ids, parents, scores).                     |
-| `get_node(tree_id, node_id)`                                | Harness, benchmark results (incl. per-scenario failures), rationale.      |
-| `get_children(tree_id, node_id)`                            | Prior attempts: harness diffs/results/rationale.                          |
-| `get_benchmark(tree_id)`                                    | Benchmark description → what gets measured.                               |
+| Tool                                                                  | Purpose                                                                                        |
+| --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `list_trees()`                                                        | Sessions (id, name, best score, node count).                                                   |
+| `get_tree(tree_id)`                                                   | Tree summary + structure (node ids, parents, scores).                                          |
+| `get_node(tree_id, node_id)`                                          | Harness, benchmark results (incl. per-scenario failures), rationale.                           |
+| `get_children(tree_id, node_id)`                                      | Prior attempts: harness diffs/results/rationale.                                               |
+| `get_benchmark(tree_id)`                                              | Benchmark description → what gets measured.                                                    |
 | `create_child_node(tree_id, parent_id, suggested_changes, rationale)` | Create child from bounded parent-relative changes; preserve unmentioned parent harness fields. |
-| `get_node_status(tree_id, node_id)`                         | Poll eval status/result.                                                  |
+| `get_node_status(tree_id, node_id)`                                   | Poll eval status/result.                                                                       |
 
 Rules:
 - **Concise structured JSON**. Truncate big payloads; offer drill-down.
@@ -353,6 +353,7 @@ Relationships/constraints:
 - Root: `parent_id = NULL`; child: `parent_id` = parent. No DB FK on parent — repo enforces creation/validation.
 - `trees.root_node_id` nullable while tree being created.
 - JSON fields: scenarios, results, tree metadata, eval errors. Harnesses are text.
+- scenarios is an array of objects: `{question: string, answer: string}`.
 - Status ∈ `pending`, `running`, `complete`, `failed`.
 - `ix_nodes_tree_parent` (`tree_id`, `parent_id`) → traversal.
 - `ix_nodes_tree_status` (`tree_id`, `status`) → status filter.
@@ -377,15 +378,10 @@ Relationships/constraints:
   focus on selected link; live region announces changes.
 - `app/web/static/live-viewer.js` drives both pages (fetch, lineage SVG, node panel, copy
   controls). Sets `has-js` itself + clipboard `execCommand` fallback + below-fold card
-<<<<<<< Updated upstream
   reveal (IO-guarded, reduced-motion respected). Lineage labels cut at word boundary +
   `…`, full text in SVG `<title>` tooltip + `aria-label`; selected node auto-scrolls
   inside plate (plate only, never page). No Node build needed in Python container.
 - Live nodes: `pending`, `running`, `complete`, `failed`; nullable raw scores, harness text,
-=======
-  reveal (IO-guarded, reduced-motion respected). No Node build needed in Python container.
-- Live nodes: `pending`, `running`, `complete`, `failed`; nullable raw scores, harness JSON,
->>>>>>> Stashed changes
   rationale, results, errors. Harness payload has copy control (payload verbatim).
   Scenario-array results → passed/failed/unscored cards; summary-only → labeled facts. No raw
   result JSON in normal detail UI. Wide lineage SVG centered in bounded scroll stage.

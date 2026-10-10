@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+import inspect
 import os
 from contextlib import contextmanager
 from typing import Iterator
@@ -15,11 +17,17 @@ from app.api.routes.deepseek import ChatRequest, _resolve
 from app.db.models import Base, Benchmark, Node, Tree
 from app.harness.dsh import to_cordis_patch_yml
 
+VALID_PATCH_YML = """- id: persona
+  name: '@deepseek-ai/dsh-persona'
+  config:
+    prefix: You are a careful customer support agent.
+"""
+
 VALID_HARNESS = {
     "version": 1,
     "kind": "dsh-default",
     "profile": "headless",
-    "system_prompt": "",
+    "system_prompt": "You are a careful customer support agent.",
     "model": {"provider": "deepseek-official", "model": "deepseek-chat"},
     "dsh_plugins": [
         {
@@ -29,12 +37,6 @@ VALID_HARNESS = {
         }
     ],
 }
-
-VALID_PATCH_YML = """- id: persona
-  name: '@deepseek-ai/dsh-persona'
-  config:
-    prefix: You are a careful customer support agent.
-"""
 
 
 def _session_factory() -> tuple[sessionmaker[Session], object]:
@@ -62,7 +64,7 @@ def _seed(session: Session) -> None:
         Node(
             id="root-1",
             tree_id="tree-1",
-            harness=VALID_HARNESS,
+            harness=VALID_PATCH_YML,
             status="pending",
             rationale="Baseline",
         )
@@ -96,19 +98,37 @@ def test_list_and_checkout_return_database_tree(monkeypatch) -> None:
     assert listing["total"] == 1
     assert listing["trees"][0]["tree_id"] == "tree-1"
     assert listing["trees"][0]["node_count"] == 1
+    assert "checkout_tree(tree_id)" in listing["next_step"]
+    assert listing["workflow"][0].startswith("Choose tree_id")
 
     digest = mcp_server.checkout_tree("tree-1")
     assert digest["tree"]["name"] == "DeepSeek support"
     assert digest["stats"]["total_nodes"] == 1
     assert digest["nodes"][0]["position"] == "n000"
-    assert digest["nodes"][0]["harness"]["profile"] == "headless"
-    assert digest["nodes"][0]["harness"]["dsh_plugins"][0]["id"] == "persona"
+    assert "@deepseek-ai/dsh-persona" in digest["nodes"][0]["harness"]
+    assert "customer support agent" in digest["nodes"][0]["harness"]
     assert digest["digest_hash"]
     assert "DEEPSEEK HARNESS TREE DIGEST" in digest["digest_text"]
-    assert "harness=dsh:headless" in digest["digest_text"]
+    assert "harness=text chars=" in digest["digest_text"]
+    assert "parent_id_rule" in digest["workflow"]
+    assert "nodes[].id" in digest["workflow"]["parent_id_rule"]
 
 
-def test_create_child_persists_deepseek_harness_without_evaluation(monkeypatch) -> None:
+def test_mcp_contract_has_one_canonical_harness_argument() -> None:
+    signature = inspect.signature(mcp_server.create_child_node)
+    assert list(signature.parameters) == ["tree_id", "parent_id", "harness", "rationale"]
+
+    tools = asyncio.run(mcp_server.mcp_server.list_tools())
+    create_tool = next(tool for tool in tools if tool.name == "create_child_node")
+    properties = create_tool.input_schema["properties"]
+    assert set(properties) == {"tree_id", "parent_id", "harness", "rationale"}
+    assert "harness_yml" not in properties
+    assert "actual" in (create_tool.description or "")
+    assert "node ID" in (create_tool.description or "")
+    assert "raw" in (create_tool.description or "")
+
+
+def test_create_child_persists_raw_patch_without_evaluation(monkeypatch) -> None:
     factory, _ = _session_factory()
     with factory() as session:
         _seed(session)
@@ -117,7 +137,7 @@ def test_create_child_persists_deepseek_harness_without_evaluation(monkeypatch) 
     result = mcp_server.create_child_node(
         tree_id="tree-1",
         parent_id="root-1",
-        harness=VALID_HARNESS,
+        harness=VALID_PATCH_YML,
         rationale="Adds a persona prefix.",
     )
 
@@ -127,66 +147,15 @@ def test_create_child_persists_deepseek_harness_without_evaluation(monkeypatch) 
         "scheduled": False,
         "reason": "The benchmark runner is not implemented yet.",
     }
-    assert result["harness_source"] == "json"
+    assert result["harness_source"] == "yml"
     assert "persona" in result["patch_yml"]
     with factory() as session:
         child = session.get(Node, result["node_id"])
         assert child is not None
         assert child.parent_id == "root-1"
-        assert child.harness == VALID_HARNESS
+        assert child.harness == result["patch_yml"]
         assert child.score is None
         assert child.benchmark_result is None
-
-
-def test_create_child_accepts_patch_yml_text(monkeypatch) -> None:
-    factory, _ = _session_factory()
-    with factory() as session:
-        _seed(session)
-    _patch_mcp_scope(monkeypatch, factory)
-
-    result = mcp_server.create_child_node(
-        tree_id="tree-1",
-        parent_id="root-1",
-        harness_yml=VALID_PATCH_YML,
-        rationale="Same persona via yml.",
-    )
-
-    assert result["status"] == "pending"
-    assert result["harness_source"] == "yml"
-    assert result["harness"]["dsh_plugins"][0]["id"] == "persona"
-    assert "persona" in result["patch_yml"]
-    with factory() as session:
-        child = session.get(Node, result["node_id"])
-        assert child is not None
-        assert child.harness["profile"] == "headless"
-
-
-def test_create_child_accepts_yml_string_in_harness_field(monkeypatch) -> None:
-    factory, _ = _session_factory()
-    with factory() as session:
-        _seed(session)
-    _patch_mcp_scope(monkeypatch, factory)
-
-    result = mcp_server.create_child_node(
-        tree_id="tree-1",
-        parent_id="root-1",
-        harness=VALID_PATCH_YML,  # type: ignore[arg-type]
-    )
-    assert result["harness_source"] == "yml"
-
-
-def test_create_child_rejects_both_harness_forms(monkeypatch) -> None:
-    factory, _ = _session_factory()
-    with factory() as session:
-        _seed(session)
-    _patch_mcp_scope(monkeypatch, factory)
-
-    try:
-        mcp_server.create_child_node("tree-1", "root-1", VALID_HARNESS, harness_yml=VALID_PATCH_YML)
-    except ValueError as exc:
-        assert "either" in str(exc).lower()
-    else:
-        raise AssertionError("both harness forms were accepted")
 
 
 def test_create_child_rejects_non_deepseek_harness(monkeypatch) -> None:
@@ -195,8 +164,10 @@ def test_create_child_rejects_non_deepseek_harness(monkeypatch) -> None:
         _seed(session)
     _patch_mcp_scope(monkeypatch, factory)
 
-    invalid = {"version": 1, "kind": "dsh-default", "profile": "headless", "dsh_plugins": []}
-    invalid["dsh_plugins"] = [{"id": "x", "name": "@not-a/real-plugin", "config": {}}]
+    invalid = """- id: persona
+  name: '@deepseek-ai/dsh-persona'
+  config: {}
+"""
     try:
         mcp_server.create_child_node("tree-1", "root-1", invalid)
     except ValueError as exc:
@@ -212,7 +183,7 @@ def test_create_child_rejects_garbage_yml(monkeypatch) -> None:
     _patch_mcp_scope(monkeypatch, factory)
 
     try:
-        mcp_server.create_child_node("tree-1", "root-1", harness_yml=": : : not yaml {{{")
+        mcp_server.create_child_node("tree-1", "root-1", harness=": : : not yaml {{{")
     except ValueError as exc:
         assert "Invalid DeepSeek harness" in str(exc)
     else:
@@ -228,7 +199,7 @@ def test_digest_text_keeps_string_failures_and_harness_name(monkeypatch) -> None
                 id="failed-1",
                 tree_id="tree-1",
                 parent_id="root-1",
-                harness={"name": "unsafe-shortcut", "tools": []},
+                harness="name: unsafe-shortcut\ntools: []\n",
                 status="failed",
                 score=10.0,
                 benchmark_result={"failed_scenarios": ["Ignored company policy"]},
@@ -238,7 +209,7 @@ def test_digest_text_keeps_string_failures_and_harness_name(monkeypatch) -> None
     _patch_mcp_scope(monkeypatch, factory)
 
     digest = mcp_server.checkout_tree("tree-1")
-    assert "harness=unsafe-shortcut" in digest["digest_text"]
+    assert "harness=text chars=" in digest["digest_text"]
     assert "failed scenarios: Ignored company policy" in digest["digest_text"]
 
 
@@ -257,7 +228,7 @@ def test_deepseek_resolve_rejects_both_forms() -> None:
 
     try:
         _resolve(
-            ChatRequest(prompt="hi", harness=VALID_HARNESS, harness_yml=VALID_PATCH_YML)  # type: ignore[arg-type]
+            ChatRequest(prompt="hi", harness=VALID_PATCH_YML, harness_yml=VALID_PATCH_YML)
         )
     except HTTPException as exc:
         assert exc.status_code == 422

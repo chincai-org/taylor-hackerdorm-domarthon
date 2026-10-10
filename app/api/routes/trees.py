@@ -15,6 +15,7 @@ from app.db.repository import (
     list_trees,
 )
 from app.db.repository import create_tree as persist_tree
+from app.harness.dsh import to_cordis_patch_yml
 from app.harness.importer import import_harness
 
 router = APIRouter(prefix="/trees", tags=["trees"])
@@ -129,7 +130,7 @@ def create_tree_endpoint(request: CreateTreeRequest) -> dict[str, Any]:
         create_root_node(
             session,
             tree_id=tree.id,
-            harness=imported["harness"],
+            harness=to_cordis_patch_yml(imported["harness"]),
             rationale="Initial DeepSeek harness loaded from cordis.patch.yml.",
         )
         nodes = list(

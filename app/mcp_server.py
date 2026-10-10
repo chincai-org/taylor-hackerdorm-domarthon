@@ -37,16 +37,32 @@ if vercel_host:
     allowed_origins.append(f"https://{vercel_host}")
 
 
+MCP_WORKFLOW_INSTRUCTIONS = """DeepSeek harness tree optimizer.
+
+Canonical workflow (follow this order):
+1. Call list_trees() before choosing a session.
+2. Choose a tree_id from list_trees().trees.
+3. Call checkout_tree(tree_id).
+4. Choose parent_id from checkout_tree().nodes[].id. Use the actual UUID; do
+   not send the display position (for example n000) or the word root.
+5. Call create_child_node(tree_id, parent_id, harness, rationale).
+
+create_child_node has one canonical harness input: `harness` must be raw
+cordis.patch.yml text. Do not send a JSON object and do not use a
+`harness_yml` argument. The server validates the text, normalizes supported
+DeepSeek plugins, stores the generated patch text, and creates a pending node.
+Evaluation is currently skipped, so no score is produced for a new node.
+
+Minimal valid harness example:
+- id: persona
+  name: '@deepseek-ai/dsh-persona'
+  config:
+    prefix: You are a careful customer-support agent.
+"""
+
 mcp_server = MCPServer(
     name=settings.PROJECT_NAME,
-    instructions=(
-        "DeepSeek customer-support harness optimizer. "
-        "At the start of every optimizer session, call list_trees first. "
-        "After the user chooses a tree, call checkout_tree with its tree_id. "
-        "Use the returned digest to choose a parent node and submit only a "
-        "DeepSeek harness object through create_child_node. Evaluation is "
-        "currently skipped, so newly created nodes remain pending."
-    ),
+    instructions=MCP_WORKFLOW_INSTRUCTIONS,
     version=settings.VERSION,
 )
 
@@ -90,6 +106,10 @@ def list_trees() -> dict[str, Any]:
         return {
             "trees": summaries,
             "total": len(summaries),
+            "workflow": [
+                "Choose tree_id from trees[].tree_id.",
+                "Call checkout_tree(tree_id).",
+            ],
             "next_step": "Choose a tree_id and call checkout_tree(tree_id).",
         }
 
@@ -99,11 +119,25 @@ def _load_tree_digest(tree_id: str) -> dict[str, Any]:
         tree = repository.get_tree(session, tree_id)
         if tree is None:
             raise ValueError(f"Tree '{tree_id}' was not found. Call list_trees() first.")
-        return digest_tree(
+        digest = digest_tree(
             tree,
             repository.get_tree_nodes(session, tree_id=tree_id),
             repository.get_benchmark(session, tree_id=tree_id),
         )
+        digest["workflow"] = {
+            "parent_id_rule": (
+                "Pass the actual node id from nodes[].id to create_child_node; "
+                "do not pass nodes[].position or 'root'."
+            ),
+            "create_child_node": {
+                "tree_id": tree_id,
+                "parent_id": "<nodes[].id>",
+                "harness": "<raw cordis.patch.yml text>",
+                "rationale": "<why this harness is different>",
+            },
+            "evaluation": "skipped; new nodes remain pending",
+        }
+        return digest
 
 
 @mcp_server.tool()
@@ -121,24 +155,32 @@ def checkout_tree(tree_id: str) -> dict[str, Any]:
 def create_child_node(
     tree_id: str,
     parent_id: str,
-    harness: str | None = None,
+    harness: str,
     rationale: str | None = None,
-    harness_yml: str | None = None,
-    harness_profile: str | None = None,
 ) -> dict[str, Any]:
-    """Store a validated DeepSeek harness as a new child node.
+    """Create a pending child from raw DeepSeek ``cordis.patch.yml`` text.
 
-    Pass the harness as raw ``cordis.patch.yml`` text. The text is validated
-    server-side via the importer and stored unchanged as text. Evaluation is
-    deliberately skipped until the test runner is implemented; the node is
-    stored as pending and no score is invented.
+    Call this only after ``checkout_tree``. ``parent_id`` must be the actual
+    node ID from ``nodes[].id``; the root node's ID is valid and may be used to
+    expand directly from the root. ``harness`` is required raw YAML text, not a
+    JSON object. Use this shape:
+
+    - id: persona
+      name: '@deepseek-ai/dsh-persona'
+      config:
+        prefix: You are a careful customer-support agent.
+
+    Do not send ``harness_yml``: this tool intentionally has one canonical
+    harness argument so clients cannot choose the wrong field. The server
+    validates and normalizes the YAML, stores the generated patch text, and
+    skips evaluation; the returned node remains ``pending``.
     """
-    if harness is None and harness_yml is None:
+    if not harness.strip():
         raise ValueError(
-            "Missing harness. Pass 'harness' (raw cordis.patch.yml text)."
+            "Missing harness. Pass raw cordis.patch.yml text in the 'harness' argument."
         )
     try:
-        normalized_harness, meta = coerce_harness(harness, harness_yml, profile=harness_profile)
+        normalized_harness, meta = coerce_harness(harness)
     except Exception as exc:
         raise ValueError(f"Invalid DeepSeek harness. Details: {exc}") from exc
     assert normalized_harness is not None  # coerce returns None only when both inputs are None
@@ -180,7 +222,10 @@ def create_child_node(
                 "scheduled": False,
                 "reason": "The benchmark runner is not implemented yet.",
             },
-            "next_step": "Call checkout_tree(tree_id) to inspect the new pending node.",
+            "next_step": (
+                "Call checkout_tree(tree_id) to inspect the new pending node. "
+                "Use this node's id for any further child."
+            ),
         }
 
 

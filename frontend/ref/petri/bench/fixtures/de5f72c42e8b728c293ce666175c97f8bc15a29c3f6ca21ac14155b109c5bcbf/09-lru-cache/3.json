@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "09-lru-cache",
+  "attemptIndex": 3,
+  "source": "export function createCache(capacity) {\n  if (typeof capacity !== 'number') throw new TypeError('capacity must be a number');\n  if (!Number.isInteger(capacity) || capacity < 0) {\n    throw new RangeError('capacity must be an integer of at least 0');\n  }\n\n  const entries = new Map();\n\n  return {\n    get(key) {\n      if (!entries.has(key)) return undefined;\n      const value = entries.get(key);\n      entries.delete(key);\n      entries.set(key, value);\n      return value;\n    },\n    set(key, value) {\n      if (capacity === 0) return undefined;\n      entries.delete(key);\n      entries.set(key, value);\n      while (entries.size > capacity) {\n        const oldest = entries.keys().next().value;\n        entries.delete(oldest);\n      }\n      return undefined;\n    },\n    has(key) {\n      return entries.has(key);\n    },\n    delete(key) {\n      return entries.delete(key);\n    },\n    size() {\n      return entries.size;\n    },\n    keys() {\n      return [...entries.keys()];\n    },\n  };\n}\n",
+  "tokens": 1162,
+  "harnessMs": 7579,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "f0eee5527bb21e5e7f6bdce3aed32cf2",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "96a5b285e3003f007ce6fa98261362d1df1da501ec2ffab67b9ccb61848473b7",
+  "inputTokens": 912,
+  "outputTokens": 250
+}

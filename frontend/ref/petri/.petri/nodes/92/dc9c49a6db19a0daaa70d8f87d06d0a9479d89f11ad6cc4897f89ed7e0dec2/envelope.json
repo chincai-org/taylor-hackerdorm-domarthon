@@ -1,0 +1,13 @@
+{
+  "body": {
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+    "hyp": "Putting the signatures and the worked example back after the trim restores the pass rate, because the task text alone does not fix the reply shape.",
+    "node": "92dc9c49a6db19a0daaa70d8f87d06d0a9479d89f11ad6cc4897f89ed7e0dec2",
+    "parent": "f07e0c55c08f73d57441947f14e148ebce9c5a0913db1fb2aa80687327b88fba",
+    "tree": "petri-main",
+    "type": "NodeSubmitted"
+  },
+  "pub": "91b851346bf486649e66aac9581b68c0d126e0fbe3cd2a8d24a14079ee3a662a",
+  "sig": "bf66c9317b9e495b0ebddabb7f6d3d324b2e8d516bcdaedd9f07253d8aec4364f585c157e816752979b55e18dedf2ec828808d01f9338cfa7ffb17fc6d85b904",
+  "ver": 1
+}

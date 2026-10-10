@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "08-semver-compare",
+  "title": "Compare two semantic version strings",
+  "difficulty": "medium",
+  "entry": "solution.mjs",
+  "exports": ["compare"],
+  "signatures": ["export function compare(a: string, b: string): -1 | 0 | 1"],
+  "timeoutMs": 5000,
+  "testCount": 10,
+  "tags": ["strings", "ordering", "validation"]
+}

@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "6666aa69455499737042e676fd082a9978c92fb50ef7d845c1c63ef5e7018da3",
+  "taskId": "15-glob-match",
+  "attemptIndex": 4,
+  "source": "// A greedy wildcard matcher. `*` stands for any run of characters.\nexport function matchGlob(pattern, path) {\n  let p = 0;\n  let s = 0;\n  let star = -1;\n  let mark = 0;\n\n  while (s < path.length) {\n    if (p < pattern.length && (pattern[p] === '?' || pattern[p] === path[s])) {\n      p += 1;\n      s += 1;\n      continue;\n    }\n    if (p < pattern.length && pattern[p] === '*') {\n      star = p;\n      mark = s;\n      p += 1;\n      continue;\n    }\n    if (star !== -1) {\n      p = star + 1;\n      mark += 1;\n      s = mark;\n      continue;\n    }\n    return false;\n  }\n\n  while (p < pattern.length && pattern[p] === '*') p += 1;\n  return p === pattern.length;\n}\n",
+  "tokens": 859,
+  "harnessMs": 5427,
+  "recordedAt": "2026-09-12T10:04:11.000Z",
+  "recordedFrom": {
+    "runId": "58deae1615be76546fb6b3a4f25e449c",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "57a593fb0e8fc029ba5fd9eaca3ed37eb4e80771bb685d6dd8162f077ebbcfd8",
+  "inputTokens": 691,
+  "outputTokens": 168
+}

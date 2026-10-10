@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "19-expression-eval",
+  "title": "Evaluate an arithmetic expression string",
+  "difficulty": "hard",
+  "entry": "solution.mjs",
+  "exports": ["evaluate"],
+  "signatures": ["export function evaluate(expr: string): number"],
+  "timeoutMs": 15000,
+  "testCount": 12,
+  "tags": ["parsing", "arithmetic", "precedence", "edge-cases"]
+}

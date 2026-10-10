@@ -1,0 +1,73 @@
+{
+  "areaMismatch": false,
+  "claimedMedianBp": 2500,
+  "claimedRuns": [
+    {
+      "passed": 5,
+      "scoreBp": 2500,
+      "tokens": 17276,
+      "wallMs": 2226
+    },
+    {
+      "passed": 5,
+      "scoreBp": 2500,
+      "tokens": 17276,
+      "wallMs": 2202
+    },
+    {
+      "passed": 5,
+      "scoreBp": 2500,
+      "tokens": 17276,
+      "wallMs": 2206
+    },
+    {
+      "passed": 5,
+      "scoreBp": 2500,
+      "tokens": 17276,
+      "wallMs": 2189
+    },
+    {
+      "passed": 5,
+      "scoreBp": 2500,
+      "tokens": 17276,
+      "wallMs": 2203
+    }
+  ],
+  "derivedAreas": [
+    "prompt"
+  ],
+  "mechanical": {
+    "cls": "ok",
+    "command": "",
+    "evidence": "",
+    "exitCode": 0
+  },
+  "mode": "replay",
+  "node": "e1adae18d486647e273e4a8f68bde285b738e2b7b519107565524168834b9c95",
+  "parentHarness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "proposal": {
+    "contradicts": [],
+    "falsifiedIf": "The median score falls by 1000bp or more.",
+    "files": [
+      {
+        "contents": "/**\n * LEVER: `prompt` — what the harness says to the model.\n *\n * V1 is the honest baseline, and it carries a real defect on purpose.\n * `buildUserPrompt` sends the exported symbol NAMES only. It never sends the\n * full signatures, so the model has to guess the argument order and the argument\n * types. That headroom is deliberate. It is the first thing a reader should see.\n *\n * Things a later node might try here:\n *   - send `s.signature` as well as `s.name` (motif: include-signatures)\n *   - add one worked example of the exact reply shape (motif: one-worked-example)\n *   - state the output format as a hard rule instead of a sentence\n *   - name the file extension and the module system in the system text\n *   - reorder the parts, so the task text is last and stays closest to the answer\n *\n * Keep the system text short. It is sent on every call of every task, so each\n * added line is paid for 20 times per run and 100 times per 5-run median.\n */\nimport type { TaskView } from './contract.js';\nimport type { RetrievedContext } from './retrieval.js';\n\nexport function buildSystemPrompt(): string {\n  return [\n    'You are a JavaScript programmer.',\n    'Write complete, runnable ESM code.',\n    'Reply with one fenced code block and nothing else.',\n  ].join('\\n');\n}\n\nexport function buildUserPrompt(task: TaskView, context: RetrievedContext): string {\n  const parts: string[] = [];\n  parts.push(`Task: ${task.prompt}`);\n  parts.push(`Write the file ${task.entryFile}.`);\n  // V1 sends symbol NAMES only. The full signatures are deliberately withheld.\n  parts.push(`It must export: ${task.exportedSymbols.map((s) => s.name).join(', ')}.`);\n  if (task.constraints.length > 0) {\n    parts.push(`Constraints:\\n${task.constraints.map((c) => `- ${c}`).join('\\n')}`);\n  }\n  for (const f of context.files) parts.push(`--- ${f.path} ---\\n${f.contents}`);\n  return parts.join('\\n\\n');\n}\n",
+        "path": "harness/prompt.ts"
+      }
+    ],
+    "hypothesis": "A shorter prompt without the signatures and the reply-shape block keeps the pass rate and cuts tokens, because the model already writes fenced code.",
+    "metric": "score",
+    "motif": "short-prompt",
+    "predictedDelta": -500,
+    "primaryArea": "prompt",
+    "reasoning": "",
+    "whyNotUntested": null
+  },
+  "protocol": "petri/detail/1",
+  "provenance": {
+    "digestHash": "",
+    "model": "none",
+    "promptHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "seed": 7,
+    "source": "human"
+  }
+}

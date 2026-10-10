@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "6666aa69455499737042e676fd082a9978c92fb50ef7d845c1c63ef5e7018da3",
+  "taskId": "12-template-render",
+  "attemptIndex": 2,
+  "source": "export function render(template, data) {\n  return template.replace(/\\{\\{([^}]*)\\}\\}/g, (whole, path) => {\n    const segments = path.trim().split('.');\n    let current = data;\n    for (const segment of segments) {\n      if (current === undefined || current === null) return whole;\n      current = current[segment];\n    }\n    return current === undefined ? whole : String(current);\n  });\n}\n",
+  "tokens": 716,
+  "harnessMs": 3946,
+  "recordedAt": "2026-09-12T10:04:11.000Z",
+  "recordedFrom": {
+    "runId": "592ff913eb1935adac6573e515ee2ee0",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "35f33c0c9e2138890a29352dcbf1263c2a15c6bfe16bb7909d7e567a87f23f5d",
+  "inputTokens": 616,
+  "outputTokens": 100
+}

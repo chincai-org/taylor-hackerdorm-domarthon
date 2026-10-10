@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "20-immutable-set-in",
+  "attemptIndex": 3,
+  "source": "const isContainer = (value) => value !== null && typeof value === 'object';\nconst has = (target, key) => Object.prototype.hasOwnProperty.call(target, key);\n\nfunction copyWith(container, key, value) {\n  if (Array.isArray(container)) {\n    const copy = container.slice();\n    copy[key] = value;\n    return copy;\n  }\n  const copy = {};\n  for (const name of Object.keys(container)) copy[name] = container[name];\n  copy[key] = value;\n  return copy;\n}\n\nfunction write(current, path, depth, value) {\n  const key = path[depth];\n  if (Array.isArray(current)) {\n    if (typeof key !== 'number') throw new TypeError('a string key cannot address an array');\n    if (key > current.length) throw new RangeError('an index past the end of the array');\n  } else if (typeof key !== 'string') {\n    throw new TypeError('a number key cannot address a plain object');\n  }\n\n  const held = current[key];\n  const present = Array.isArray(current) ? key < current.length : has(current, key);\n\n  if (depth === path.length - 1) {\n    if (present && Object.is(held, value)) return current;\n    return copyWith(current, key, value);\n  }\n\n  const child = isContainer(held)\n    ? held\n    : (typeof path[depth + 1] === 'number' ? [] : {});\n  const next = write(child, path, depth + 1, value);\n  if (next === child && child === held) return current;\n  return copyWith(current, key, next);\n}\n\nexport function setIn(obj, path, value) {\n  if (!Array.isArray(path)) throw new TypeError('path must be an array');\n  for (const key of path) {\n    const ok = typeof key === 'string'\n      || (typeof key === 'number' && Number.isInteger(key) && key >= 0);\n    if (!ok) throw new TypeError('every key must be a string or an integer of at least 0');\n  }\n  if (path.length === 0) return value;\n  if (!isContainer(obj)) throw new TypeError('obj must be a plain object or an array');\n  return write(obj, path, 0, value);\n}\n",
+  "tokens": 1281,
+  "harnessMs": 7366,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "f0eee5527bb21e5e7f6bdce3aed32cf2",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "1bf43e9d536d534dcf94d881977bc77d9e8cd9406bbcb0aa579f0d444578994b",
+  "inputTokens": 809,
+  "outputTokens": 472
+}

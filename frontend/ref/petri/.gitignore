@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Secrets. NEVER commit these.
+.petri/identity.json
+.env
+
+# Local Petri state that is derived or transient.
+# .petri/log.jsonl and .petri/config.json ARE safe to commit.
+# Design rule 3 says nothing is deleted, so the log belongs in git.
+.petri/index/
+.petri/scratch/
+.petri/log.lock
+.petri/mirror-cache.jsonl
+
+# OS noise
+.DS_Store

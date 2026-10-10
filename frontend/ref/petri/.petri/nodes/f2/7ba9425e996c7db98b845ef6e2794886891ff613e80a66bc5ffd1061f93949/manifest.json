@@ -1,0 +1,11 @@
+{
+  "author": "91b851346bf486649e66aac9581b68c0d126e0fbe3cd2a8d24a14079ee3a662a",
+  "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+  "detail": "7558432556211cc7993ef09c45dab65da691058e9ebe899bbd35b8e33da5732e",
+  "harness": "3775f68ef1ba80c7deffe44090097823992d68314ec0fc3e05d834af8c245087",
+  "hypothesis": "Reserving half the token budget for a repair turn raises the pass rate, because a failed draft still has room to retry.",
+  "nonce": "",
+  "parent": "ea3b75324cc6328b38fdb5b2792345653b8e54c1088693e283d095c872a37cb4",
+  "protocol": "petri/node/1",
+  "tree": "petri-main"
+}

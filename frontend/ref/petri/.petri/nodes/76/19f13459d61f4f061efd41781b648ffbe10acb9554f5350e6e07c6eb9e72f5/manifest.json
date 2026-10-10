@@ -1,0 +1,11 @@
+{
+  "author": "91b851346bf486649e66aac9581b68c0d126e0fbe3cd2a8d24a14079ee3a662a",
+  "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+  "detail": "5661949d6067563703360b81cc3520109fb267c2c9709bd711d6a165ea470fc7",
+  "harness": "7e00f08cbfd7bc984fa7d444520b44b11987682aa4bedc8be5ee1ee0df9ab95c",
+  "hypothesis": "Reading the task's test file gives the model the expected outputs, so the pass rate rises sharply.",
+  "nonce": "",
+  "parent": "0a54718ad85ba6b6dc69eee47cd110fc5dd99f76f920aebe7afdbc682e86dc73",
+  "protocol": "petri/node/1",
+  "tree": "petri-main"
+}

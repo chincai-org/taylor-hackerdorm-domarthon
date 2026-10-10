@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "6666aa69455499737042e676fd082a9978c92fb50ef7d845c1c63ef5e7018da3",
+  "taskId": "01-chunk-array",
+  "attemptIndex": 2,
+  "source": "export function chunk(input, size) {\n  if (!Array.isArray(input)) {\n    throw new TypeError('chunk expects an array');\n  }\n  if (typeof size !== 'number' || !Number.isInteger(size) || size < 1) {\n    throw new RangeError('chunk expects a positive integer size');\n  }\n  const groups = [];\n  let i = 0;\n  while (i < input.length) {\n    const group = [];\n    for (let k = 0; k < size && i < input.length; k += 1) {\n      group.push(input[i]);\n      i += 1;\n    }\n    groups.push(group);\n  }\n  return groups;\n}\n",
+  "tokens": 474,
+  "harnessMs": 2127,
+  "recordedAt": "2026-09-12T10:04:11.000Z",
+  "recordedFrom": {
+    "runId": "592ff913eb1935adac6573e515ee2ee0",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "4d41b7cbc9d7c3df8402edd062d07eaf9200f9f9181de33a383cd34419c47905",
+  "inputTokens": 344,
+  "outputTokens": 130
+}

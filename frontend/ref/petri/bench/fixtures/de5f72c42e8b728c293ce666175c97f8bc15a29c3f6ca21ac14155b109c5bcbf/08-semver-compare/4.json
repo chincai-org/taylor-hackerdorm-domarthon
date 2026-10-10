@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "08-semver-compare",
+  "attemptIndex": 4,
+  "source": "const NUMERIC = /^(0|[1-9][0-9]*)$/;\nconst IDENTIFIER = /^[0-9A-Za-z-]+$/;\nconst DIGITS = /^[0-9]+$/;\n\nfunction parse(version) {\n  if (typeof version !== 'string') throw new TypeError('a version must be a string');\n  let rest = version;\n\n  const plus = rest.indexOf('+');\n  if (plus !== -1) {\n    const build = rest.slice(plus + 1);\n    rest = rest.slice(0, plus);\n    if (build === '') throw new SyntaxError('the build part is empty');\n    for (const part of build.split('.')) {\n      if (!IDENTIFIER.test(part)) throw new SyntaxError('a build identifier is malformed');\n    }\n  }\n\n  let pre = null;\n  const dash = rest.indexOf('-');\n  if (dash !== -1) {\n    pre = rest.slice(dash + 1);\n    rest = rest.slice(0, dash);\n    if (pre === '') throw new SyntaxError('the prerelease part is empty');\n  }\n\n  const core = rest.split('.');\n  if (core.length !== 3) throw new SyntaxError('a version needs a major, a minor and a patch');\n  for (const part of core) {\n    if (!NUMERIC.test(part)) throw new SyntaxError('a version number is malformed');\n  }\n\n  let identifiers = null;\n  if (pre !== null) {\n    identifiers = pre.split('.');\n    for (const id of identifiers) {\n      if (!IDENTIFIER.test(id)) throw new SyntaxError('a prerelease identifier is malformed');\n      if (DIGITS.test(id) && !NUMERIC.test(id)) {\n        throw new SyntaxError('a numeric prerelease identifier has a leading zero');\n      }\n    }\n  }\n\n  return { core: core.map(Number), pre: identifiers };\n}\n\nexport function compare(a, b) {\n  const left = parse(a);\n  const right = parse(b);\n\n  for (let i = 0; i < 3; i += 1) {\n    if (left.core[i] !== right.core[i]) return left.core[i] < right.core[i] ? -1 : 1;\n  }\n\n  if (left.pre === null && right.pre === null) return 0;\n  if (left.pre === null) return 1;\n  if (right.pre === null) return -1;\n\n  const shared = Math.min(left.pre.length, right.pre.length);\n  for (let i = 0; i < shared; i += 1) {\n    const x = left.pre[i];\n    const y = right.pre[i];\n    const xNumeric = DIGITS.test(x);\n    const yNumeric = DIGITS.test(y);\n    if (xNumeric && yNumeric) {\n      const nx = Number(x);\n      const ny = Number(y);\n      if (nx !== ny) return nx < ny ? -1 : 1;\n      continue;\n    }\n    if (xNumeric !== yNumeric) return xNumeric ? -1 : 1;\n    if (x !== y) return x < y ? -1 : 1;\n  }\n\n  if (left.pre.length === right.pre.length) return 0;\n  return left.pre.length < right.pre.length ? -1 : 1;\n}\n",
+  "tokens": 1478,
+  "harnessMs": 2074,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "34e09b2546630fae5e1e0eed4dc8fd55",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "cff9fbe339a6c4601fcef140b7143c4d620154bcb49c560200c045bd57b0e9cc",
+  "inputTokens": 872,
+  "outputTokens": 606
+}

@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "17-state-machine",
+  "attemptIndex": 1,
+  "source": "const has = (target, key) => Object.prototype.hasOwnProperty.call(target, key);\nconst listOf = (value) => (Array.isArray(value) ? value : [value]);\n\nexport function createMachine(config) {\n  if (config === null || typeof config !== 'object') throw new TypeError('config must be an object');\n  const states = config.states;\n  if (states === null || typeof states !== 'object') {\n    throw new TypeError('config.states must be an object');\n  }\n  if (typeof config.initial !== 'string' || !has(states, config.initial)) {\n    throw new ReferenceError(`the initial state ${String(config.initial)} is not defined`);\n  }\n\n  for (const name of Object.keys(states)) {\n    const on = states[name] === null || typeof states[name] !== 'object'\n      ? undefined\n      : states[name].on;\n    if (on === undefined || on === null) continue;\n    for (const type of Object.keys(on)) {\n      for (const transition of listOf(on[type])) {\n        if (transition === null || typeof transition !== 'object') {\n          throw new TypeError('a transition must be an object');\n        }\n        if (typeof transition.target !== 'string' || !has(states, transition.target)) {\n          throw new ReferenceError(`the target ${String(transition.target)} is not defined`);\n        }\n        if (transition.guard !== undefined && typeof transition.guard !== 'function') {\n          throw new TypeError('a guard must be a function');\n        }\n      }\n    }\n  }\n\n  const machine = {\n    state: config.initial,\n    log: [],\n    send(event) {\n      let type;\n      if (typeof event === 'string') type = event;\n      else if (event !== null && typeof event === 'object' && typeof event.type === 'string') {\n        type = event.type;\n      } else {\n        throw new TypeError('an event must be a string or an object with a string type');\n      }\n      const payload = typeof event === 'string' ? { type } : event;\n\n      const current = states[machine.state];\n      const on = current.on;\n      if (on === undefined || on === null || !has(on, type)) return false;\n\n      let chosen = null;\n      for (const transition of listOf(on[type])) {\n        if (transition.guard === undefined || transition.guard(payload)) {\n          chosen = transition;\n          break;\n        }\n      }\n      if (chosen === null) return false;\n\n      if (typeof current.onExit === 'string') machine.log.push(current.onExit);\n      if (typeof chosen.action === 'string') machine.log.push(chosen.action);\n      const target = states[chosen.target];\n      if (typeof target.onEntry === 'string') machine.log.push(target.onEntry);\n      machine.state = chosen.target;\n      return true;\n    },\n  };\n\n  const first = states[config.initial];\n  if (typeof first.onEntry === 'string') machine.log.push(first.onEntry);\n  return machine;\n}\n",
+  "tokens": 1650,
+  "harnessMs": 7433,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "58d3ef6655fae359befbe08dc1c215a5",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "4b500dc7c1369fad8a8653cb141e64c035c191bcfda1de99e24e34e8e26cfb03",
+  "inputTokens": 953,
+  "outputTokens": 697
+}

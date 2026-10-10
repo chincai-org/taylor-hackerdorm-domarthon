@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "19-expression-eval",
+  "attemptIndex": 0,
+  "source": "const isDigit = (ch) => ch !== undefined && ch >= '0' && ch <= '9';\n\nfunction tokenize(expr) {\n  const tokens = [];\n  let i = 0;\n  while (i < expr.length) {\n    const ch = expr[i];\n    if (ch === ' ' || ch === '\\t') {\n      i += 1;\n      continue;\n    }\n    if (isDigit(ch)) {\n      let j = i;\n      while (isDigit(expr[j])) j += 1;\n      if (expr[j] === '.') {\n        j += 1;\n        if (!isDigit(expr[j])) throw new SyntaxError('a dot needs a digit after it');\n        while (isDigit(expr[j])) j += 1;\n      }\n      tokens.push({ kind: 'number', value: Number(expr.slice(i, j)) });\n      i = j;\n      continue;\n    }\n    if (ch === '+' || ch === '-' || ch === '*' || ch === '/' || ch === '%'\n      || ch === '(' || ch === ')') {\n      tokens.push({ kind: ch });\n      i += 1;\n      continue;\n    }\n    throw new SyntaxError(`the character ${ch} is not part of the grammar`);\n  }\n  return tokens;\n}\n\nexport function evaluate(expr) {\n  if (typeof expr !== 'string') throw new TypeError('expr must be a string');\n  const tokens = tokenize(expr);\n  let pos = 0;\n  const peek = () => tokens[pos];\n\n  const parseExpression = () => {\n    let left = parseTerm();\n    for (;;) {\n      const token = peek();\n      if (token === undefined || (token.kind !== '+' && token.kind !== '-')) return left;\n      pos += 1;\n      const right = parseTerm();\n      left = token.kind === '+' ? left + right : left - right;\n    }\n  };\n\n  const parseTerm = () => {\n    let left = parseUnary();\n    for (;;) {\n      const token = peek();\n      if (token === undefined\n        || (token.kind !== '*' && token.kind !== '/' && token.kind !== '%')) return left;\n      pos += 1;\n      const right = parseUnary();\n      if (token.kind === '*') {\n        left *= right;\n        continue;\n      }\n      if (right === 0) throw new RangeError('division by zero');\n      left = token.kind === '/' ? left / right : left % right;\n    }\n  };\n\n  const parseUnary = () => {\n    const token = peek();\n    if (token === undefined) throw new SyntaxError('the expression ends too early');\n    if (token.kind === '+') {\n      pos += 1;\n      return parseUnary();\n    }\n    if (token.kind === '-') {\n      pos += 1;\n      return -parseUnary();\n    }\n    return parsePrimary();\n  };\n\n  const parsePrimary = () => {\n    const token = peek();\n    if (token === undefined) throw new SyntaxError('the expression ends too early');\n    if (token.kind === 'number') {\n      pos += 1;\n      return token.value;\n    }\n    if (token.kind === '(') {\n      pos += 1;\n      const value = parseExpression();\n      const close = peek();\n      if (close === undefined || close.kind !== ')') throw new SyntaxError('a ( was never closed');\n      pos += 1;\n      return value;\n    }\n    throw new SyntaxError('a value was expected');\n  };\n\n  const value = parseExpression();\n  if (pos !== tokens.length) throw new SyntaxError('the expression has trailing input');\n  return value;\n}\n",
+  "tokens": 1415,
+  "harnessMs": 3302,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "2433d6d8ffe158c4da37c097f9ef9aa5",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "d60bc284e2ffa049b238f638ad1457160200366b83203e4518fc491410ee07bd",
+  "inputTokens": 683,
+  "outputTokens": 732
+}

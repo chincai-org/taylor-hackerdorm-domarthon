@@ -1,0 +1,42 @@
+{
+  "areaMismatch": true,
+  "claimedMedianBp": 0,
+  "claimedRuns": [],
+  "derivedAreas": [
+    "loop"
+  ],
+  "mechanical": {
+    "cls": "sandbox-violation",
+    "command": "",
+    "evidence": "banned construct in harness/loop.ts: process",
+    "exitCode": 1
+  },
+  "mode": "replay",
+  "node": "f27ba9425e996c7db98b845ef6e2794886891ff613e80a66bc5ffd1061f93949",
+  "parentHarness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "proposal": {
+    "contradicts": [],
+    "falsifiedIf": "The score does not rise by at least 1000bp.",
+    "files": [
+      {
+        "contents": "/**\n * LEVER: `loop` — the control flow of one solve call, and how the reply is parsed.\n *\n * V1 makes exactly ONE model call. It does not run the tests, it does not check\n * its own answer and it does not reflect. It takes the FIRST fenced block of the\n * reply. Taking the last one is already a change worth measuring, because a model\n * that explains itself first puts the real answer in the last block.\n *\n * Things a later node might try here:\n *   - take the LAST fenced block instead of the first (motif: last-fence-not-first)\n *   - prefer a block whose language tag is js or javascript\n *   - draw two drafts and keep the longer one (motif: best-of-two)\n *   - raise or lower MAX_OUTPUT_TOKENS, which is the `decoding` lever next door\n *   - call the `recovery` seam for `no-code-block` as well as `empty-file`\n *\n * V1 does NOT catch BudgetExceededError. The runner catches it and scores that\n * task 0. Catching it is a `recovery` change and the tree can measure whether it\n * helps. Every model call needs a distinct label; V1 uses exactly one, \"draft\".\n */\nimport type { TaskView, HarnessContext, Solution, SourceFile } from './contract.js';\nimport { selectContext } from './retrieval.js';\nimport { buildSystemPrompt, buildUserPrompt } from './prompt.js';\nimport { attemptRepair, type Failure } from './recovery.js';\n\nexport const MAX_OUTPUT_TOKENS = Number(process.env.PETRI_MAX_OUTPUT ?? 2048);\n\n/** V1 takes the FIRST fenced block. Taking the last one is already a change. */\nexport function extractSolutionFiles(task: TaskView, replyText: string): SourceFile[] {\n  const fence = /```[a-zA-Z0-9_-]*\\n([\\s\\S]*?)```/g;\n  const blocks: string[] = [];\n  let m: RegExpExecArray | null;\n  while ((m = fence.exec(replyText)) !== null) blocks.push(m[1] ?? '');\n  const code = blocks.length > 0 ? blocks[0]! : replyText;\n  return [{ path: task.entryFile, contents: `${code.trim()}\\n` }];\n}\n\n/** V1 makes exactly one model call. */\nexport async function runLoop(task: TaskView, ctx: HarnessContext): Promise<Solution> {\n  const context = selectContext(task);\n  ctx.log.event('retrieval', { files: context.files.length, dropped: context.droppedFiles.length });\n\n  const reply = await ctx.model.complete({\n    label: 'draft',\n    system: buildSystemPrompt(),\n    messages: [{ role: 'user', content: buildUserPrompt(task, context) }],\n    maxTokens: MAX_OUTPUT_TOKENS,\n    temperature: 0,\n  });\n  ctx.log.event('model', {\n    label: 'draft', stopReason: reply.stopReason, outputTokens: reply.outputTokens,\n  });\n\n  const files = extractSolutionFiles(task, reply.text);\n  if (files[0]!.contents.trim().length === 0) {\n    const failure: Failure = { kind: 'empty-file', detail: 'the model returned no code' };\n    const repaired = await attemptRepair(task, ctx, failure, reply.text);\n    if (repaired !== null) return repaired;\n    ctx.log.event('give-up', { reason: failure.kind });\n    return { files: [{ path: task.entryFile, contents: '' }], notes: 'no code produced' };\n  }\n  return { files, notes: 'single-shot draft' };\n}\n",
+        "path": "harness/loop.ts"
+      }
+    ],
+    "hypothesis": "Reserving half the token budget for a repair turn raises the pass rate, because a failed draft still has room to retry.",
+    "metric": "score",
+    "motif": "reserve-repair-budget",
+    "predictedDelta": 1000,
+    "primaryArea": "budget",
+    "reasoning": "",
+    "whyNotUntested": null
+  },
+  "protocol": "petri/detail/1",
+  "provenance": {
+    "digestHash": "",
+    "model": "none",
+    "promptHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "seed": 7,
+    "source": "human"
+  }
+}

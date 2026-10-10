@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "01-chunk-array",
+  "title": "Chunk an array into fixed-size groups",
+  "difficulty": "easy",
+  "entry": "solution.mjs",
+  "exports": ["chunk"],
+  "signatures": ["export function chunk(input: unknown[], size: number): unknown[][]"],
+  "timeoutMs": 5000,
+  "testCount": 10,
+  "tags": ["arrays", "validation", "edge-cases"]
+}

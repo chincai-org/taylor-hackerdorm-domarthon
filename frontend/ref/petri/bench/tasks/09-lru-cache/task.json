@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "09-lru-cache",
+  "title": "A least recently used cache with a fixed capacity",
+  "difficulty": "medium",
+  "entry": "solution.mjs",
+  "exports": ["createCache"],
+  "signatures": ["export function createCache(capacity: number): { get(key: unknown): unknown; set(key: unknown, value: unknown): void; has(key: unknown): boolean; delete(key: unknown): boolean; size(): number; keys(): unknown[] }"],
+  "timeoutMs": 5000,
+  "testCount": 10,
+  "tags": ["data-structures", "state", "edge-cases"]
+}

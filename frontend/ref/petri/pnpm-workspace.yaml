@@ -1,0 +1,6 @@
+# pnpm 11 reads build-script approval from this file.
+# esbuild (through tsx) and protobufjs (through @hashgraph/sdk) run postinstall
+# steps. Without approval `pnpm exec` refuses to run and every command fails.
+allowBuilds:
+  esbuild: true
+  protobufjs: true

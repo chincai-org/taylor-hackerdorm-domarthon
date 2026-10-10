@@ -1,0 +1,13 @@
+{
+  "body": {
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+    "hyp": "Reading the task's test file gives the model the expected outputs, so the pass rate rises sharply.",
+    "node": "7619f13459d61f4f061efd41781b648ffbe10acb9554f5350e6e07c6eb9e72f5",
+    "parent": "0a54718ad85ba6b6dc69eee47cd110fc5dd99f76f920aebe7afdbc682e86dc73",
+    "tree": "petri-main",
+    "type": "NodeSubmitted"
+  },
+  "pub": "91b851346bf486649e66aac9581b68c0d126e0fbe3cd2a8d24a14079ee3a662a",
+  "sig": "2e58c18b3de517c50de26a1b3dab3befb042a942f3160e403dfe60300159a4bf20b8ce30400e92e3fd4e9b336ac2edc6572536b9af54b41f2e66383874e68b0f",
+  "ver": 1
+}

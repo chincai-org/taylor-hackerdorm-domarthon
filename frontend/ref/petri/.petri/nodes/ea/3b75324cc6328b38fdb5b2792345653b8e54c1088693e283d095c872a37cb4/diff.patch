@@ -1,0 +1,63 @@
+--- a/harness/prompt.ts
++++ b/harness/prompt.ts
+@@ -1,20 +1,23 @@
+ /**
+  * LEVER: `prompt` — what the harness says to the model.
+  *
+- * V1 is the honest baseline, and it carries a real defect on purpose.
+- * `buildUserPrompt` sends the exported symbol NAMES only. It never sends the
+- * full signatures, so the model has to guess the argument order and the argument
+- * types. That headroom is deliberate. It is the first thing a reader should see.
++ * V2 closes the two gaps V1 left open on purpose.
+  *
++ *   - `buildUserPrompt` sends the FULL SIGNATURE of every exported symbol, not
++ *     the bare name. The model no longer guesses the argument order, the
++ *     argument types or the return shape. (motif: include-signatures)
++ *   - `buildSystemPrompt` carries ONE worked example of the reply shape. The
++ *     model no longer guesses the output format. (motif: one-worked-example)
++ *
++ * Both lines are paid for on every call of every task, so the example is kept to
++ * four lines. The measured trade-off is more input tokens for a higher score.
++ *
+  * Things a later node might try here:
+- *   - send `s.signature` as well as `s.name` (motif: include-signatures)
+- *   - add one worked example of the exact reply shape (motif: one-worked-example)
+  *   - state the output format as a hard rule instead of a sentence
+  *   - name the file extension and the module system in the system text
+  *   - reorder the parts, so the task text is last and stays closest to the answer
+- *
+- * Keep the system text short. It is sent on every call of every task, so each
+- * added line is paid for 20 times per run and 100 times per 5-run median.
++ *   - drop the worked example again and keep only the signatures, to find out
++ *     which of the two changes carried the win
+  */
+ import type { TaskView } from './contract.js';
+ import type { RetrievedContext } from './retrieval.js';
+@@ -24,6 +27,13 @@
+     'You are a JavaScript programmer.',
+     'Write complete, runnable ESM code.',
+     'Reply with one fenced code block and nothing else.',
++    'Reply in exactly this shape:',
++    '```js',
++    'export function example(input, size) {',
++    "  if (!Array.isArray(input)) throw new TypeError('input must be an array');",
++    '  return [];',
++    '}',
++    '```',
+   ].join('\n');
+ }
+ 
+@@ -31,8 +41,11 @@
+   const parts: string[] = [];
+   parts.push(`Task: ${task.prompt}`);
+   parts.push(`Write the file ${task.entryFile}.`);
+-  // V1 sends symbol NAMES only. The full signatures are deliberately withheld.
+-  parts.push(`It must export: ${task.exportedSymbols.map((s) => s.name).join(', ')}.`);
++  // V2 sends the FULL signature of every symbol. V1 sent the names only.
++  parts.push(
++    'It must export exactly these symbols, with exactly these signatures:\n'
++    + task.exportedSymbols.map((s) => `- ${s.signature}`).join('\n'),
++  );
+   if (task.constraints.length > 0) {
+     parts.push(`Constraints:\n${task.constraints.map((c) => `- ${c}`).join('\n')}`);
+   }

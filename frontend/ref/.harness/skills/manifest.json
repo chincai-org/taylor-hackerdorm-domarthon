@@ -1,0 +1,47 @@
+{
+  "vendoredAt": "2026-09-10T17:31:26.059Z",
+  "skills": [
+    {
+      "name": "hedera-consensus-service",
+      "relativePath": ".harness/skills/hedera-consensus-service/SKILL.md",
+      "sourcePath": "/Users/zwavo/Desktop/ethonline2026/.skill-cache/github-com-hedera-dev-hedera-skills-6c4ae9c1d731/plugins/native-services-js/skills/hedera-consensus-service/SKILL.md",
+      "referencesPath": ".harness/skills/hedera-consensus-service/references"
+    },
+    {
+      "name": "hedera-token-service",
+      "relativePath": ".harness/skills/hedera-token-service/SKILL.md",
+      "sourcePath": "/Users/zwavo/Desktop/ethonline2026/.skill-cache/github-com-hedera-dev-hedera-skills-6c4ae9c1d731/plugins/native-services-js/skills/hedera-token-service/SKILL.md",
+      "referencesPath": ".harness/skills/hedera-token-service/references"
+    },
+    {
+      "name": "hss-system-contract",
+      "relativePath": ".harness/skills/hss-system-contract/SKILL.md",
+      "sourcePath": "/Users/zwavo/Desktop/ethonline2026/.skill-cache/github-com-hedera-dev-hedera-skills-6c4ae9c1d731/plugins/system-contracts/skills/hss-system-contract/SKILL.md",
+      "referencesPath": ".harness/skills/hss-system-contract/references"
+    },
+    {
+      "name": "hts-system-contract",
+      "relativePath": ".harness/skills/hts-system-contract/SKILL.md",
+      "sourcePath": "/Users/zwavo/Desktop/ethonline2026/.skill-cache/github-com-hedera-dev-hedera-skills-6c4ae9c1d731/plugins/system-contracts/skills/hts-system-contract/SKILL.md",
+      "referencesPath": ".harness/skills/hts-system-contract/references"
+    },
+    {
+      "name": "Project Scaffolding",
+      "relativePath": ".harness/skills/project-scaffolding/SKILL.md",
+      "sourcePath": "/Users/zwavo/Desktop/ethonline2026/.skill-cache/github-com-hedera-dev-hedera-skills-6c4ae9c1d731/plugins/dev-intelligence/skills/project-scaffolding/SKILL.md",
+      "referencesPath": ".harness/skills/project-scaffolding/references"
+    },
+    {
+      "name": "Quality Gates",
+      "relativePath": ".harness/skills/quality-gates/SKILL.md",
+      "sourcePath": "/Users/zwavo/Desktop/ethonline2026/.skill-cache/github-com-hedera-dev-hedera-skills-6c4ae9c1d731/plugins/dev-intelligence/skills/quality-gates/SKILL.md",
+      "referencesPath": ".harness/skills/quality-gates/references"
+    },
+    {
+      "name": "Session Management",
+      "relativePath": ".harness/skills/session-management/SKILL.md",
+      "sourcePath": "/Users/zwavo/Desktop/ethonline2026/.skill-cache/github-com-hedera-dev-hedera-skills-6c4ae9c1d731/plugins/dev-intelligence/skills/session-management/SKILL.md",
+      "referencesPath": ".harness/skills/session-management/references"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "areaMismatch": false,
+  "claimedMedianBp": 0,
+  "claimedRuns": [],
+  "derivedAreas": [
+    "prompt"
+  ],
+  "mechanical": {
+    "cls": "not-scored",
+    "command": "",
+    "evidence": "Replay has no recorded answers for this harness, so nobody could score it yet.\nScore it live with --mode live and ANTHROPIC_API_KEY.\n\npetri: no fixture for this harness, task and attempt.\n  harness  ec4b2d8e1cbff8280fcfb70452d6f4573081c5f046f8ccc8cf84d95953c1a18c\n  task     15-glob-match\n  attempt  0\n  path     /Users/jingyuan/Code/ethonline2026/petri/bench/fixtures/ec4b2d8e1cbff8280fcfb70452d6f4573081c5f046f8ccc8cf84d95953c1a18c/15-glob-match/0.json\n  Replay mode never calls a model, so it cannot invent this answer.\n  Fix it in one of three ways:\n    1. allow the published graded answers:  add --allow-graded\n    2. measure this harness live, which calls the model for real:\n       ANTHROPIC_API_KEY=... pnpm petri verify <nodeId> --mode live\n    3. measure a harness the fixture store already holds:\n    6666aa69455499737042e676fd082a9978c92fb50ef7d845c1c63ef5e7018da3\n    de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+    "exitCode": 1
+  },
+  "mode": "replay",
+  "node": "c34b88dace5e7cbc28aa73fcfb884bc09ee34dc74f489d6e4363979fa586562a",
+  "parentHarness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "proposal": {
+    "contradicts": [],
+    "falsifiedIf": "The median score does not rise by at least 1000bp.",
+    "files": [
+      {
+        "contents": "/**\n * LEVER: `prompt` — what the harness says to the model.\n *\n * V3 keeps V2's signatures and worked example, and changes HOW the rules are said.\n * Every instruction is a positive directive: what the model must do. V2 closed its\n * format rule with a prohibition (\"and nothing else\"). A prohibition makes the model\n * reason about what to avoid; a directive tells it exactly what to produce.\n *\n * Hypothesis under test: positive directives raise the pass rate, make the code\n * safer (inputs are validated), and cut reply tokens.\n */\nimport type { TaskView } from './contract.js';\nimport type { RetrievedContext } from './retrieval.js';\n\nexport function buildSystemPrompt(): string {\n  return [\n    'You are a JavaScript programmer.',\n    'Write complete, runnable ESM code.',\n    'Put your whole answer inside one fenced js code block.',\n    'Export every symbol the task names, with exactly the signature it gives.',\n    'Validate each input, and throw a TypeError with a clear message when an input is wrong.',\n    'Use this exact reply shape:',\n    '```js',\n    'export function example(input, size) {',\n    \"  if (!Array.isArray(input)) throw new TypeError('input must be an array');\",\n    '  return [];',\n    '}',\n    '```',\n  ].join('\\n');\n}\n\nexport function buildUserPrompt(task: TaskView, context: RetrievedContext): string {\n  const parts: string[] = [];\n  parts.push(`Task: ${task.prompt}`);\n  parts.push(`Write the file ${task.entryFile}.`);\n  parts.push(\n    'Export exactly these symbols, with exactly these signatures:\\n'\n    + task.exportedSymbols.map((s) => `- ${s.signature}`).join('\\n'),\n  );\n  if (task.constraints.length > 0) {\n    parts.push(`Follow these constraints:\\n${task.constraints.map((c) => `- ${c}`).join('\\n')}`);\n  }\n  for (const f of context.files) parts.push(`--- ${f.path} ---\\n${f.contents}`);\n  return parts.join('\\n\\n');\n}\n",
+        "path": "harness/prompt.ts"
+      }
+    ],
+    "hypothesis": "Stating each rule as a positive directive raises the pass rate, because the model follows do-this instructions more reliably.",
+    "metric": "score",
+    "motif": "positive-instructions",
+    "predictedDelta": 1000,
+    "primaryArea": "prompt",
+    "reasoning": "",
+    "whyNotUntested": null
+  },
+  "protocol": "petri/detail/1",
+  "provenance": {
+    "digestHash": "",
+    "model": "none",
+    "promptHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "seed": 7,
+    "source": "human"
+  }
+}

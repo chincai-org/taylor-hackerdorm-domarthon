@@ -1,0 +1,13 @@
+{
+  "body": {
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+    "hyp": "Reserving half the token budget for a repair turn raises the pass rate, because a failed draft still has room to retry.",
+    "node": "f27ba9425e996c7db98b845ef6e2794886891ff613e80a66bc5ffd1061f93949",
+    "parent": "ea3b75324cc6328b38fdb5b2792345653b8e54c1088693e283d095c872a37cb4",
+    "tree": "petri-main",
+    "type": "NodeSubmitted"
+  },
+  "pub": "91b851346bf486649e66aac9581b68c0d126e0fbe3cd2a8d24a14079ee3a662a",
+  "sig": "dc9d94f750367a2a3108122c9aafd8a351ce8ad9f6a56a6bad9336efc8cd16993e69c4ec3aa470611b2ecceb27637d079de47ff5ed6af2212cefbfe94da97a04",
+  "ver": 1
+}

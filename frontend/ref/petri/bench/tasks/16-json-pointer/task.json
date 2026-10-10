@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "16-json-pointer",
+  "title": "Resolve an RFC 6901 JSON pointer",
+  "difficulty": "medium",
+  "entry": "solution.mjs",
+  "exports": ["resolvePointer"],
+  "signatures": ["export function resolvePointer(doc: unknown, pointer: string): unknown"],
+  "timeoutMs": 5000,
+  "testCount": 11,
+  "tags": ["parsing", "json", "validation", "edge-cases"]
+}

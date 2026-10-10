@@ -1,0 +1,73 @@
+{
+  "areaMismatch": false,
+  "claimedMedianBp": 9500,
+  "claimedRuns": [
+    {
+      "passed": 19,
+      "scoreBp": 9500,
+      "tokens": 22831,
+      "wallMs": 2096
+    },
+    {
+      "passed": 19,
+      "scoreBp": 9500,
+      "tokens": 22831,
+      "wallMs": 2064
+    },
+    {
+      "passed": 19,
+      "scoreBp": 9500,
+      "tokens": 22831,
+      "wallMs": 2067
+    },
+    {
+      "passed": 19,
+      "scoreBp": 9500,
+      "tokens": 22831,
+      "wallMs": 2070
+    },
+    {
+      "passed": 19,
+      "scoreBp": 9500,
+      "tokens": 22831,
+      "wallMs": 2058
+    }
+  ],
+  "derivedAreas": [
+    "prompt"
+  ],
+  "mechanical": {
+    "cls": "ok",
+    "command": "",
+    "evidence": "",
+    "exitCode": 0
+  },
+  "mode": "replay",
+  "node": "ae0acec30289d8e77c37de7eb9febd602634ee617677541c6d9458a7348e8562",
+  "parentHarness": "6666aa69455499737042e676fd082a9978c92fb50ef7d845c1c63ef5e7018da3",
+  "proposal": {
+    "contradicts": [],
+    "falsifiedIf": "The median score does not rise by at least 1000bp.",
+    "files": [
+      {
+        "contents": "/**\n * LEVER: `prompt` — what the harness says to the model.\n *\n * V2 closes the two gaps V1 left open on purpose.\n *\n *   - `buildUserPrompt` sends the FULL SIGNATURE of every exported symbol, not\n *     the bare name. The model no longer guesses the argument order, the\n *     argument types or the return shape. (motif: include-signatures)\n *   - `buildSystemPrompt` carries ONE worked example of the reply shape. The\n *     model no longer guesses the output format. (motif: one-worked-example)\n *\n * Both lines are paid for on every call of every task, so the example is kept to\n * four lines. The measured trade-off is more input tokens for a higher score.\n *\n * Things a later node might try here:\n *   - state the output format as a hard rule instead of a sentence\n *   - name the file extension and the module system in the system text\n *   - reorder the parts, so the task text is last and stays closest to the answer\n *   - drop the worked example again and keep only the signatures, to find out\n *     which of the two changes carried the win\n */\nimport type { TaskView } from './contract.js';\nimport type { RetrievedContext } from './retrieval.js';\n\nexport function buildSystemPrompt(): string {\n  return [\n    'You are a JavaScript programmer.',\n    'Write complete, runnable ESM code.',\n    'Reply with one fenced code block and nothing else.',\n    'Reply in exactly this shape:',\n    '```js',\n    'export function example(input, size) {',\n    \"  if (!Array.isArray(input)) throw new TypeError('input must be an array');\",\n    '  return [];',\n    '}',\n    '```',\n  ].join('\\n');\n}\n\nexport function buildUserPrompt(task: TaskView, context: RetrievedContext): string {\n  const parts: string[] = [];\n  parts.push(`Task: ${task.prompt}`);\n  parts.push(`Write the file ${task.entryFile}.`);\n  // V2 sends the FULL signature of every symbol. V1 sent the names only.\n  parts.push(\n    'It must export exactly these symbols, with exactly these signatures:\\n'\n    + task.exportedSymbols.map((s) => `- ${s.signature}`).join('\\n'),\n  );\n  if (task.constraints.length > 0) {\n    parts.push(`Constraints:\\n${task.constraints.map((c) => `- ${c}`).join('\\n')}`);\n  }\n  for (const f of context.files) parts.push(`--- ${f.path} ---\\n${f.contents}`);\n  return parts.join('\\n\\n');\n}\n",
+        "path": "harness/prompt.ts"
+      }
+    ],
+    "hypothesis": "Restoring the full symbol signatures and the worked example after the second trim raises the pass rate by at least 1000bp, because the trimmed prompt no longer fixes the reply shape.",
+    "metric": "score",
+    "motif": "restore-signatures-retest",
+    "predictedDelta": 7000,
+    "primaryArea": "prompt",
+    "reasoning": "",
+    "whyNotUntested": null
+  },
+  "protocol": "petri/detail/1",
+  "provenance": {
+    "digestHash": "",
+    "model": "none",
+    "promptHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "seed": 7,
+    "source": "human"
+  }
+}

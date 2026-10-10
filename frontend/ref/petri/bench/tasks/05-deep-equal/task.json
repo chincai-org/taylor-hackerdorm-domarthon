@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "05-deep-equal",
+  "title": "Compare two values deeply without hanging on cycles",
+  "difficulty": "medium",
+  "entry": "solution.mjs",
+  "exports": ["deepEqual"],
+  "signatures": ["export function deepEqual(a: unknown, b: unknown): boolean"],
+  "timeoutMs": 5000,
+  "testCount": 10,
+  "tags": ["objects", "recursion", "edge-cases"]
+}

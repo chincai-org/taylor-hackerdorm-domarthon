@@ -1,0 +1,120 @@
+{
+  "body": {
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+    "candidate": {
+      "medianBp": 9500,
+      "node": "92dc9c49a6db19a0daaa70d8f87d06d0a9479d89f11ad6cc4897f89ed7e0dec2",
+      "runs": [
+        {
+          "passed": 19,
+          "resultId": "5c23c36bf4d09189aed34748382d91db46dd4dc46e388d2f3c9f44858ad3ee6d",
+          "scoreBp": 9500,
+          "seed": "838b3c1031bc38fc37fb36ccebe3d8d9129f715386d001aae14b1141893840ad",
+          "tokens": 22831,
+          "wallMs": 2094
+        },
+        {
+          "passed": 19,
+          "resultId": "86d424e7f24992abb76f022166a19271c73b9a68a63d6c0552d8d8c63e64d307",
+          "scoreBp": 9500,
+          "seed": "0c992a4880002d07dd8afcbb312170794543a9fc473076ebc4c69c124ed6cd36",
+          "tokens": 22831,
+          "wallMs": 2091
+        },
+        {
+          "passed": 19,
+          "resultId": "53c1ab4f638516f35e3c534abe43e03694653bf865e6718b62f0061ea4395dd0",
+          "scoreBp": 9500,
+          "seed": "d54a55da53bb4074cd0ecc7ef03af4a1bf7431435492434c61e68c2465b5d538",
+          "tokens": 22831,
+          "wallMs": 2117
+        },
+        {
+          "passed": 19,
+          "resultId": "a71088ea63ae345eed4584f469129e46b35e0ea874c9c0c7f595d2b7e9caedaa",
+          "scoreBp": 9500,
+          "seed": "d37ca26041afff2e5597655c1b69072b07c271b28d62aa8831b2e0b547315c5a",
+          "tokens": 22831,
+          "wallMs": 2116
+        },
+        {
+          "passed": 19,
+          "resultId": "79c1a7adba3eabf2f09ea04b995c61da66e0c2f8ac28b268440dfc03f7f83bfe",
+          "scoreBp": 9500,
+          "seed": "639fe81aa80572fb3ba9e2132f76092c967909af52a54586e3a72a79265d6cc7",
+          "tokens": 22831,
+          "wallMs": 2112
+        }
+      ],
+      "total": 20
+    },
+    "deltaMedianBp": 7000,
+    "env": {
+      "arch": "arm64",
+      "benchId": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+      "ledger": "local",
+      "mode": "replay",
+      "model": "none",
+      "nodeVersion": "v26.0.0",
+      "petriCommit": "0b59327a1a02d541d55b058b981b15c37fb0ebf3",
+      "platform": "darwin"
+    },
+    "mode": "replay",
+    "parent": {
+      "medianBp": 2500,
+      "node": "f07e0c55c08f73d57441947f14e148ebce9c5a0913db1fb2aa80687327b88fba",
+      "runs": [
+        {
+          "passed": 5,
+          "resultId": "fdd7020d74f9d4f97ea85b3638381675ba332612647b632f811de58424c844ea",
+          "scoreBp": 2500,
+          "seed": "838b3c1031bc38fc37fb36ccebe3d8d9129f715386d001aae14b1141893840ad",
+          "tokens": 17276,
+          "wallMs": 2217
+        },
+        {
+          "passed": 5,
+          "resultId": "02a7b3ca5720273bfdc48b7996274dba185563145fc5bdd5868147b173142eca",
+          "scoreBp": 2500,
+          "seed": "0c992a4880002d07dd8afcbb312170794543a9fc473076ebc4c69c124ed6cd36",
+          "tokens": 17276,
+          "wallMs": 2211
+        },
+        {
+          "passed": 5,
+          "resultId": "af4de4fb628a1feb310483a1347237a3cbf05aa6f98e6a775f62176896f18cf2",
+          "scoreBp": 2500,
+          "seed": "d54a55da53bb4074cd0ecc7ef03af4a1bf7431435492434c61e68c2465b5d538",
+          "tokens": 17276,
+          "wallMs": 2212
+        },
+        {
+          "passed": 5,
+          "resultId": "74dfa24dc4ea561e6d369f6113874858f31d783a77b4430f8a54886f0939ac46",
+          "scoreBp": 2500,
+          "seed": "d37ca26041afff2e5597655c1b69072b07c271b28d62aa8831b2e0b547315c5a",
+          "tokens": 17276,
+          "wallMs": 2210
+        },
+        {
+          "passed": 5,
+          "resultId": "6acea9720e1a5a4e2e161606446c22c1f4399929ac0052d42a4040bdb82b9e89",
+          "scoreBp": 2500,
+          "seed": "639fe81aa80572fb3ba9e2132f76092c967909af52a54586e3a72a79265d6cc7",
+          "tokens": 17276,
+          "wallMs": 2206
+        }
+      ],
+      "total": 20
+    },
+    "protocol": "petri/verify/1",
+    "runner": "c339ad93bd4c21f0d910f2fbe94c1b226684fb354805faa12af3e3fbfcd69cd1",
+    "runs": 5,
+    "seedBase": "212c21f6f96f6134a4b7341e17787da205f12be5e96cedad504e87649cf03106",
+    "startedAt": 1789312222542,
+    "tree": "petri-main"
+  },
+  "pub": "c339ad93bd4c21f0d910f2fbe94c1b226684fb354805faa12af3e3fbfcd69cd1",
+  "sig": "43db36c94d8e2f6a86f78e2adc54b9233cc25805d0a33b39a23bace731e35e5385541608e9a4ef945766404ff3e9791ac2910f0135d714943db6a3ec7ce0c90d",
+  "ver": 1
+}

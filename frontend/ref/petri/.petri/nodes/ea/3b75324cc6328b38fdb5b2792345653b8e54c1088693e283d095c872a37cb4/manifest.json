@@ -1,0 +1,11 @@
+{
+  "author": "91b851346bf486649e66aac9581b68c0d126e0fbe3cd2a8d24a14079ee3a662a",
+  "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+  "detail": "8bad9d09af2a0f4b3893179817061b75b643d466437aad01c576f46ee3743fad",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "hypothesis": "Restoring the full signatures and the worked example undoes the regression, because the model needs the reply shape spelled out.",
+  "nonce": "",
+  "parent": "872aaa3dce30e5b42bd93b1bd17a7bba5a8914966c5319749a0f459c7faa55e7",
+  "protocol": "petri/node/1",
+  "tree": "petri-main"
+}

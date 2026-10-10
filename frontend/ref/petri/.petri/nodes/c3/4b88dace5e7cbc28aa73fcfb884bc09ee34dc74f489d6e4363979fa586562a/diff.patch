@@ -1,0 +1,61 @@
+--- a/harness/prompt.ts
++++ b/harness/prompt.ts
+@@ -1,23 +1,13 @@
+ /**
+  * LEVER: `prompt` — what the harness says to the model.
+  *
+- * V2 closes the two gaps V1 left open on purpose.
++ * V3 keeps V2's signatures and worked example, and changes HOW the rules are said.
++ * Every instruction is a positive directive: what the model must do. V2 closed its
++ * format rule with a prohibition ("and nothing else"). A prohibition makes the model
++ * reason about what to avoid; a directive tells it exactly what to produce.
+  *
+- *   - `buildUserPrompt` sends the FULL SIGNATURE of every exported symbol, not
+- *     the bare name. The model no longer guesses the argument order, the
+- *     argument types or the return shape. (motif: include-signatures)
+- *   - `buildSystemPrompt` carries ONE worked example of the reply shape. The
+- *     model no longer guesses the output format. (motif: one-worked-example)
+- *
+- * Both lines are paid for on every call of every task, so the example is kept to
+- * four lines. The measured trade-off is more input tokens for a higher score.
+- *
+- * Things a later node might try here:
+- *   - state the output format as a hard rule instead of a sentence
+- *   - name the file extension and the module system in the system text
+- *   - reorder the parts, so the task text is last and stays closest to the answer
+- *   - drop the worked example again and keep only the signatures, to find out
+- *     which of the two changes carried the win
++ * Hypothesis under test: positive directives raise the pass rate, make the code
++ * safer (inputs are validated), and cut reply tokens.
+  */
+ import type { TaskView } from './contract.js';
+ import type { RetrievedContext } from './retrieval.js';
+@@ -26,8 +16,10 @@
+   return [
+     'You are a JavaScript programmer.',
+     'Write complete, runnable ESM code.',
+-    'Reply with one fenced code block and nothing else.',
+-    'Reply in exactly this shape:',
++    'Put your whole answer inside one fenced js code block.',
++    'Export every symbol the task names, with exactly the signature it gives.',
++    'Validate each input, and throw a TypeError with a clear message when an input is wrong.',
++    'Use this exact reply shape:',
+     '```js',
+     'export function example(input, size) {',
+     "  if (!Array.isArray(input)) throw new TypeError('input must be an array');",
+@@ -41,13 +33,12 @@
+   const parts: string[] = [];
+   parts.push(`Task: ${task.prompt}`);
+   parts.push(`Write the file ${task.entryFile}.`);
+-  // V2 sends the FULL signature of every symbol. V1 sent the names only.
+   parts.push(
+-    'It must export exactly these symbols, with exactly these signatures:\n'
++    'Export exactly these symbols, with exactly these signatures:\n'
+     + task.exportedSymbols.map((s) => `- ${s.signature}`).join('\n'),
+   );
+   if (task.constraints.length > 0) {
+-    parts.push(`Constraints:\n${task.constraints.map((c) => `- ${c}`).join('\n')}`);
++    parts.push(`Follow these constraints:\n${task.constraints.map((c) => `- ${c}`).join('\n')}`);
+   }
+   for (const f of context.files) parts.push(`--- ${f.path} ---\n${f.contents}`);
+   return parts.join('\n\n');

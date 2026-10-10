@@ -1,0 +1,13 @@
+{
+  "body": {
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+    "hyp": "Single-shot prompt. No retry. No test run. This is the honest baseline.",
+    "node": "0a54718ad85ba6b6dc69eee47cd110fc5dd99f76f920aebe7afdbc682e86dc73",
+    "parent": "root",
+    "tree": "petri-main",
+    "type": "NodeSubmitted"
+  },
+  "pub": "0b3c69814f295bb73e4affb25fd2d88a5765e598b047809149edb8954041e584",
+  "sig": "b5ed81ef7a27b6b8c4bf89db87fdaf7bb223d54c64942b0f8887ddc0588d9561c57c42d45c7cd98998ba4472a91d31f9b88833a6d75264d5658ff30ce356070c",
+  "ver": 1
+}

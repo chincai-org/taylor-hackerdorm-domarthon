@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "6666aa69455499737042e676fd082a9978c92fb50ef7d845c1c63ef5e7018da3",
+  "taskId": "02-run-length-encode",
+  "attemptIndex": 1,
+  "source": "export function encode(input) {\n  if (typeof input !== 'string') throw new TypeError('encode expects a string');\n  let out = '';\n  let run = 0;\n  for (let i = 0; i < input.length; i += 1) {\n    run += 1;\n    if (input[i + 1] !== input[i]) {\n      out = `${out}${run}x${input[i]}`;\n      run = 0;\n    }\n  }\n  return out;\n}\n\nexport function decode(input) {\n  if (typeof input !== 'string') throw new TypeError('decode expects a string');\n  let out = '';\n  let i = 0;\n  while (i < input.length) {\n    let count = '';\n    while (i < input.length && input[i] >= '0' && input[i] <= '9') {\n      count = count + input[i];\n      i += 1;\n    }\n    if (count === '') throw new SyntaxError('missing count');\n    if (count.length > 1 && count[0] === '0') throw new SyntaxError('leading zero');\n    if (Number(count) === 0) throw new SyntaxError('zero count');\n    if (input[i] !== 'x') throw new SyntaxError('missing x');\n    i += 1;\n    if (i >= input.length) throw new SyntaxError('missing character');\n    out = out + input[i].repeat(Number(count));\n    i += 1;\n  }\n  return out;\n}\n",
+  "tokens": 913,
+  "harnessMs": 3422,
+  "recordedAt": "2026-09-12T10:04:11.000Z",
+  "recordedFrom": {
+    "runId": "236220a010c71feb2d6c788c45ff7cb7",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "1934da3211f052548bc0f73ae3f82ce15bc702f620587dd3135baab709a79483",
+  "inputTokens": 642,
+  "outputTokens": 271
+}

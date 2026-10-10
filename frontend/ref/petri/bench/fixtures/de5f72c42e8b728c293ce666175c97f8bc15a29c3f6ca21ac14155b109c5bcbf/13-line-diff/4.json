@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "13-line-diff",
+  "attemptIndex": 4,
+  "source": "export function diffLines(a, b) {\n  if (!Array.isArray(a) || !Array.isArray(b)) throw new TypeError('both sides must be arrays');\n  for (const line of a) {\n    if (typeof line !== 'string') throw new TypeError('every line must be a string');\n  }\n  for (const line of b) {\n    if (typeof line !== 'string') throw new TypeError('every line must be a string');\n  }\n\n  const n = a.length;\n  const m = b.length;\n  const width = m + 1;\n  // lcs[i * width + j] is the length of the longest common subsequence of\n  // a.slice(i) and b.slice(j). The table is filled from the end backwards.\n  const lcs = new Int32Array((n + 1) * width);\n  for (let i = n - 1; i >= 0; i -= 1) {\n    for (let j = m - 1; j >= 0; j -= 1) {\n      lcs[i * width + j] = a[i] === b[j]\n        ? lcs[(i + 1) * width + j + 1] + 1\n        : Math.max(lcs[(i + 1) * width + j], lcs[i * width + j + 1]);\n    }\n  }\n\n  const script = [];\n  let i = 0;\n  let j = 0;\n  while (i < n || j < m) {\n    if (i >= n) {\n      script.push({ op: 'add', line: b[j] });\n      j += 1;\n      continue;\n    }\n    if (j >= m) {\n      script.push({ op: 'remove', line: a[i] });\n      i += 1;\n      continue;\n    }\n    if (a[i] === b[j]) {\n      script.push({ op: 'keep', line: a[i] });\n      i += 1;\n      j += 1;\n      continue;\n    }\n    if (lcs[(i + 1) * width + j] > lcs[i * width + j + 1]) {\n      script.push({ op: 'remove', line: a[i] });\n      i += 1;\n      continue;\n    }\n    script.push({ op: 'add', line: b[j] });\n    j += 1;\n  }\n  return script;\n}\n",
+  "tokens": 1189,
+  "harnessMs": 2590,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "34e09b2546630fae5e1e0eed4dc8fd55",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "ebdb0d7c33a8a19e4fa561fb676097793811da297b1f0dcff1de92a45a1d0ce1",
+  "inputTokens": 811,
+  "outputTokens": 378
+}

@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "6666aa69455499737042e676fd082a9978c92fb50ef7d845c1c63ef5e7018da3",
+  "taskId": "04-balanced-brackets",
+  "attemptIndex": 3,
+  "source": "export function isBalanced(source) {\n  if (typeof source !== 'string') throw new TypeError('isBalanced expects a string');\n  const open = '([{';\n  const close = ')]}';\n  const stack = [];\n  let inString = null;\n  let i = 0;\n  while (i < source.length) {\n    const ch = source[i];\n    if (inString !== null) {\n      if (ch === '\\\\') {\n        i += 2;\n        continue;\n      }\n      if (ch === inString) inString = null;\n      i += 1;\n      continue;\n    }\n    if (ch === '\"' || ch === \"'\") {\n      inString = ch;\n      i += 1;\n      continue;\n    }\n    if (open.includes(ch)) stack.push(ch);\n    else if (close.includes(ch)) {\n      if (stack.pop() !== open[close.indexOf(ch)]) return false;\n    }\n    i += 1;\n  }\n  return inString === null && stack.length === 0;\n}\n",
+  "tokens": 710,
+  "harnessMs": 6259,
+  "recordedAt": "2026-09-12T10:04:11.000Z",
+  "recordedFrom": {
+    "runId": "63de2349696b9f1aeace6983ca933a12",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "c514a92318e3b50425c6df4db374025876474773dcc79e28509cc8efea114d6a",
+  "inputTokens": 516,
+  "outputTokens": 194
+}

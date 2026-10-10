@@ -1,0 +1,11 @@
+{
+  "author": "91b851346bf486649e66aac9581b68c0d126e0fbe3cd2a8d24a14079ee3a662a",
+  "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+  "detail": "312c08487a0d335952f3767d58134245b56168dca513e31fe036b286cd309173",
+  "harness": "8b3aa30f36520bad084572e9232a8ec81afeb4b8b4014101526118d73bf7db7b",
+  "hypothesis": "One repair call after an empty reply raises the pass rate, because some drafts come back with no code block.",
+  "nonce": "",
+  "parent": "ecc7cdb0e5d18a743e12e4dd3c00ab99541f25f254512e77005d616ff3293784",
+  "protocol": "petri/node/1",
+  "tree": "petri-main"
+}

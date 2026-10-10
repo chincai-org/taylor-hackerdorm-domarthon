@@ -1,0 +1,13 @@
+{
+  "body": {
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+    "hyp": "Running each draft against a quick self-check before returning raises the pass rate, because wrong answers get caught early.",
+    "node": "e961cb124309c9a2ce70d3237d4dbd6ec9342d216c451cff161a54ca3b120073",
+    "parent": "0a54718ad85ba6b6dc69eee47cd110fc5dd99f76f920aebe7afdbc682e86dc73",
+    "tree": "petri-main",
+    "type": "NodeSubmitted"
+  },
+  "pub": "91b851346bf486649e66aac9581b68c0d126e0fbe3cd2a8d24a14079ee3a662a",
+  "sig": "3911c0ed0fbefbf89ba7d69b62527416caa5af93494add8b587b1091b02a91ae100c385880e833759098d65427967b04a0a896a1614af73dc60c3111dfa16301",
+  "ver": 1
+}

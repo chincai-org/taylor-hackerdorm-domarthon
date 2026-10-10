@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "05-deep-equal",
+  "attemptIndex": 4,
+  "source": "export function deepEqual(a, b) {\n  const assumed = new Map();\n\n  const walk = (x, y) => {\n    if (Object.is(x, y)) return true;\n    if (x === null || y === null) return false;\n    if (typeof x !== 'object' || typeof y !== 'object') return false;\n\n    const seen = assumed.get(x);\n    if (seen !== undefined && seen.has(y)) return true;\n    if (seen === undefined) assumed.set(x, new Set([y]));\n    else seen.add(y);\n\n    const xArray = Array.isArray(x);\n    const yArray = Array.isArray(y);\n    if (xArray !== yArray) return false;\n    if (xArray) {\n      if (x.length !== y.length) return false;\n      for (let i = 0; i < x.length; i += 1) {\n        if (!walk(x[i], y[i])) return false;\n      }\n      return true;\n    }\n\n    const xDate = x instanceof Date;\n    const yDate = y instanceof Date;\n    if (xDate !== yDate) return false;\n    if (xDate) return Object.is(x.getTime(), y.getTime());\n\n    const keys = Object.keys(x);\n    if (keys.length !== Object.keys(y).length) return false;\n    for (const key of keys) {\n      if (!Object.prototype.hasOwnProperty.call(y, key)) return false;\n      if (!walk(x[key], y[key])) return false;\n    }\n    return true;\n  };\n\n  return walk(a, b);\n}\n",
+  "tokens": 1049,
+  "harnessMs": 3067,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "34e09b2546630fae5e1e0eed4dc8fd55",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "b63318e02e4d11739cd5164066e3f05efeb289168e7a9f96f70b2e36718bd054",
+  "inputTokens": 749,
+  "outputTokens": 300
+}

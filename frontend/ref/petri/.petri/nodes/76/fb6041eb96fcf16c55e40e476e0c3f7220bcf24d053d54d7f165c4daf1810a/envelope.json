@@ -1,0 +1,13 @@
+{
+  "body": {
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+    "hyp": "Taking the last fenced block instead of the first raises the pass rate, because the model often explains first and puts the real answer last.",
+    "node": "76fb6041eb96fcf16c55e40e476e0c3f7220bcf24d053d54d7f165c4daf1810a",
+    "parent": "0a54718ad85ba6b6dc69eee47cd110fc5dd99f76f920aebe7afdbc682e86dc73",
+    "tree": "petri-main",
+    "type": "NodeSubmitted"
+  },
+  "pub": "91b851346bf486649e66aac9581b68c0d126e0fbe3cd2a8d24a14079ee3a662a",
+  "sig": "c93264e8de5a53750aa98eb4d6085e51f9305d12fec1fd7944c4beff1297315297ee98c642867694daa7dada0dde42c25908c396c736bbd9cad72929ff17e602",
+  "ver": 1
+}

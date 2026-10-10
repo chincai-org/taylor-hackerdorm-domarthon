@@ -1,0 +1,19 @@
+{
+  "bench": {
+    "id": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+    "name": "petri-bench-v1"
+  },
+  "ledger": "local",
+  "mode": "replay",
+  "policy": {
+    "maxRunSpreadBp": 3000,
+    "maxRunnerDisagreementBp": 1000,
+    "minDeltaBp": 1000,
+    "minRuns": 5,
+    "minVerifications": 2,
+    "trustedRunners": []
+  },
+  "runsPerVerification": 5,
+  "treeId": "petri-main",
+  "version": 1
+}

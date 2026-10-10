@@ -1,0 +1,15 @@
+{
+  "specVersion": 1,
+  "id": "03-roman-numerals",
+  "title": "Convert between integers and Roman numerals",
+  "difficulty": "medium",
+  "entry": "solution.mjs",
+  "exports": ["toRoman", "fromRoman"],
+  "signatures": [
+    "export function toRoman(value: number): string",
+    "export function fromRoman(text: string): number"
+  ],
+  "timeoutMs": 5000,
+  "testCount": 10,
+  "tags": ["strings", "numbers", "validation"]
+}

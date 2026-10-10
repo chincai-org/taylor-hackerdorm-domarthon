@@ -1,0 +1,47 @@
+{
+  "areaMismatch": false,
+  "claimedMedianBp": 0,
+  "claimedRuns": [],
+  "derivedAreas": [
+    "loop",
+    "prompt",
+    "retrieval",
+    "recovery",
+    "budget",
+    "decoding"
+  ],
+  "mechanical": {
+    "cls": "ok",
+    "command": "",
+    "evidence": "",
+    "exitCode": 0
+  },
+  "mode": "replay",
+  "node": "0a54718ad85ba6b6dc69eee47cd110fc5dd99f76f920aebe7afdbc682e86dc73",
+  "parentHarness": "5894095975556df34aedf9a9be1228f959515821141de45e140f46890fe83a59",
+  "proposal": {
+    "contradicts": [],
+    "falsifiedIf": "A verified median at or below 0bp over the empty harness.",
+    "files": [
+      {
+        "contents": "/**\n * LEVER: `loop` — this file is the frozen entry point, not a place to think.\n *\n * `solve` keeps its signature forever. The evolve guard checks the exact text of\n * the declaration, so a patch that widens it is rejected as a contract violation.\n * Everything behind `solve` is mutable: files may be added, split, merged or\n * deleted, as long as each one imports only its relative siblings inside harness/.\n *\n * Things a later node might try here:\n *   - move the two log events, so a trace reader can see where time went\n *   - call a new top-level stage before runLoop, for example a plan step\n * Prefer changing ./loop.ts. Keeping this file thin keeps every diff readable.\n */\nimport type { TaskView, HarnessContext, Solution } from './contract.js';\nimport { runLoop } from './loop.js';\n\nexport { HARNESS_ENTRY_VERSION } from './contract.js';\nexport type { TaskView, HarnessContext, Solution } from './contract.js';\n\n/** FROZEN ENTRY POINT. The signature never changes. Everything behind it is mutable. */\nexport async function solve(task: TaskView, ctx: HarnessContext): Promise<Solution> {\n  ctx.log.event('solve:start', { taskId: task.taskId });\n  const solution = await runLoop(task, ctx);\n  ctx.log.event('solve:end', { files: solution.files.length });\n  return solution;\n}\n",
+        "path": "harness/index.ts"
+      }
+    ],
+    "hypothesis": "Single-shot prompt. No retry. No test run. This is the honest baseline.",
+    "metric": "score",
+    "motif": "genesis-v1",
+    "predictedDelta": 1,
+    "primaryArea": "loop",
+    "reasoning": "The genesis node states the starting harness. It is not a change to anything, so it makes no claim beyond scoring above the empty harness.",
+    "whyNotUntested": null
+  },
+  "protocol": "petri/detail/1",
+  "provenance": {
+    "digestHash": "",
+    "model": "none",
+    "promptHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "seed": 0,
+    "source": "human"
+  }
+}

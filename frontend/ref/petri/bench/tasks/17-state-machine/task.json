@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "17-state-machine",
+  "title": "Run events through a state transition table",
+  "difficulty": "medium",
+  "entry": "solution.mjs",
+  "exports": ["createMachine"],
+  "signatures": ["export function createMachine(config: object): { state: string, log: string[], send(event: string | { type: string }): boolean }"],
+  "timeoutMs": 5000,
+  "testCount": 11,
+  "tags": ["state-machines", "ordering", "validation", "edge-cases"]
+}

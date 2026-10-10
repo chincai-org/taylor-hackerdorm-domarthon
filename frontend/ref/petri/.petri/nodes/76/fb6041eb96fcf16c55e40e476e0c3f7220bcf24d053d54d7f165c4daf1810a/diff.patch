@@ -1,0 +1,11 @@
+--- a/harness/loop.ts
++++ b/harness/loop.ts
+@@ -30,7 +30,7 @@
+   const blocks: string[] = [];
+   let m: RegExpExecArray | null;
+   while ((m = fence.exec(replyText)) !== null) blocks.push(m[1] ?? '');
+-  const code = blocks.length > 0 ? blocks[0]! : replyText;
++  const code = blocks.length > 0 ? blocks.at(-1) : replyText;
+   return [{ path: task.entryFile, contents: `${code.trim()}\n` }];
+ }
+ 

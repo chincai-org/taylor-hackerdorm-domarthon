@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "de5f72c42e8b728c293ce666175c97f8bc15a29c3f6ca21ac14155b109c5bcbf",
+  "taskId": "18-word-wrap",
+  "attemptIndex": 2,
+  "source": "function wrapPart(part, width) {\n  const words = part.split(' ').filter((word) => word !== '');\n  const lines = [];\n  let line = '';\n\n  for (let word of words) {\n    if (line !== '' && line.length + 1 + word.length <= width) {\n      line += ` ${word}`;\n      continue;\n    }\n    if (line === '' && word.length <= width) {\n      line = word;\n      continue;\n    }\n    if (line !== '') {\n      lines.push(line);\n      line = '';\n    }\n    while (word.length > width) {\n      lines.push(word.slice(0, width));\n      word = word.slice(width);\n    }\n    line = word;\n  }\n\n  if (line !== '') lines.push(line);\n  return lines.join('\\n');\n}\n\nexport function wrapText(text, width) {\n  if (typeof text !== 'string') throw new TypeError('text must be a string');\n  if (!Number.isInteger(width) || width < 1) {\n    throw new RangeError('width must be an integer of at least 1');\n  }\n  return text.split('\\n').map((part) => wrapPart(part, width)).join('\\n');\n}\n",
+  "tokens": 884,
+  "harnessMs": 5896,
+  "recordedAt": "2026-09-12T11:47:36.000Z",
+  "recordedFrom": {
+    "runId": "55849d9b04f2db4c3c69dac7dc399fee",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "3be00bcae4608adcd15c79419efa48354d481ac8f981dfd6b6e06ce58ef805b5",
+  "inputTokens": 644,
+  "outputTokens": 240
+}

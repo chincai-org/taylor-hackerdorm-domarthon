@@ -1,0 +1,11 @@
+{
+  "author": "0b3c69814f295bb73e4affb25fd2d88a5765e598b047809149edb8954041e584",
+  "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+  "detail": "c32a5edd1e8a3bc0d198041a2f65805184ee52be02a1e78695f5fd9963eb8462",
+  "harness": "6666aa69455499737042e676fd082a9978c92fb50ef7d845c1c63ef5e7018da3",
+  "hypothesis": "Single-shot prompt. No retry. No test run. This is the honest baseline.",
+  "nonce": "",
+  "parent": "root",
+  "protocol": "petri/node/1",
+  "tree": "petri-main"
+}

@@ -1,0 +1,13 @@
+{
+  "body": {
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2",
+    "hyp": "Giving the model the full symbol signatures and one worked example of the reply shape raises the pass rate, because most failures are wrong shape, not wrong logic.",
+    "node": "ecc7cdb0e5d18a743e12e4dd3c00ab99541f25f254512e77005d616ff3293784",
+    "parent": "0a54718ad85ba6b6dc69eee47cd110fc5dd99f76f920aebe7afdbc682e86dc73",
+    "tree": "petri-main",
+    "type": "NodeSubmitted"
+  },
+  "pub": "0b3c69814f295bb73e4affb25fd2d88a5765e598b047809149edb8954041e584",
+  "sig": "86d206e8cf4015923c8dbc64e92f0be4c8f3c9f6813d8c4edc585c67d7213c33c4e6ec6fe00836b059949ae7252aabab8bc07550f9cb057274fde3d24cf89104",
+  "ver": 1
+}

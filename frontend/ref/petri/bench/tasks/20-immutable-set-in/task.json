@@ -1,0 +1,12 @@
+{
+  "specVersion": 1,
+  "id": "20-immutable-set-in",
+  "title": "Set a deep value without mutating anything",
+  "difficulty": "hard",
+  "entry": "solution.mjs",
+  "exports": ["setIn"],
+  "signatures": ["export function setIn(obj: object, path: (string | number)[], value: unknown): object"],
+  "timeoutMs": 5000,
+  "testCount": 12,
+  "tags": ["immutability", "structural-sharing", "validation", "edge-cases"]
+}

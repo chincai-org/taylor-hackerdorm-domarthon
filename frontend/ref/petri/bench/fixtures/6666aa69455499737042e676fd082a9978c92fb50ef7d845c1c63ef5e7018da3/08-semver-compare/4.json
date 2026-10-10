@@ -1,0 +1,18 @@
+{
+  "protocol": "petri/fixture/1",
+  "harness": "6666aa69455499737042e676fd082a9978c92fb50ef7d845c1c63ef5e7018da3",
+  "taskId": "08-semver-compare",
+  "attemptIndex": 4,
+  "source": "export function compare(a, b) {\n  const clean = (version) => version.split('+')[0].split('-')[0];\n  const left = clean(a).split('.').map(Number);\n  const right = clean(b).split('.').map(Number);\n  for (let i = 0; i < 3; i += 1) {\n    if (left[i] !== right[i]) return left[i] - right[i];\n  }\n  return 0;\n}\n",
+  "tokens": 883,
+  "harnessMs": 5727,
+  "recordedAt": "2026-09-12T10:04:11.000Z",
+  "recordedFrom": {
+    "runId": "58deae1615be76546fb6b3a4f25e449c",
+    "model": "claude-sonnet-5",
+    "bench": "5ec2e9b81f7ab85dc999eb179bd1d38ad7f89e4670706b2a6f14cd830b136ed2"
+  },
+  "contentHash": "519d93eb9e4458ab4faa26e9b9d61cfc5c96e4d31f706b388d5c48e2ba540fa5",
+  "inputTokens": 804,
+  "outputTokens": 79
+}

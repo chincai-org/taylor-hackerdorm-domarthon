@@ -2,19 +2,15 @@ FROM python:3.14-slim
 
 WORKDIR /app
 
-# Provision requisite system dependencies, Node.js, and verified DSH plugins
+# Provision requisite system dependencies, Node.js, and VERIFIED plugins
 RUN apt-get update && \
     apt-get install -y curl && \
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs && \
-    npm install @cordisjs/plugin-logger \
-                @deepseek-ai/dsh-plugin-fs \
-                @deepseek-ai/dsh-plugin-web-search \
-                @deepseek-ai/dsh-mcp-client \
-                dsh-plugin-shop \
-                dsh-better-sidebar \
-                @liustack/modlens \
-                @stackstackstack/dsh-session-persistence-sqlite && \
+    npm install -g @deepseek-ai/dsh && \
+    npm install @cordisjs/plugin-logger-console \
+                dsh-plugin-marketplace \
+                @liustack/modlens && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

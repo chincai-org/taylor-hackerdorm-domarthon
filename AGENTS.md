@@ -4,7 +4,7 @@ Guide for AI coding agents (+ humans). **24h hackathon**: end-to-end > polish, s
 
 ## 1. Project Overview
 
-**One AI optimizes harness of another AI**, inspired by [Petri](https://ethonline2026-two.vercel.app/) ([repo](https://github.com/Avoisavo/ethonline2026/tree/petri)).
+**One AI optimizes harness of another AI.**
 
 - **Harness** = config around customer-support agent: system prompt, tool defs/descriptions, routing/policy instructions, anything shaping behavior.
 - Versions stored as **tree**. Each node = one harness version + **benchmark result**.
@@ -63,7 +63,7 @@ Don't restructure without reason.
 /
 ├── AGENTS.md
 ├── app/
-│   ├── main.py              # FastAPI app; mounts /trees, /showcase + REST/MCP routers
+│   ├── main.py              # FastAPI app; mounts /trees + REST/MCP routers
 │   ├── api/                 # REST endpoints for frontend
 │   ├── core/                # Settings
 │   ├── db/                  # Engine, models, repository (SQLAlchemy + Neon Postgres)
@@ -72,12 +72,9 @@ Don't restructure without reason.
 │   ├── services/            # PI clients, digest helpers
 │   ├── mcp_server.py        # MCP tool definitions
 │   └── web/                 # Everything browser sees
-│       ├── templates/       # Live pages: gallery.html (/), tree-detail.html (/tree/*)
-│       ├── static/          # Served at /trees: theme.css, live-viewer.css/js,
-│       │                    # showcase-enhance.js
-│       └── showcase/        # Static Petri showcase source (build.mjs, registry.mjs,
-│           │                # lib/, templates/, data/, checks/)
-│           └── dist/        # GENERATED showcase pages, served at /showcase/
+│       ├── templates/       # Live pages: base.html, gallery.html (/),
+│       │                    # tree-detail.html (/tree/*)
+│       └── static/          # Served at /trees: theme.css, live-viewer.css/js
 ├── benchmarks/              # Benchmark definitions (customer support)
 ├── scripts/                 # One-off helpers (DeepSeek eval)
 ├── tests/                   # pytest suite
@@ -180,12 +177,6 @@ uv run ruff check .
 
 # Run tests when test files present
 uv run pytest
-
-# Rebuild static showcase (writes app/web/showcase/dist/)
-node app/web/showcase/build.mjs
-
-# Showcase unit + render tests (pure Node, no browser)
-node --test app/web/showcase/checks/unit.mjs app/web/showcase/checks/render.mjs
 ```
 
 ### DeepSeek agent API (prompt + harness, streamed over SSE)
@@ -330,388 +321,23 @@ Relationships/constraints:
 
 ---
 
-## 16. Frontend guidance — live backend viewer + standalone Petri showcase
-
-### 16.1 Production integration (takes precedence over showcase notes)
+## 16. Frontend guidance — live backend viewer
 
 - Live gallery `/` renders `app/web/templates/gallery.html`. Native cards → `/tree/{tree_id}`
-  from `app/web/templates/tree-detail.html`. Detail fetches only `/api/v1/trees/{tree_id}` +
-  native Back to trees link. FastAPI serves live-viewer assets at `/trees`, static showcase
-  at `/showcase`; REST contracts unchanged.
+  from `app/web/templates/tree-detail.html`. Both extend `base.html` (shared head/topbar/
+  favicon/live assets). Detail fetches only `/api/v1/trees/{tree_id}` + native Back to trees
+  link. FastAPI serves live assets at `/trees` (`html=True`); `/favicon.ico` from `public/`
+  via explicit route. REST contracts unchanged.
 - Keep loading/failure/retry handling on both live pages. Node selection keeps keyboard
   focus on selected link; live region announces changes.
-- `app/web/static/live-viewer.js` restores integration from commit `54019be`;
-  `live-viewer.css` scopes live styles to `.live-trees`. Keep both linked from prod template.
-  No Node build needed to serve live page in Python container.
+- `app/web/static/live-viewer.js` drives both pages (fetch, lineage SVG, node panel, copy
+  controls). Sets `has-js` itself + clipboard `execCommand` fallback + below-fold card
+  reveal (IO-guarded, reduced-motion respected). No Node build needed in Python container.
 - Live nodes: `pending`, `running`, `complete`, `failed`; nullable raw scores, harness JSON,
-  rationale, results, errors. Harness + result payloads have copy controls. Scenario-array
-  results → passed/failed/unscored cards; summary-only → labeled facts. No raw result JSON
-  in normal detail UI. Copy payload verbatim. Wide lineage SVG centered in bounded scroll
-  stage. Never apply showcase acceptance thresholds / basis points / verification keys /
-  Petri CLI instructions to backend data.
-- Static showcase stays `/showcase/index.html` or local `file://` page.
-  `showcase-enhance.js` only enhances; `build.mjs` composes static `templates/` modules.
-  Never overwrite prod integration with showcase code.
-- `node checks/integration.mjs` from `app/web/showcase`: read-only same-origin
-  API-contract/browser tests on local fixtures, no DB. Covers clipboard payloads, scenario
-  rendering, sparse-tree centering, dropdown pointer. Also run static build, unit/render,
-  static checks.
-- Frontend `lib/` tracked in Git. Root `.gitignore` exempts `app/web/showcase/lib/` from
-  generic Python `lib/` ignore.
-- Live data needs JS (as recovered commit). No-JS prod shell links JSON API/docs instead of
-  fictional showcase data. Strict no-JS rules below = standalone showcase only.
-
----
-
-### 16.2 Standalone showcase notes
-
-Read first before changing showcase. **Traps** section matters most: every entry = bug that
-already happened once, easy to reintroduce.
-
----
-
-#### 16.2.1 What this is
-
-**Standalone plain HTML/CSS/JS recreation** of Petri "Trees" section. No framework/bundler/runtime deps.
-
-Source: `app/web/showcase/`; build output: `app/web/showcase/dist/` (served `/showcase/`,
-opens `file://`). Move deliverable → move this guidance too + fix paths in §16.2.3/§16.2.4
-(`checks/` scripts contain absolute paths).
-
-| | |
-|---|---|
-| Reference repo (Next.js) | `ref/` — clone of `https://github.com/Avoisavo/ethonline2026` |
-| Live reference | `https://ethonline2026-two.vercel.app/` |
-| Deliverable | `app/web/showcase/` (source) → `dist/` (generated pages) |
-| Screenshots | `shots/` |
-| Work log | `.workbuddy-ai/memory/2026-10-10.md` (history of *why*) |
-
-`ref/` = **read-only source of truth for behaviour/geometry**. Never edit. Reference usually
-wins on disagreement — except deliberate divergences in §16.2.6.
-
----
-
-#### 16.2.2 Non-negotiable constraints
-
-1. **Works with JS disabled.** Headline req, easiest to break. Read §16.2.5 before touching
-   anything interactive.
-2. **No dependencies.** No npm/framework/bundler/CDN. Build = `node build.mjs`, Node stdlib only.
-3. **Opens from `file://`.** No server. All pages in one flat `dist/` → stylesheet/script/links
-   plain siblings.
-4. **Static HTML, generated at build time.** Complete + readable before any script runs.
-5. **Visually faithful to reference**, except deliberate divergences (§16.2.6).
-
----
-
-#### 16.2.3 Layout
-
-```
-app/web/showcase/
-  build.mjs                 THE GENERATOR. Emits dist/ pages + per-tree stylesheets.
-  registry.mjs              Tree registry: TREES[] + loadTree(). Showcase or real snapshot.
-  lib/
-    layout.mjs              buildForest / tidySlots — port of ref/lib/layout.ts
-    glyph.mjs               Per-node status glyph (port of ref/components/Glyph.tsx)
-    metrics.mjs             changesOf / fmtPct
-    format.mjs              Status words, basis points, node numbers, claim/sign helpers
-    objectives.mjs          OBJECTIVES — fork "direction" options
-  data/
-    showcase.mjs            5 hand-authored trees (port of ref/lib/showcase.ts)
-    petri-export.json       Real `petri export` snapshot (1 tree)
-    petri-digest.json       Its digest panel
-  checks/                   Verification suite (§16.2.4.2).
-  dist/                     GENERATED — gallery, 6 tree pages + stylesheets,
-                            + copies of theme.css / showcase-enhance.js (file:// needs
-                            no server).
-```
-
-Shared `theme.css` + `showcase-enhance.js` live in `app/web/static/` (also served to live
-viewer at `/trees/`); `build.mjs` copies both into `dist/` every build.
-
-Six slugs: `research--hermes-agent--claude-sonnet-5`,
-`coding--claude-code--claude-opus-5`, `coding--petri-harness-v1--claude-sonnet-5`,
-`finance--pi--claude-haiku-4-5`, `security--codex-cli--gpt-5`,
-`data-analysis--openhands--gemini-2-5-pro`.
-
-**Never hand-edit `dist/`.** Gallery/tree pages/stylesheets overwritten every build.
-`<slug>.css` header says so. Edit `build.mjs`, `theme.css`, `showcase-enhance.js` or
-`data/`, then rebuild.
-
----
-
-#### 16.2.4 Commands
-
-##### 16.2.4.1 Build
-
-```bash
-cd app/web/showcase
-node build.mjs
-```
-
-Expected: `Wrote dist/index.html, 6 tree pages (…) and 6 tree stylesheets (…).` Byte counts
-drift with content — only message shape matters.
-
-No `node` on PATH → managed runtime (`node` v22 under the Workbuddy binaries dir).
-
-##### 16.2.4.2 Checks
-
-Playwright = dev tool, **not** deliverable dep. Already installed under the
-Workbuddy-managed Node workspace (`playwright-core`).
-Scripts resolve it via `createRequire` there.
-
-```bash
-cd app/web/showcase/checks
-node verify.mjs        # contrast, font sizes, tap targets; then JS-on interaction path
-node nojs.mjs          # THE HEADLINE CHECK — same interactions, JS disabled
-node sweep.mjs         # 7 pages × 9 widths (360…1920): overflow, escaped elements, sticky overlap
-node palette.mjs       # resolved colour of every semantic element; flags non-blue hue
-node clipboard.mjs     # clipboard really gets command; icon swaps
-node copy-fallback.mjs # no-navigator.clipboard path + glyph draws
-node cmd-box.mjs       # copy control geometry inside command box; no word split
-node shots.mjs         # regenerates ../shots/
-```
-
-**Caveat — read output, not exit code.** Only `cmd-box.mjs` calls `process.exit(1)` on
-failure. Others print failures yet exit `0`. Zero exit ≠ pass.
-
-##### 16.2.4.3 Definition of done
-
-Layout/CSS/markup change → all green:
-
-| Check | Expected |
-|---|---|
-| `verify.mjs` | `contrast 0`, `<12px 0`, `tap<24 0` all three pages; selection/chips/switch correct |
-| `nojs.mjs` | node click, narrow list-row click, "Full record" all swap strip **and** panel; 6 gallery links |
-| `sweep.mjs` | `0 failing viewport/page combinations out of 63` |
-| `palette.mjs` | `All non-failure chrome sits in the blue family.` |
-| `clipboard.mjs` | clipboard matches `data-copy`; `0 copy buttons rendered with no script` |
-| `copy-fallback.mjs` | tick shown via fallback; glyph drawn 16×16 |
-| `cmd-box.mjs` | `0 failure(s)` |
-
----
-
-#### 16.2.5 The four mechanisms
-
-Required reading before touching anything interactive. Makes JS-off work.
-
-##### 16.2.5.1 Layout solved at build time
-
-Tidy-tree row layout depends on leaves above each node. `lib/layout.mjs` computes in Node;
-pages ship complete static SVG. Browser never computes geometry. **Node added / shape
-changed → rebuild, never fix layout in CSS/JS.**
-
-##### 16.2.5.2 State lives in CSS
-
-Tree|Stats switch + four info chips = **native radio groups** (`<input>` + `<label>`),
-shown/hidden via `body:has(#id:checked)`. No JS; arrow keys native. Never convert to
-buttons or add JS.
-
-##### 16.2.5.3 Selection: two paths, one outcome
-
-Two ways to decide shown version, must never fight:
-
-- **No script** — figure links `#s-<short>`, generated `<slug>.css` uses `:target`.
-- **With script** — `showcase-enhance.js` adds `is-open` to `.selected-strip` (`:target`
-  **not** re-evaluated when fragment rewritten in place — see Trap 1).
-
-Generated rules cover both; `:target` half disables itself once strip marked:
-
-```css
-:is(body:not(:has(.selected-strip.is-open)):has(#s-he-07:target),
-    body:has(.selected-strip.is-open):has(.selected-strip[data-for="he-07"].is-open))
-```
-
-Mechanism = **custom properties**, not declarations — one rule covers wide figure + narrow
-list, another covers strip + record. `theme.css` defaults (`--sel-ring` → `none`) → unchosen
-version costs nothing.
-
-##### 16.2.5.4 Progressive-enhancement gate
-
-Script-only controls carry `.needs-js`, **hidden until script runs**:
-
-```css
-.needs-js { display: none; }                    /* not display:none in the markup */
-html.has-js .icon-btn.needs-js { display: inline-flex; }
-```
-
-`showcase-enhance.js` adds `html.has-js` first. Script never loads → copy buttons + direction
-picker absent, never shown-but-inert. Commands stay readable plain text. **Never add
-interactive-looking control needing JS without this gate.**
-
----
-
-#### 16.2.6 Deliberate divergences from reference
-
-**Intentional.** Never "fix" back without asking.
-
-| Area | Ours | Reference |
-|---|---|---|
-| Colour | M3 dark seeded from **blue** | M3 baseline purple (`#6750A4`) |
-| `tertiary` | cyan (`#a2d2df`) | M3 pink |
-| `.record-info` | `position: sticky` | static (leaves tall void) |
-| `.chips` | bare M3 filter-chip group, 32px, gap 8 | nested sunk panel, 34px, gap 4 |
-| Radii | 8px / 12px (`--shape-sm` etc.) | fixed 10px |
-| Copy control | 32px **icon button** with clipboard glyph, **inside** command box both blocks | text "Copy"; inside in `.checkit-cmd`, **below** command in `.np-block.fork` |
-| `build.mjs` output | flat folder (`index.html`, `<slug>.html`) | Next.js routes |
-
-**Copy placement** stands out: reference itself inconsistent (table above). Ours inside both
-places. Cost: button eats ~34px command width (300 → 266px) → pushes fork command to wrap
-at sidebar widths.
-
----
-
-#### 16.2.7 Traps
-
-Each: symptom → cause → working fix.
-
-##### 16.2.7.1 `:target` not re-evaluated by `history.replaceState()`
-
-**Symptom.** Node click changes URL, screen static.
-**Cause.** Selection drove off `:target` + only `replaceState`. In-place fragment rewrite
-never re-resolves `:target`.
-**Fix.** `showcase-enhance.js` selects via `is-open` class; fragment kept only for shareable
-URL (§16.2.5.3).
-**Trap.** One-off test *seems* to prove `replaceState` works if fragment set during initial
-script run — target just computed first time before first style resolution. Test the click,
-not the load.
-
-##### 16.2.7.2 One fragment can't mean two things
-
-**Symptom (JS off).** "Full record ↓" resets page to default version.
-**Cause.** Strip held `id="s-<short>"`, figure linked it, but "Full record" → `#record`
-matches no `#s-*:target` rule → all strips collapse.
-**Fix.** `s-<short>` id lives on **record `<article class="rec">`** → one fragment selects
-version + scrolls to it. `showcase-enhance.js` keys off `strip.dataset.for`, not `strip.id`;
-"Full record" plain anchor, no `preventDefault`. `.rec` has `scroll-margin-block-start: 64px`
-(clears top bar). Empty-choice test = `body:not(:has(.rec:target))` — **not**
-`.selected-strip:target`.
-
-##### 16.2.7.3 `data-fork-out` stays on `<pre>`
-
-**Symptom.** Fork copy button vanishes on first direction-picker change.
-**Cause.** `showcase-enhance.js` does `out.textContent = …` → **replaces every child**.
-Attribute on wrapper → button (child) deleted.
-**Fix.** `data-fork-out` on `<pre>`, button its *sibling*. `checks/cmd-box.mjs` asserts both.
-
-##### 16.2.7.4 Copy button = sibling, never child
-
-Same root as 16.2.7.3: **never nest copy button inside copied element.** Hooks: `data-copy`
-(literal string) + `data-copy-out` (reads `[data-fork-out]`).
-
-##### 16.2.7.5 Chromium reports `fill` as `rgb(0, 0, 0)` for HTML elements
-
-**Symptom.** Colour probe reports black for every link.
-**Cause.** HTML-element `fill` = meaningless `rgb(0, 0, 0)` — *not* `none`. "Fallback to
-`color` when `fill` none" probe silently reports black.
-**Fix.** Name CSS channel per element in `checks/palette.mjs` (`PROBES`).
-
-##### 16.2.7.6 Playwright forces light mode
-
-Pages dark-only. Pass `colorScheme: "dark"` to context, else screenshots/measurements wrong.
-
-##### 16.2.7.7 `waitUntil: "load"` never settles on `file://` with scripting off
-
-Use `{ waitUntil: "domcontentloaded" }` in `javaScriptEnabled: false` context.
-
-##### 16.2.7.8 Chromium normalises clipboard newlines to CRLF
-
-Clipboard-vs-`<pre>` comparison fails `\n` vs `\r\n`. Normalise before comparing.
-
-##### 16.2.7.9 Unscoped selectors match hidden records
-
-**Symptom.** Geometry assertion passes when should fail, or readability check `false`.
-**Cause.** Every record ships own fork block/check-it/panels, only one displayed.
-`document.querySelector(".fork .cmd")` returns **first** → hidden record, measures **0×0** —
-0×0 satisfies every containment test free.
-**Fix.** Scope to visible record: `.rec[data-for="he-08"]`. `checks/cmd-box.mjs` also asserts
-non-zero box → vacuous pass impossible.
-
-##### 16.2.7.10 Edge reports `file://` as secure context
-
-**Symptom.** `execCommand` fallback never exercised locally.
-**Cause.** `navigator.clipboard` present even on `file://` in Edge → fallback never runs.
-**Fix.** `checks/copy-fallback.mjs` deletes `navigator.clipboard` before load → forces fallback.
-Fallback ≠ dead code — only route in genuinely insecure context.
-
-##### 16.2.7.11 Figure SVG text in user units
-
-`.h-word`, `.h-num`, objective labels inside SVG viewBox; build derives label boxes from char
-counts. **Resizing desyncs geometry.** Sub-12px rule = HTML labels only.
-
-##### 16.2.7.12 `--flag` can break after hyphen
-
-**Symptom.** Command renders `--` line-end + `area` next-line-start.
-**Cause.** Hyphen = legit CSS break opportunity.
-**Fix.** None in CSS. `word-break: keep-all`, `line-break: strict`, `break-spaces`,
-`overflow-wrap: anywhere` all measured, break same place. Only per-token markup stops it.
-`checks/cmd-box.mjs` reports as `note`, not failure. Soft wrap inserts **zero chars** →
-clipboard payload unaffected.
-
-##### 16.2.7.13 `overflow-wrap: break-word` splits words mid-token
-
-Token breaks at overflow point — `improves` → `improv` / `es`. Use `overflow-wrap: normal`
-→ breaks only at real opportunities.
-
-**Trap-in-trap:** at real content widths `break-word` ≡ `normal` rendering, so "no mid-word
-break" test passes under both, proves nothing. Assertion meaningful only with synthetic
-over-long token. Test that can never go red ≠ evidence.
-
-##### 16.2.7.14 `@layer` order load-bearing
-
-`@layer tokens, base, layout, card, glyph, page, motion;` → stylesheet needs no `!important`.
-New rules → correct layer. `.checkit-cmd` in `page` after `.cmd`, relies on source order for
-its one extra declaration.
-
-##### 16.2.7.15 Tap targets need real padding
-
-`::after` pseudo hit-area tried + **reverted**: `elementsFromPoint` proves no hit-area
-extension, tooling can't measure. Use real `padding-block`.
-
-##### 16.2.7.16 Never hand-edit generated CSS/HTML
-
-`<slug>.css` carries GENERATED header. Edit `selectionCss()` in `build.mjs`, rebuild.
-
----
-
-#### 16.2.8 Conventions
-
-- **Comments explain *why*, not what.** Odd-looking rule usually has reason beside it — read
-  first. Several name measured-and-rejected alternative.
-- **Escape every interpolation** in `build.mjs` with `esc()`.
-- **No raw colour outside `@layer tokens`.** M3 roles (`--md-sys-color-*`), `--md-state-*`
-  state layers, `--shape-*` radii, `--type-*` type. Non-M3 value → say so in comment.
-- **Additive JS only.** `showcase-enhance.js` never loads → pages still work. Anything else →
-  `.needs-js` gate.
-- **One shared rule > two near-identical.** Two command blocks share `.cmd`; strip/record
-  reveals share generated `--sel-*` props.
-- **Delete dead CSS.** No unused-class linter in `checks/` → grep stylesheet vs generated markup
-  before assuming class needed. (Earlier `check.mjs` did this, now gone — reinstate if dead
-  CSS recurs.)
-
----
-
-#### 16.2.9 Do not
-
-- Dependency / framework / bundler / CDN script.
-- Build step beyond `node build.mjs`.
-- Move page out of `dist/`. Preview harness maps each dir to own base path →
-  `index.html` vs `tree/*.html` different bases → every card link 404s. All generated pages
-  stay in one flat `dist/`.
-- Hand-edit anything under `dist/`.
-- Edit anything in `ref/`.
-- Convert radio-group switch/chips to JS.
-- Interactive-looking control without `.needs-js` gate.
-- Trust green test without checking it goes red (see 16.2.7.13).
-- Claim layout done without `sweep.mjs` — 63 viewport/page combos = only narrow-width net.
-
----
-
-#### 16.2.10 Matching reference more closely
-
-1. Measure, never eyeball. Render live site via Playwright at same viewport
-   (`colorScheme: "dark"`), compare **computed box models**.
-2. Compare DOM, not just pixels. Past "switch must be fragment-driven" assumption wrong —
-   `ref/components/Panels.tsx` showed React buttons with `aria-pressed`, no anchors; change
-   reverted.
-3. Check §16.2.6 first — difference may be deliberate.
-4. After change → full suite (§16.2.4.3).
+  rationale, results, errors. Harness + result payloads have copy controls (payload verbatim).
+  Scenario-array results → passed/failed/unscored cards; summary-only → labeled facts. No raw
+  result JSON in normal detail UI. Wide lineage SVG centered in bounded scroll stage.
+- Live data needs JS. No-JS shell links JSON API/docs instead of fictional data.
+- `theme.css` = shared M3 theme (tokens → motion layers, no `!important`); `live-viewer.css`
+  scopes live styles to `.live-trees`. No raw colour outside `@layer tokens`.
+- Verify via `uv run pytest` + live HTTP smoke (`/`, `/tree/x`, `/favicon.ico`, assets).

@@ -1,5 +1,7 @@
-/** Live FastAPI viewer restored from commit 54019be; separate from the Petri showcase. */
+/** Live FastAPI viewer: gallery + tree detail, driven by /api/v1/trees. */
 (() => {
+	// Gate script-only controls before anything else (live CSS hides them until set).
+	document.documentElement.classList.add("has-js");
 	const cards = document.getElementById("tree-cards");
 	const detail = document.getElementById("tree-detail");
 	const count = document.getElementById("tree-count");
@@ -27,7 +29,7 @@
 	let trees = new Map();
 	let selectedTree = null;
 
-	/** Validate the backend's contract, not the showcase's acceptance/basis-point schema. */
+	/** Validate the backend's tree/node contract before rendering. */
 	function prepareTree(tree) {
 		if (
 			!tree ||
@@ -270,6 +272,72 @@
 		selectNode(tree.nodeMap.get(tree.root_node_id) ?? tree.nodes[0]);
 	}
 
+	/** Clipboard write with legacy fallback: navigator.clipboard is absent or
+		denied in insecure contexts, execCommand may still work. */
+	async function writeClipboard(text) {
+		if (navigator.clipboard?.writeText) {
+			try {
+				await navigator.clipboard.writeText(text);
+				return true;
+			} catch {
+				// Permission denial is expected; the legacy copy path may still work.
+			}
+		}
+		const focused = document.activeElement;
+		const selection = window.getSelection();
+		const ranges = selection
+			? Array.from({ length: selection.rangeCount }, (_, index) =>
+					selection.getRangeAt(index).cloneRange(),
+				)
+			: [];
+		const scratch = document.createElement("textarea");
+		scratch.value = text;
+		scratch.readOnly = true;
+		scratch.tabIndex = -1;
+		scratch.style.cssText = "position:fixed;top:0;left:-9999px";
+		try {
+			document.body.append(scratch);
+			scratch.select();
+			return document.execCommand("copy");
+		} catch {
+			return false;
+		} finally {
+			scratch.remove();
+			focused?.focus({ preventScroll: true });
+			if (selection) {
+				selection.removeAllRanges();
+				for (const range of ranges) selection.addRange(range);
+			}
+		}
+	}
+
+	/** Below-fold gallery cards fade/slide in on scroll. Runs after each render
+		(cards inject post-fetch), honours reduced-motion, no-ops without IO. */
+	function revealCards(scope) {
+		if (
+			!("IntersectionObserver" in window) ||
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches
+		) {
+			return;
+		}
+		const observer = new IntersectionObserver(
+			(entries) => {
+				for (const { target, isIntersecting } of entries) {
+					if (!isIntersecting) continue;
+					target.classList.add("is-revealed");
+					observer.unobserve(target);
+				}
+			},
+			{ rootMargin: "0px 0px -10% 0px" },
+		);
+		for (const card of scope.querySelectorAll(".card")) {
+			if (card.getBoundingClientRect().top >= window.innerHeight) {
+				card.classList.add("will-reveal");
+				observer.observe(card);
+			}
+		}
+	}
+
 	detail?.addEventListener("click", async (event) => {
 		const copyButton = event.target.closest("button[data-copy-node]");
 		if (copyButton) {
@@ -284,15 +352,15 @@
 				return;
 			}
 			copyButton.disabled = true;
+			let copied = false;
 			try {
-				await navigator.clipboard.writeText(JSON.stringify(value, null, 2));
-				status.textContent = "Copied to clipboard";
-			} catch {
-				status.textContent =
-					"Copy failed. Allow clipboard access and try again.";
+				copied = await writeClipboard(JSON.stringify(value, null, 2));
 			} finally {
 				copyButton.disabled = false;
 			}
+			status.textContent = copied
+				? "Copied to clipboard"
+				: "Copy failed. Allow clipboard access and try again.";
 			return;
 		}
 		const link = event.target.closest("a[data-node-id]");
@@ -350,6 +418,7 @@
 				cards.innerHTML = prepared.length
 					? prepared.map(card).join("")
 					: '<li class="empty-state"><h2>No trees yet</h2><p>Create a session and evaluate its root node to see it here.</p></li>';
+				revealCards(cards);
 			} else {
 				const tree = prepareTree(payload);
 				if (tree.id !== detail.dataset.treeId)

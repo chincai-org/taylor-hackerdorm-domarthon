@@ -15,12 +15,12 @@ Scope: customer support only.
 ```
 Workbuddy ("Improve this node") --MCP--> FastAPI server --runs--> DeepSeek / PI
                                               |
-                         +--------------------+--------------------+
-                         |                    |                    |
-                    REST (/api/v1)      MCP (/mcp)          Pages (/ , /tree/*)
-                         |                                         |
-                    Live gallery +                        Static Petri showcase
-                    tree detail                           (/showcase/, works offline)
+                         +--------------------+----------------+
+                         |                    |                |
+                    REST (/api/v1)      MCP (/mcp)      Pages (/ , /tree/*)
+                         |                                 |
+                    Live gallery +                   Tree lineage, node
+                    tree detail                      detail, scores
 ```
 
 1. Seed a tree with a benchmark and an evaluated root node.
@@ -46,10 +46,8 @@ Then open:
 
 - `http://127.0.0.1:5001/` — live gallery of optimization trees
 - `http://127.0.0.1:5001/tree/<tree_id>` — tree lineage, node detail, scores
-- `http://127.0.0.1:5001/showcase/` — static Petri showcase (also opens from
-  `file://`, no server needed)
 - `http://127.0.0.1:5001/docs` — REST API docs
-- `/mcp` — MCP endpoint Workbuddy talks to (also deployed; see Deliverables)
+- `/mcp` — MCP endpoint Workbuddy talks to
 
 Without `DEEPSEEK_API_KEY`, the server still runs; DeepSeek-backed routes
 return 503.
@@ -93,7 +91,7 @@ curl -N -X POST http://127.0.0.1:5001/api/v1/deepseek/stream \
 
 ```
 app/
-  main.py            # FastAPI: mounts /, /tree/*, /trees, /showcase, /api/v1, /mcp
+  main.py            # FastAPI: mounts /, /tree/*, /trees, /api/v1, /mcp
   api/               # REST for the frontend (trees, harness, deepseek)
   core/              # Settings / env
   db/                # SQLAlchemy models + repository (Neon Postgres)
@@ -102,11 +100,8 @@ app/
   services/          # DeepSeek client, tree digest helpers
   mcp_server.py      # MCP tools: list/get/create nodes, benchmark, status
   web/
-    templates/       # Live pages: gallery.html, tree-detail.html
-    static/          # Served at /trees: theme.css, live-viewer.css/js,
-                     # showcase-enhance.js
-    showcase/        # Static Petri showcase source (Node stdlib only)
-      dist/          # GENERATED pages, served at /showcase/
+    templates/       # Live pages: base.html, gallery.html, tree-detail.html
+    static/          # Served at /trees: theme.css, live-viewer.css/js
 scripts/             # One-off helpers (DeepSeek eval)
 benchmarks/          # Customer-support scenario sets (immutable once used)
 tests/               # pytest suite (sqlite-backed, no network)
@@ -132,17 +127,9 @@ Never commit secrets. See `.env.example`.
 ```bash
 uv run pytest                                     # backend (sqlite, no network)
 uv run ruff format . && uv run ruff check .       # lint
-node app/web/showcase/build.mjs                   # rebuild showcase dist/
-node --test app/web/showcase/checks/unit.mjs \
-  app/web/showcase/checks/render.mjs              # showcase unit/render tests
 ```
-
-Browser checks (contrast, no-JS, sweep, clipboard, …) live in
-`app/web/showcase/checks/` and need Playwright; see `AGENTS.md` §16.2.4.
 
 ## For agents
 
 `AGENTS.md` is the full contributor guide: data model, MCP interface,
-DeepSeek SSE API, evaluation flow, database schema, frontend rules, and the
-showcase traps (bugs that already happened once — read before touching
-`app/web/`).
+DeepSeek SSE API, evaluation flow, database schema, and frontend rules.

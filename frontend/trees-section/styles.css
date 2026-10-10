@@ -1,0 +1,1930 @@
+/* Petri — Material Design 3, dark scheme, blue seed.
+   ---------------------------------------------------------------------------
+   Every colour here is a Material 3 colour role, every corner is an M3 shape
+   token, and the type is the M3 scale set in Roboto. Nothing invents a colour:
+   if a value is not an M3 role it is a state layer or a scrim, and it says so.
+
+   Layered so the cascade needs no !important:
+     tokens → base → layout → card → glyph → page → motion
+
+   Layout is unchanged. This is a re-skin: the tree geometry, the `--sel-*`
+   selection hooks and every structural rule behave exactly as before.
+
+   This file is shared by every page. The handful of rules that are true of one
+   tree only — which node is selected, and what that selection looks like — are
+   generated per page into `<slug>.css` next to each `<slug>.html`.
+*/
+
+@layer tokens, base, layout, card, glyph, page, motion;
+
+@layer tokens {
+  :root {
+    /* Dark scheme only. Tells the browser to theme form controls, scrollbars
+       and the canvas to match. */
+    color-scheme: dark;
+
+    /* ---- M3 colour roles, dark scheme (blue source) ----
+       The M3 baseline scheme is seeded from purple (#6750A4); this one is seeded
+       from blue, so `primary` and the whole neutral ramp carry a blue cast. Only
+       the values changed — every role kept its name, which is why the rest of
+       this file needed no edit at all. */
+    --md-sys-color-primary: #a8c7fa;
+    --md-sys-color-on-primary: #062e6f;
+    --md-sys-color-primary-container: #0842a0;
+    --md-sys-color-on-primary-container: #d3e3fd;
+
+    --md-sys-color-secondary: #bfc6dc;
+    --md-sys-color-on-secondary: #293141;
+    --md-sys-color-secondary-container: #3f4759;
+    --md-sys-color-on-secondary-container: #dbe2f9;
+
+    /* A cyan-leaning accent, so the brand mark's second wedge reads as part of
+       the blue family instead of clashing with it. */
+    --md-sys-color-tertiary: #a2d2df;
+    --md-sys-color-on-tertiary: #06333f;
+    --md-sys-color-tertiary-container: #244a56;
+    --md-sys-color-on-tertiary-container: #bee9f7;
+
+    --md-sys-color-error: #ffb4ab;
+    --md-sys-color-on-error: #690005;
+    --md-sys-color-error-container: #93000a;
+    --md-sys-color-on-error-container: #ffdad6;
+
+    --md-sys-color-surface: #111318;
+    --md-sys-color-on-surface: #e2e2e9;
+    --md-sys-color-surface-variant: #44474f;
+    --md-sys-color-on-surface-variant: #c4c6cf;
+
+    --md-sys-color-surface-container-lowest: #0c0e13;
+    --md-sys-color-surface-container-low: #191c20;
+    --md-sys-color-surface-container: #1d2024;
+    --md-sys-color-surface-container-high: #282a2f;
+    --md-sys-color-surface-container-highest: #33353a;
+
+    --md-sys-color-outline: #8e9099;
+    --md-sys-color-outline-variant: #44474f;
+
+    /* A third text tone between `outline` and `on-surface-variant`. M3 has no
+       role for it, but metadata needs one step below body text, and `outline`
+       only clears 3.9:1 on the lightest container. This clears 5:1 everywhere. */
+    --md-sys-color-on-surface-dim: #a9adb8;
+
+    /* State layers: on-surface white at the M3 opacities, over any container. */
+    --md-state-hover: rgb(226 226 233 / 8%);
+    --md-state-focus: rgb(226 226 233 / 10%);
+    --md-state-pressed: rgb(226 226 233 / 10%);
+
+    /* The edge fade on the sideways-scrolling tree panel. A scrim, not a role. */
+    --md-scrim: rgb(0 0 0 / 60%);
+
+    /* ---- M3 shape scale ---- */
+    --shape-none: 0;
+    --shape-xs: 4px;
+    --shape-sm: 8px;
+    --shape-md: 12px;
+    --shape-lg: 16px;
+    --shape-xl: 28px;
+    --shape-full: 999px;
+
+    /* ---- M3 type scale ---- */
+    --font-sans: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "Roboto Mono", ui-monospace, "SF Mono", monospace;
+
+    --type-headline-small: 400 24px/32px var(--font-sans);
+    --type-title-large: 400 22px/28px var(--font-sans);
+    --type-title-medium: 500 16px/24px var(--font-sans);
+    --type-title-small: 500 14px/20px var(--font-sans);
+    --type-body-large: 400 16px/24px var(--font-sans);
+    --type-body-medium: 400 14px/20px var(--font-sans);
+    --type-body-small: 400 12px/16px var(--font-sans);
+    --type-label-large: 500 14px/20px var(--font-sans);
+    --type-label-medium: 500 12px/16px var(--font-sans);
+    /* One mono role, at 12px. M3's label-small is 11px, but a version id or a
+       shell command is read carefully, so the mono text does not drop that far. */
+    --type-mono-medium: 400 12px/16px var(--font-mono);
+  }
+}
+
+@layer base {
+  :where(*, *::before, *::after) {
+    box-sizing: border-box;
+  }
+
+  /* No padding here: `.container` owns the page gutters. */
+  :where(body) {
+    margin: 0;
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font: var(--type-body-medium);
+    letter-spacing: 0.25px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :where(h1, h2, h3, p, dl, dd, figure, table) {
+    margin: 0;
+  }
+
+  :where(a) {
+    color: inherit;
+  }
+
+  /* M3 focus indicator: a 3dp primary ring, not a browser default. */
+  :focus-visible {
+    outline: 3px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+    border-radius: var(--shape-xs);
+  }
+
+  .muted {
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  /* Announced by a screen reader without taking up any space. Not `display: none`
+     — a hidden element is removed from the accessibility tree entirely, so the
+     live region would never be read. */
+  .sr-only {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+@layer layout {
+  /* One column, evenly spaced: every direct child of <main> is a band. */
+  .container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-inline-size: 1240px;
+    margin-inline: auto;
+    padding: 28px 24px 64px;
+  }
+
+  .container-wide {
+    max-inline-size: 1440px;
+  }
+
+  .section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 12px;
+
+    & :is(h1, h2) {
+      font: var(--type-headline-small);
+    }
+  }
+
+  .cards {
+    display: grid;
+    gap: 16px;
+    /* Fluid columns: one card on a phone, up to four on a wide screen, and no
+       media queries to maintain. min() keeps a card from overflowing at 320px. */
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+
+@layer card {
+  /* M3 filled card: a container tone, 12dp corners, no border and no shadow —
+     in a dark scheme M3 separates surfaces by tone, not by elevation. */
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    block-size: 100%;
+    padding: 16px;
+    border-radius: var(--shape-md);
+    background: var(--md-sys-color-surface-container-high);
+    text-decoration: none;
+    transition: background-color 0.15s ease;
+  }
+
+  .card:hover {
+    background: var(--md-sys-color-surface-container-highest);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .card-title {
+    font: var(--type-title-medium);
+    letter-spacing: 0.15px;
+  }
+
+  .card-sub {
+    font: var(--type-body-small);
+    letter-spacing: 0.4px;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  /* M3 assist chip. */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    block-size: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: var(--shape-sm);
+    color: var(--md-sys-color-on-surface-variant);
+    font: var(--type-label-large);
+    letter-spacing: 0.1px;
+    white-space: nowrap;
+  }
+
+  /* The tree panel. Its darker ground separates the drawing from the card. */
+  .card-mini {
+    padding: 6px;
+    border-radius: var(--shape-sm);
+    background: var(--md-sys-color-surface-container-lowest);
+  }
+
+  .mini {
+    display: block;
+    inline-size: 100%;
+    block-size: 96px;
+  }
+
+  .card-goal {
+    font: var(--type-body-medium);
+    letter-spacing: 0.25px;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .card-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-block-start: auto; /* pin the numbers to the bottom of every card */
+    padding-block-start: 12px;
+    border-block-start: 1px solid var(--md-sys-color-outline-variant);
+
+    & div {
+      display: flex;
+      flex-direction: column;
+    }
+
+    & dt {
+      font: var(--type-label-medium);
+      letter-spacing: 0.5px;
+      color: var(--md-sys-color-on-surface-dim);
+    }
+
+    & dd {
+      font: var(--type-title-medium);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+  }
+
+  /* Four columns of numbers get too narrow to read on a phone; two keeps
+     "33 of 40" on one line instead of breaking it in half. */
+  @media (max-width: 420px) {
+    .card-stats {
+      grid-template-columns: repeat(2, 1fr);
+      row-gap: 10px;
+    }
+  }
+}
+
+@layer glyph {
+  /* Status reads by shape first and colour second: drop the colour and the tree
+     still parses — filled circle passed, ring + cross failed, ring + dot open.
+     The roles are M3's: primary passes, error fails, outline is still open. */
+  .g-pass {
+    fill: var(--md-sys-color-primary);
+    stroke: var(--md-sys-color-primary);
+    stroke-width: 2;
+  }
+
+  .g-hollow {
+    fill: var(--md-sys-color-surface-container-lowest);
+    stroke-width: 2;
+  }
+
+  .g-fail {
+    stroke: var(--md-sys-color-error);
+  }
+
+  .g-wait {
+    stroke: var(--md-sys-color-outline);
+  }
+
+  .g-x {
+    stroke: var(--md-sys-color-error);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+
+  .g-dot {
+    fill: var(--md-sys-color-outline);
+  }
+
+  .h-edge {
+    fill: none;
+    stroke: var(--md-sys-color-outline-variant);
+    stroke-width: 1.3;
+  }
+
+  /* A rejected child: dashed, so a dead branch is legible without colour. */
+  .h-edge.dead {
+    stroke: var(--md-sys-color-outline);
+    stroke-dasharray: 2.5 4;
+  }
+}
+
+@layer page {
+  /* ---- top app bar (M3 small) ---- */
+  .topbar {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 10;
+    background: var(--md-sys-color-surface-container);
+  }
+
+  /* The reference bar is 52px. M3's small app bar is 64px, but the reference is
+     taller only because of `.topnav` link padding, which M3 does not want. We
+     keep the reference's 52px so the sticky offset in `.record-info` still lines
+     up with the bar's bottom edge. */
+  .topbar-in {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    block-size: 52px;
+    max-inline-size: 1240px;
+    margin-inline: auto;
+    padding-inline: 16px;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding-block: 8px;
+    font: var(--type-title-large);
+    text-decoration: none;
+  }
+
+  /* The mark: a primary disc, a tertiary wedge, and a hairline of the bar. */
+  .brand-mark {
+    inline-size: 24px;
+    block-size: 24px;
+    border-radius: var(--shape-full);
+    background:
+      radial-gradient(circle at 35% 35%, var(--md-sys-color-primary) 0 38%, transparent 40%),
+      conic-gradient(var(--md-sys-color-primary) 0 25%, var(--md-sys-color-tertiary) 0 30%, var(--md-sys-color-outline) 0);
+    box-shadow: inset 0 0 0 1.5px var(--md-sys-color-surface-container);
+  }
+
+  .topnav {
+    display: flex;
+    gap: 4px;
+
+    & a {
+      display: inline-flex;
+      align-items: center;
+      block-size: 40px;
+      padding-inline: 12px;
+      border-radius: var(--shape-full);
+      color: var(--md-sys-color-on-surface-variant);
+      font: var(--type-label-large);
+      letter-spacing: 0.1px;
+      text-decoration: none;
+    }
+
+    & a:hover {
+      background: var(--md-state-hover);
+      color: var(--md-sys-color-on-surface);
+    }
+  }
+
+  /* Small links carry real vertical padding so they clear the 24x24 WCAG
+     minimum. A pseudo-element hit area was tried first, but it cannot be
+     measured by tooling and does not reliably receive pointer events. */
+  .crumbs a,
+  .selected-strip a,
+  .parent-link a {
+    padding-block: 6px;
+  }
+
+  /* ---- page furniture ---- */
+  .crumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font: var(--type-body-small);
+    letter-spacing: 0.4px;
+    color: var(--md-sys-color-on-surface-dim);
+
+    & a {
+      color: var(--md-sys-color-on-surface-variant);
+      text-decoration: none;
+    }
+
+    & a:hover {
+      color: var(--md-sys-color-primary);
+    }
+  }
+
+  .page-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px 24px;
+  }
+
+  .page-head h1 {
+    font: var(--type-headline-small);
+    line-height: 1.25;
+  }
+
+  .h1-sub {
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: 400;
+  }
+
+  .eyebrow {
+    font: var(--type-label-medium);
+    letter-spacing: 0.5px;
+    color: var(--md-sys-color-on-surface-dim);
+  }
+
+  /* M3 filled card, the shared panel look. */
+  .plate {
+    border-radius: var(--shape-md);
+    background: var(--md-sys-color-surface-container);
+  }
+
+  /* ---- Tree | Stats switch ----
+     A real radio group, so the arrow keys move between the two and the choice
+     survives with JavaScript off. The inputs are hidden but still focusable.
+     This is the M3 segmented button.
+
+     The reference drives this from React state and `aria-pressed`, so it has no
+     route in without a script. A radio group is the accessible M3 control and
+     needs none, which is why we use one. */
+  .view-bar {
+    display: flex;
+    margin-block-end: -12px;
+  }
+
+  .seg {
+    position: relative;
+    display: inline-flex;
+    block-size: 40px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: var(--shape-full);
+    overflow: hidden;
+
+    & label {
+      display: inline-flex;
+      align-items: center;
+      padding-inline: 20px;
+      border-inline-start: 1px solid var(--md-sys-color-outline);
+      color: var(--md-sys-color-on-surface);
+      font: var(--type-label-large);
+      letter-spacing: 0.1px;
+      cursor: pointer;
+    }
+
+    & label:first-of-type {
+      border-inline-start: 0;
+    }
+
+    & label:hover {
+      background: var(--md-state-hover);
+    }
+  }
+
+  .seg-input {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .seg-input:checked + label {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+
+  .seg-input:focus-visible + label {
+    outline: 3px solid var(--md-sys-color-primary);
+    outline-offset: -3px;
+  }
+
+  .view-stats {
+    display: none;
+  }
+
+  .view-tree {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  body:has(#view-stats:checked) .view-stats {
+    display: block;
+  }
+
+  body:has(#view-stats:checked) .view-tree {
+    display: none;
+  }
+
+  /* ---- the tree figure ---- */
+  .stage {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* The figure is wider than the panel on most screens, so the panel scrolls.
+     These edge shadows are pure CSS: the covers are `local` and travel with the
+     content, so a shadow only shows on a side where there is more to see, and
+     neither shows once you reach an end. `tabindex="0"` on the element makes the
+     same area keyboard-scrollable. Longhands, so the plate keeps its container. */
+  .tree-plate {
+    position: relative;
+    padding: 6px;
+    overflow: auto;
+    border-radius: var(--shape-sm);
+    background-color: var(--md-sys-color-surface-container);
+    background-image:
+      linear-gradient(var(--md-sys-color-surface-container) 30%, transparent),
+      linear-gradient(transparent, var(--md-sys-color-surface-container) 70%),
+      radial-gradient(farthest-side at 0 50%, var(--md-scrim), transparent),
+      radial-gradient(farthest-side at 100% 50%, var(--md-scrim), transparent);
+    background-repeat: no-repeat;
+    background-position: left center, right center, left center, right center;
+    background-size: 40px 100%, 40px 100%, 16px 100%, 16px 100%;
+    background-attachment: local, local, scroll, scroll;
+  }
+
+  /* M3 legend: label-medium items on a container-high surface. */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    font: var(--type-label-medium);
+    letter-spacing: 0.5px;
+    color: var(--md-sys-color-on-surface-variant);
+
+    & span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  /* The legend sits inside the tree panel, top right, once there is room. */
+  .legend-overlay {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    inline-size: fit-content;
+    margin: 8px 8px 0;
+    padding: 10px 14px;
+    border-radius: var(--shape-sm);
+    background: var(--md-sys-color-surface-container-high);
+  }
+
+  @media (min-width: 700px) {
+    .legend-overlay {
+      position: absolute;
+      inset-block-start: 12px;
+      inset-inline-end: 12px;
+      z-index: 1;
+      margin: 0;
+      flex-direction: column;
+    }
+  }
+
+  /* On a phone the legend is reference material, so it becomes one swipeable
+     row instead of four stacked ones eating the top of the panel. */
+  @media (max-width: 699px) {
+    .legend-overlay {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+
+      & span {
+        white-space: nowrap;
+      }
+    }
+  }
+
+  /* The wide figure is for wide screens; the list view carries narrow ones.
+     The reference reuses one `.hero` rule for both the home-page hero and this
+     figure, so the figure inherits a 760px cap and 36px of top padding. Both
+     matter: the cap is what makes the plate scroll, and the padding is what
+     keeps the first row of versions clear of the legend. */
+  .hero {
+    display: none;
+    /* Nesting `.hero` in `.stage` would be tidier, but the figure and the strip
+       share this cap with the home-page hero, exactly as the reference does. */
+    flex-direction: column;
+    gap: 12px;
+    max-inline-size: 760px;
+    padding: 36px 0 8px;
+  }
+
+  .hero svg {
+    display: block;
+    block-size: auto;
+  }
+
+  @media (min-width: 700px) {
+    .hero {
+      display: block;
+    }
+
+    .list-view {
+      display: none;
+    }
+  }
+
+  /* A branch rejoining the accepted line: same harness, after a rejected parent. */
+  .h-edge.restore {
+    stroke: var(--md-sys-color-primary);
+    stroke-dasharray: 2 5;
+    stroke-linecap: round;
+    opacity: 0.5;
+  }
+
+  /* The selected look is driven by four custom properties, so the generated
+     per-node rules only have to set variables on the group rather than repeat
+     four declarations each. See `selectionRules` in build.mjs. */
+  .h-node {
+    cursor: pointer;
+    outline: none;
+
+    & .hit {
+      fill: var(--sel-hit, transparent);
+      stroke: var(--sel-edge, transparent);
+    }
+
+    & .backdrop {
+      fill: var(--sel-backdrop, var(--md-sys-color-surface-container));
+    }
+
+    & .ring {
+      display: var(--sel-ring, none);
+      fill: none;
+      stroke: var(--md-sys-color-primary);
+      stroke-width: 2;
+    }
+  }
+
+  /* Hover lightens a version, unless it is the selected one. */
+  .h-node:hover .hit {
+    fill: var(--sel-hit, var(--md-state-hover));
+  }
+
+  .h-node:hover .backdrop {
+    fill: var(--sel-backdrop, var(--md-sys-color-surface-container-high));
+  }
+
+  .h-node:focus-visible .hit {
+    stroke: var(--md-sys-color-primary);
+    stroke-width: 2;
+  }
+
+  /* Sizes here are SVG user units, and build.mjs derives each label box from the
+     character count. Changing a size without changing those constants desyncs
+     the boxes from the text, so leave them alone. */
+  .h-word {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    fill: var(--md-sys-color-on-surface-dim);
+  }
+
+  .s-accepted .h-word {
+    fill: var(--md-sys-color-primary);
+  }
+
+  .s-rejected .h-word {
+    fill: var(--md-sys-color-error);
+  }
+
+  .h-hyp {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    fill: var(--md-sys-color-on-surface);
+  }
+
+  .h-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    fill: var(--md-sys-color-on-surface-variant);
+  }
+
+  .objective rect {
+    fill: var(--md-sys-color-surface-container-high);
+    stroke: none;
+  }
+
+  .objective text {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    fill: var(--md-sys-color-on-surface-variant);
+  }
+
+  /* ---- narrow list view ---- */
+  .tree,
+  .tree ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tree {
+    padding: 4px;
+  }
+
+  .tree ul {
+    padding-inline-start: 24px;
+  }
+
+  .t-node {
+    position: relative;
+  }
+
+  /* The elbow that joins a child to its parent's line. */
+  .tree ul > .t-node::before {
+    content: "";
+    position: absolute;
+    inset-inline-start: -6px;
+    inset-block-start: 0;
+    inline-size: 14px;
+    block-size: 17px;
+    border-inline-start: 1.3px solid var(--md-sys-color-outline-variant);
+    border-block-end: 1.3px solid var(--md-sys-color-outline-variant);
+  }
+
+  .tree ul > .t-node.dead::before {
+    border-inline-start-style: dashed;
+    border-block-end-style: dashed;
+    border-color: var(--md-sys-color-outline);
+  }
+
+  .tree ul > .t-node:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    inset-inline-start: -6px;
+    inset-block-start: 17px;
+    inset-block-end: 0;
+    border-inline-start: 1.3px solid var(--md-sys-color-outline-variant);
+  }
+
+  .t-row {
+    position: relative;
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr);
+    gap: 8px;
+    inline-size: 100%;
+    padding: 10px 12px;
+    border-radius: var(--shape-md);
+    background: var(--sel-row, transparent);
+    color: inherit;
+    text-align: start;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .t-node:has(> ul) > .t-row::after {
+    content: "";
+    position: absolute;
+    inset-inline-start: 16px;
+    inset-block-start: 25px;
+    inset-block-end: -1px;
+    border-inline-start: 1.3px solid var(--md-sys-color-outline-variant);
+  }
+
+  .t-row:hover {
+    background: var(--sel-row, var(--md-state-hover));
+  }
+
+  .t-text {
+    display: flex;
+    flex-direction: column;
+    min-inline-size: 0;
+  }
+
+  .t-word {
+    font: var(--type-label-medium);
+    letter-spacing: 0.5px;
+    color: var(--md-sys-color-on-surface-dim);
+  }
+
+  .s-accepted .t-row .t-word {
+    color: var(--md-sys-color-primary);
+  }
+
+  .s-rejected .t-row .t-word {
+    color: var(--md-sys-color-error);
+  }
+
+  .t-hyp {
+    font: var(--type-body-medium);
+    letter-spacing: 0.25px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .t-num {
+    font: var(--type-mono-medium);
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  /* ---- the selected-version strip ----
+     Each strip carries the id the figure links to. `--sel-strip` is set by the
+     generated rules in the page head, so exactly one strip is ever laid out. */
+  /* The strip is a container-tonal bar under the figure, matching the reference
+     8px/12px inset. It is not chrome, so it gets no M3 shadow or extra height. */
+  .selected-strip {
+    display: var(--sel-strip, none);
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    padding: 8px 12px;
+    border-radius: var(--shape-sm);
+    background: var(--md-sys-color-surface-container);
+
+    & a {
+      color: var(--md-sys-color-primary);
+      font: var(--type-label-large);
+      letter-spacing: 0.1px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+  }
+
+  .sel-word {
+    font: var(--type-label-medium);
+    letter-spacing: 0.5px;
+    color: var(--md-sys-color-on-surface-dim);
+  }
+
+  .s-accepted .sel-word {
+    color: var(--md-sys-color-primary);
+  }
+
+  .s-rejected .sel-word {
+    color: var(--md-sys-color-error);
+  }
+
+  .sel-hyp {
+    flex: 1 1 28ch;
+    min-inline-size: 0;
+    font: var(--type-title-small);
+  }
+
+  .sel-num {
+    font: var(--type-mono-medium);
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  /* ---- the record ----
+     One record is laid out at a time; `--sel-rec` is set by the same generated
+     rules that pick the strip. The panel sits left, the info panels right, and
+     everything stacks below 1020px. */
+  .record {
+    display: grid;
+    grid-template-columns: 380px minmax(0, 1fr);
+    align-items: start;
+    gap: 14px;
+  }
+
+  /* The node panel runs far taller than the info panels, so the right column
+     sticks instead of leaving a tall void beside it. The offset clears the 52px
+     bar plus the same 12px of breathing room the reference leaves below it. */
+  .record-info {
+    position: sticky;
+    inset-block-start: 64px;
+    grid-column: 2;
+    min-inline-size: 0;
+  }
+
+  .rec {
+    display: var(--sel-rec, none);
+    grid-column: 1;
+    /* A fragment scrolls its target to the very top of the viewport, which would
+       hide the record under the 52px sticky bar. This is the same guard the
+       reference puts on `.record`. */
+    scroll-margin-block-start: 64px;
+  }
+
+  @media (max-width: 1019px) {
+    .record {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .record-info {
+      position: static;
+      grid-column: 1;
+    }
+  }
+
+  /* ---- the record panel ---- */
+  .node-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-inline-size: 0;
+    padding: 16px;
+    border-radius: var(--shape-md);
+    background: var(--md-sys-color-surface-container);
+  }
+
+  .np-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .np-hyp {
+    font: var(--type-title-medium);
+    letter-spacing: 0.15px;
+  }
+
+  /* M3 tonal surfaces for a verdict: primary for a win, error for a loss. */
+  .verdict {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    border-radius: var(--shape-sm);
+    background: var(--md-sys-color-surface-container-high);
+
+    & .code {
+      font: var(--type-label-medium);
+      letter-spacing: 0.5px;
+    }
+
+    & p {
+      font: var(--type-body-small);
+      letter-spacing: 0.4px;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+  }
+
+  .verdict.v-accepted {
+    background: var(--md-sys-color-primary-container);
+  }
+
+  .verdict.v-accepted .code {
+    color: var(--md-sys-color-on-primary-container);
+  }
+
+  .verdict.v-rejected {
+    background: var(--md-sys-color-error-container);
+  }
+
+  .verdict.v-rejected .code {
+    color: var(--md-sys-color-on-error-container);
+  }
+
+  .blocked {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--shape-sm);
+    background: var(--md-sys-color-surface-container-high);
+
+    & .code {
+      font: var(--type-label-medium);
+      letter-spacing: 0.5px;
+      color: var(--md-sys-color-error);
+    }
+
+    & p {
+      font: var(--type-body-small);
+      letter-spacing: 0.4px;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    & pre {
+      max-block-size: 160px;
+      margin: 0;
+      padding: 8px;
+      overflow: auto;
+      border-radius: var(--shape-xs);
+      background: var(--md-sys-color-surface-container-lowest);
+      font: var(--type-mono-medium);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  .facts,
+  .goal-facts {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+  }
+
+  .facts {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .goal-facts {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .facts div,
+  .goal-facts div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px;
+    border-radius: var(--shape-sm);
+    background: var(--md-sys-color-surface-container-high);
+  }
+
+  .facts dd,
+  .goal-facts dd {
+    font: var(--type-title-medium);
+  }
+
+  dt {
+    font: var(--type-label-medium);
+    letter-spacing: 0.5px;
+    color: var(--md-sys-color-on-surface-dim);
+  }
+
+  dd {
+    margin: 0;
+    font: var(--type-headline-small);
+    font-variant-numeric: tabular-nums;
+
+    & small {
+      display: block;
+      font: var(--type-body-small);
+      letter-spacing: 0.4px;
+      color: var(--md-sys-color-on-surface-dim);
+    }
+  }
+
+  .np-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    & h3 {
+      font: var(--type-label-medium);
+      letter-spacing: 0.5px;
+      color: var(--md-sys-color-on-surface-dim);
+    }
+
+    & > p {
+      font: var(--type-body-medium);
+      letter-spacing: 0.25px;
+    }
+  }
+
+  /* M3 assist chips. */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    & span {
+      display: inline-flex;
+      align-items: center;
+      block-size: 32px;
+      padding: 0 12px;
+      border: 1px solid var(--md-sys-color-outline);
+      border-radius: var(--shape-sm);
+      color: var(--md-sys-color-on-surface-variant);
+      font: var(--type-label-large);
+      letter-spacing: 0.1px;
+    }
+
+    & .badge {
+      border-color: transparent;
+      background: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+    }
+  }
+
+  .parent-link {
+    font: var(--type-body-small);
+    letter-spacing: 0.4px;
+    color: var(--md-sys-color-on-surface-variant);
+
+    & a {
+      font: var(--type-mono-medium);
+      color: var(--md-sys-color-primary);
+    }
+  }
+
+  .checks {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .check {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: var(--shape-sm);
+    font: var(--type-body-small);
+    letter-spacing: 0.4px;
+
+    & code {
+      font: var(--type-mono-medium);
+      color: var(--md-sys-color-on-surface-variant);
+      overflow-wrap: anywhere;
+    }
+  }
+
+  .check.counted {
+    border-color: var(--md-sys-color-primary);
+  }
+
+  .check.ignored {
+    border-style: dashed;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .check-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .check-state {
+    font: var(--type-label-medium);
+    letter-spacing: 0.5px;
+  }
+
+  .check.counted .check-state {
+    color: var(--md-sys-color-primary);
+  }
+
+  .why {
+    font: var(--type-body-small);
+    letter-spacing: 0.4px;
+    color: var(--md-sys-color-error);
+  }
+
+  .diff summary,
+  .table-view summary {
+    font: var(--type-label-large);
+    letter-spacing: 0.1px;
+    color: var(--md-sys-color-primary);
+    cursor: pointer;
+  }
+
+  .diff pre {
+    max-block-size: 320px;
+    margin: 8px 0 0;
+    padding: 12px;
+    overflow: auto;
+    border-radius: var(--shape-sm);
+    background: var(--md-sys-color-surface-container-lowest);
+    font: var(--type-mono-medium);
+    white-space: pre;
+  }
+
+  /* ---- fork + check-it-yourself ---- */
+  .fork {
+    padding: 12px;
+    border-radius: var(--shape-sm);
+    background: var(--md-sys-color-surface-container-high);
+  }
+
+  /* M3 outlined select. */
+  .fork-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font: var(--type-body-small);
+    letter-spacing: 0.4px;
+    color: var(--md-sys-color-on-surface-variant);
+
+    & select {
+      flex: 1;
+      block-size: 40px;
+      padding-inline: 12px;
+      border: 1px solid var(--md-sys-color-outline);
+      border-radius: var(--shape-xs);
+      background: var(--md-sys-color-surface-container-lowest);
+      color: var(--md-sys-color-on-surface);
+      font: var(--type-body-medium);
+      letter-spacing: 0.25px;
+      cursor: pointer;
+    }
+  }
+
+  /* A command block is one control, not two: the command and its copy button
+     share a single sunken box, so the button reads as belonging to the command
+     instead of floating underneath it. The right padding is tighter than the
+     left because the button is a circle — 6px of padding plus the icon button's
+     own -2px inset lands the glyph optically flush with the box edge. */
+  .cmd {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 6px 6px 12px;
+    border-radius: var(--shape-sm);
+    background: var(--md-sys-color-surface-container-lowest);
+
+    & > :is(pre, code) {
+      flex: 1;
+      min-inline-size: 0;
+      margin: 0;
+      font: var(--type-mono-medium);
+    }
+  }
+
+  /* A fork command keeps its own line breaks, but wraps at spaces rather than
+     scrolling: the record column is only ~324px wide, so a scrolling box would
+     hide most of the command behind a scrollbar, and the reference wraps too.
+     `overflow-wrap: normal` keeps wrapping to real break opportunities. A soft
+     wrap inserts no characters, so the text — and therefore what the copy
+     button puts on the clipboard — is identical either way.
+     One cosmetic cost, and it cannot be avoided in CSS: a break is permitted
+     after a hyphen, so a long `--flag` can end a line as `--` / `area`. Every
+     alternative (`word-break: keep-all`, `line-break: strict`, `break-spaces`)
+     was measured and breaks in the same place; only markup around each token
+     would stop it, which is not worth the weight. */
+  .cmd > pre {
+    overflow-wrap: normal;
+    white-space: pre-wrap;
+  }
+
+  /* A check-it command is short and meant to be read, so it wraps at spaces
+     instead of scrolling. A command broken mid-token is unusable. */
+  .cmd > code {
+    overflow-wrap: normal;
+  }
+
+  /* M3 icon button, used for the copy controls. Square and 32px so it lines up
+     with the command blocks it sits beside, and circular because that is the M3
+     shape for this control. The negative inset on the inline end pulls it back
+     against the block's own padding, which is what keeps the icon optically
+     aligned with the last character of the command rather than floating. */
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    inline-size: 32px;
+    block-size: 32px;
+    margin-inline-end: -2px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--shape-full);
+    background: transparent;
+    color: var(--md-sys-color-on-surface-variant);
+    cursor: pointer;
+  }
+
+  .icon-btn:hover {
+    background: var(--md-state-hover);
+    color: var(--md-sys-color-on-surface);
+  }
+
+  .icon-btn:active {
+    background: var(--md-state-pressed);
+  }
+
+  /* The glyphs are stroked line art, not fills: a clipboard drawn with fills
+     would need separate shapes per size, while a 1.6px stroke on a 24-unit
+     viewBox scales cleanly. `currentColor` so the icon follows the button. */
+  .icon-btn svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Exactly one glyph is ever shown, chosen by the state class the script sets.
+     Both ship in the markup, so nothing is built at click time. */
+  .icon-btn .icon-copied {
+    display: none;
+  }
+
+  .icon-btn.is-copied {
+    color: var(--md-sys-color-primary);
+  }
+
+  .icon-btn.is-copied .icon-copy {
+    display: none;
+  }
+
+  .icon-btn.is-copied .icon-copied {
+    display: block;
+  }
+
+  /* The tick is the only thing that changes on success, and colour alone is not
+     a signal every visitor can read, so the swap is animated as well. */
+  @media (prefers-reduced-motion: no-preference) {
+    .icon-btn .icon-copied {
+      animation: tick 160ms ease-out;
+    }
+  }
+
+  @keyframes tick {
+    from {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+  }
+
+  /* M3 text button. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    block-size: 40px;
+    padding-inline: 16px;
+    border: 0;
+    border-radius: var(--shape-full);
+    background: transparent;
+    color: var(--md-sys-color-primary);
+    font: var(--type-label-large);
+    letter-spacing: 0.1px;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .btn:hover {
+    background: var(--md-state-hover);
+  }
+
+  .btn-sm {
+    block-size: 32px;
+    padding-inline: 12px;
+    font: var(--type-label-medium);
+    letter-spacing: 0.5px;
+    align-self: flex-start;
+  }
+
+  /* Anything that only works with a script stays hidden until one is running. */
+  .needs-js {
+    display: none;
+  }
+
+  html.has-js .btn.needs-js {
+    display: inline-flex;
+  }
+
+  html.has-js .icon-btn.needs-js {
+    display: inline-flex;
+  }
+
+  html.has-js .fork-row.needs-js {
+    display: flex;
+  }
+
+  .checkit-steps {
+    display: grid;
+    gap: 16px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: checkit;
+
+    & li {
+      position: relative;
+      padding-inline-start: 32px;
+      counter-increment: checkit;
+    }
+
+    & li::before {
+      content: counter(checkit);
+      position: absolute;
+      inset-inline-start: 0;
+      inset-block-start: 1px;
+      display: grid;
+      place-items: center;
+      inline-size: 24px;
+      block-size: 24px;
+      border-radius: var(--shape-full);
+      background: var(--md-sys-color-primary-container);
+      color: var(--md-sys-color-on-primary-container);
+      font: var(--type-label-medium);
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .checkit-what {
+    font: var(--type-title-small);
+  }
+
+  .checkit-steps .muted {
+    font: var(--type-body-small);
+    letter-spacing: 0.4px;
+  }
+
+  /* Only the spacing differs from `.cmd`; the box itself is shared, so the fork
+     command and the check-it commands are visually the same control. */
+  .checkit-cmd {
+    margin-block-start: 8px;
+  }
+
+  /* ---- Hedera links ---- */
+  .hs-id {
+    padding-block: 6px;
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: var(--md-sys-color-primary);
+    text-underline-offset: 3px;
+  }
+
+  .hs-id:hover {
+    color: var(--md-sys-color-primary);
+  }
+
+  /* M3 assist chip. */
+  .hs-chip {
+    display: inline-flex;
+    align-items: center;
+    block-size: 32px;
+    margin-inline-start: auto;
+    padding-inline: 12px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: var(--shape-sm);
+    color: var(--md-sys-color-primary);
+    font: var(--type-label-medium);
+    letter-spacing: 0.5px;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .hs-chip:hover {
+    background: var(--md-state-hover);
+  }
+
+  .hs-chip-off {
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  /* ---- info panels ---- */
+  .panels {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* M3 filter chips in a chip set. The set has no own surface: the chips carry
+     their own outline and container, so a wrapping set reads as one group of
+     controls rather than a panel inside a panel. */
+  .chips {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    inline-size: fit-content;
+    max-inline-size: 100%;
+  }
+
+  .chip-input {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* M3 filter chip: 32px tall, 16px inset, small corner. Selected state swaps to
+     the secondary container, which is the M3 "selected filter chip" look and
+     needs no checkmark to read as on. */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    block-size: 32px;
+    padding-inline: 16px;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: var(--shape-sm);
+    color: var(--md-sys-color-on-surface-variant);
+    font: var(--type-label-large);
+    letter-spacing: 0.1px;
+    cursor: pointer;
+
+    & .chip-hint {
+      display: none;
+    }
+  }
+  .chip:hover {
+    background: var(--md-state-hover);
+  }
+
+  .chip-input:checked + .chip {
+    border-color: transparent;
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+
+  .chip-input:focus-visible + .chip {
+    outline: 3px solid var(--md-sys-color-primary);
+    outline-offset: 2px;
+  }
+
+  .panel {
+    display: none;
+    padding: 24px;
+    border-radius: var(--shape-md);
+    background: var(--md-sys-color-surface-container);
+
+    & h2 {
+      margin: 4px 0 8px;
+      font: var(--type-title-large);
+    }
+
+    & .lede {
+      max-inline-size: 70ch;
+      font: var(--type-body-large);
+      letter-spacing: 0.5px;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+  }
+
+  /* The radio in the chip bar decides which panel is on show. */
+  body:has(#chip-next:checked) .panel[data-panel="next"],
+  body:has(#chip-goal:checked) .panel[data-panel="goal"],
+  body:has(#chip-rules:checked) .panel[data-panel="rules"],
+  body:has(#chip-how:checked) .panel[data-panel="how"],
+  body:has(#chip-limits:checked) .panel[data-panel="limits"] {
+    display: block;
+  }
+
+  .panel-grid {
+    display: grid;
+    gap: 24px;
+  }
+
+  @media (min-width: 1200px) {
+    .panel-grid {
+      grid-template-columns: 1fr 1.3fr;
+      align-items: start;
+    }
+  }
+
+  .rules,
+  .limits {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-inline-size: 76ch;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .rules {
+    counter-reset: r;
+
+    & li {
+      position: relative;
+      padding-inline-start: 40px;
+      font: var(--type-body-medium);
+      letter-spacing: 0.25px;
+      color: var(--md-sys-color-on-surface-variant);
+      counter-increment: r;
+    }
+
+    & li::before {
+      content: counter(r, decimal-leading-zero);
+      position: absolute;
+      inset-inline-start: 0;
+      inset-block-start: 2px;
+      font: var(--type-label-medium);
+      letter-spacing: 0.5px;
+      color: var(--md-sys-color-primary);
+    }
+  }
+
+  .limits li {
+    position: relative;
+    padding-inline-start: 20px;
+    font: var(--type-body-medium);
+    letter-spacing: 0.25px;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .limits li::before {
+    content: "\2013";
+    position: absolute;
+    inset-inline-start: 0;
+    color: var(--md-sys-color-error);
+  }
+
+  .rules b,
+  .limits b {
+    color: var(--md-sys-color-on-surface);
+    font-weight: 500;
+  }
+
+  .how {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .faults {
+    display: grid;
+    gap: 12px;
+
+    & > div {
+      padding: 16px;
+      border-radius: var(--shape-sm);
+      background: var(--md-sys-color-surface-container-high);
+    }
+
+    & h3 {
+      margin-block-end: 4px;
+      font: var(--type-title-small);
+      color: var(--md-sys-color-error);
+    }
+
+    & p {
+      font: var(--type-body-medium);
+      letter-spacing: 0.25px;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+  }
+
+  @media (min-width: 760px) {
+    .faults {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  table {
+    border-collapse: collapse;
+    inline-size: 100%;
+    font: var(--type-body-medium);
+    letter-spacing: 0.25px;
+  }
+
+  .how table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  th,
+  td {
+    padding: 12px 12px 12px 0;
+    border-block-end: 1px solid var(--md-sys-color-outline-variant);
+    text-align: start;
+    vertical-align: top;
+  }
+
+  th {
+    font: var(--type-label-large);
+    letter-spacing: 0.1px;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .punch {
+    max-inline-size: 70ch;
+    margin-block-start: 16px;
+    padding-inline-start: 16px;
+    border-inline-start: 3px solid var(--md-sys-color-primary);
+    font: var(--type-body-large);
+    letter-spacing: 0.5px;
+  }
+
+  .loop {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding-inline-start: 1.5rem;
+    font: var(--type-body-medium);
+    letter-spacing: 0.25px;
+    color: var(--md-sys-color-on-surface-variant);
+
+    & b {
+      color: var(--md-sys-color-on-surface);
+      font-weight: 500;
+    }
+  }
+
+  .digest-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .idkey {
+    font: var(--type-mono-medium);
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  pre.digest {
+    max-block-size: 60vh;
+    margin: 8px 0 0;
+    padding: 16px;
+    overflow: auto;
+    border-radius: var(--shape-sm);
+    background: var(--md-sys-color-surface-container-lowest);
+    font: var(--type-mono-medium);
+    white-space: pre;
+  }
+
+  /* ---- stats ---- */
+  .stats {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .stats-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 12px;
+
+    & h2 {
+      font: var(--type-headline-small);
+    }
+  }
+
+  .goalstrip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 0;
+  }
+
+  .goalstrip > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px;
+    border-radius: var(--shape-md);
+    background: var(--md-sys-color-surface-container);
+  }
+
+  .dd-note {
+    font: var(--type-body-small);
+    letter-spacing: 0.4px;
+    color: var(--md-sys-color-on-surface-dim);
+  }
+
+  .chart-figure {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .chart-plate {
+    padding: 16px;
+    overflow-x: auto;
+  }
+
+  .chart-plate svg {
+    display: block;
+    inline-size: 100%;
+    max-inline-size: 860px;
+    block-size: auto;
+    min-inline-size: 520px;
+  }
+
+  .c-grid {
+    stroke: var(--md-sys-color-outline-variant);
+    stroke-width: 1;
+  }
+
+  .c-axis {
+    stroke: var(--md-sys-color-outline);
+    stroke-width: 1;
+  }
+
+  .c-tick {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    fill: var(--md-sys-color-on-surface-dim);
+  }
+
+  .c-line {
+    fill: none;
+    stroke: var(--md-sys-color-primary);
+    stroke-width: 2;
+    stroke-linejoin: round;
+  }
+
+  .c-pass {
+    fill: var(--md-sys-color-primary);
+    stroke: var(--md-sys-color-surface-container);
+    stroke-width: 2;
+  }
+
+  .c-fail {
+    fill: var(--md-sys-color-surface-container);
+    stroke: var(--md-sys-color-error);
+    stroke-width: 2;
+  }
+
+  .c-wait {
+    fill: var(--md-sys-color-surface-container);
+    stroke: var(--md-sys-color-outline);
+    stroke-width: 2;
+  }
+
+  .c-bar {
+    stroke: var(--md-sys-color-outline);
+    stroke-width: 1.3;
+    stroke-dasharray: 5 4;
+  }
+
+  .c-note {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    fill: var(--md-sys-color-on-surface-variant);
+  }
+
+  .c-goal {
+    fill: var(--md-sys-color-on-surface-variant);
+    font-weight: 500;
+  }
+
+  .c-val {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    fill: var(--md-sys-color-primary);
+  }
+
+  /* An accepted version off the best line: filled, but not joined to it. */
+  .c-offspine {
+    opacity: 0.75;
+  }
+
+  .c-climb {
+    stroke-width: 1.6;
+    opacity: 0.55;
+  }
+
+  figcaption {
+    font: var(--type-body-small);
+    letter-spacing: 0.4px;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  .table-view table {
+    margin-block-start: 12px;
+  }
+}
+
+@layer motion {
+  @media (prefers-reduced-motion: no-preference) {
+    /* The hidden state is a class main.js *adds* (to cards that start below the
+       fold) rather than one it has to remember to remove. So if the script never
+       runs, no card is ever hidden — the enhancement can only add, never hide. */
+    .card.will-reveal .card-mini {
+      opacity: 0;
+      translate: 0 8px;
+    }
+
+    .card.will-reveal.is-revealed .card-mini {
+      opacity: 1;
+      translate: 0 0;
+      transition: opacity 0.45s ease, translate 0.5s cubic-bezier(0.2, 0.7, 0.3, 1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card {
+      transition: none;
+    }
+  }
+}

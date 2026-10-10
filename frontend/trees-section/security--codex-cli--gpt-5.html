@@ -1,0 +1,2578 @@
+<!doctype html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Codex CLI × GPT-5 · Petri</title>
+    <meta name="description" content="Find more of 40 planted vulnerabilities. Every version is re-checked by other keys, and failures are kept." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <!-- This tree's own selection rules. Only the page knows its node ids, so
+         build.mjs generates them; nothing here is hand-written. -->
+    <link rel="stylesheet" href="security--codex-cli--gpt-5.css" />
+    <!-- Deferred so it never blocks the first paint. Every page is complete
+         without it; the script only adds polish. -->
+    <script src="main.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-in">
+        <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"></span>Petri</a>
+        <nav class="topnav" aria-label="Main">
+          <a href="index.html">Trees</a>
+          <a href="https://github.com/Avoisavo/ethonline2026">GitHub</a>
+        </nav>
+      </div>
+    </header>
+    <main class="container container-wide">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="index.html">Trees</a><span aria-hidden="true">/</span><span>Security</span><span aria-hidden="true">/</span><span>Codex CLI × GPT-5</span>
+      </nav>
+
+      <div class="page-head">
+        <div>
+          <h1>Codex CLI <span class="h1-sub">× GPT-5 (Security)</span></h1>
+        </div>
+      </div>
+
+      <div class="view-bar">
+        <div class="seg" role="group" aria-label="View">
+          <input type="radio" name="view" id="view-tree" class="seg-input" checked>
+          <label for="view-tree">Tree</label>
+          <input type="radio" name="view" id="view-stats" class="seg-input">
+          <label for="view-stats">Stats</label>
+        </div>
+      </div>
+
+      <div class="view view-tree">
+        <figure class="stage">
+          <div class="plate tree-plate" tabindex="0" role="region" aria-label="Lineage figure of 11 versions. Scroll sideways to see the whole tree.">
+            <div class="legend legend-overlay" aria-label="Legend">
+              <span><svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>Accepted — two other keys re-ran it and agreed</span>
+              <span><svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="7" cy="7" r="5"/><path class="g-x" d="M4.3 4.3L9.7 9.7M9.7 4.3L4.3 9.7"/></g></svg>Rejected — kept, with the reason</span>
+              <span><svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>Pending — waiting for keys</span>
+              <span><svg width="22" height="14" aria-hidden="true"><line class="h-edge restore" x1="1" x2="21" y1="7" y2="7"/></svg>Runs the same harness as that version again</span>
+            </div>
+            <div class="hero">
+          <svg viewBox="0 0 2060 462" role="group" aria-label="Lineage of 11 harness versions" style="max-inline-size:2060px;min-inline-size:1607px">
+            <path class="h-edge" d="M48 231C250 231 250 231 452 231"/><path class="h-edge" d="M48 231C250 231 250 416 452 416"/><path class="h-edge" d="M48 231C250 231 250 46 452 46"/><path class="h-edge" d="M468 231C670 231 670 231 872 231"/><path class="h-edge dead" d="M468 231C670 231 670 342 872 342"/><path class="h-edge" d="M468 231C670 231 670 120 872 120"/><path class="h-edge" d="M468 416C670 416 670 416 872 416"/><path class="h-edge" d="M888 231C1090 231 1090 268 1292 268"/><path class="h-edge dead" d="M888 231C1090 231 1090 194 1292 194"/><path class="h-edge" d="M1308 268C1510 268 1510 268 1712 268"/><g class="objective"><rect x="352.6" y="223" width="89.4" height="16" rx="8"/><text x="397.3" y="234.2" text-anchor="middle">accuracy +36%</text></g><g class="objective"><rect x="370" y="408" width="72" height="16" rx="8"/><text x="406" y="419.2" text-anchor="middle">speed +40%</text></g><g class="objective"><rect x="352.6" y="38" width="89.4" height="16" rx="8"/><text x="397.3" y="49.2" text-anchor="middle">accuracy +29%</text></g><g class="objective"><rect x="772.6" y="223" width="89.4" height="16" rx="8"/><text x="817.3" y="234.2" text-anchor="middle">security +26%</text></g><g class="objective"><rect x="772.6" y="334" width="89.4" height="16" rx="8"/><text x="817.3" y="345.2" text-anchor="middle">accuracy −21%</text></g><g class="objective"><rect x="749.4" y="112" width="112.6" height="16" rx="8"/><text x="805.7" y="123.2" text-anchor="middle">code quality +21%</text></g><g class="objective"><rect x="795.8" y="408" width="66.2" height="16" rx="8"/><text x="828.9" y="419.2" text-anchor="middle">speed +7%</text></g><g class="objective"><rect x="1192.6" y="260" width="89.4" height="16" rx="8"/><text x="1237.3" y="271.2" text-anchor="middle">accuracy +17%</text></g><g class="objective"><rect x="1210" y="186" width="72" height="16" rx="8"/><text x="1246" y="197.2" text-anchor="middle">speed +54%</text></g><g class="objective"><rect x="1624.2" y="260" width="77.8" height="16" rx="8"/><text x="1663.1" y="271.2" text-anchor="middle">ethics +11%</text></g><a class="h-node s-accepted" href="#s-cx-00" aria-label="ACCEPTED cx-00. Codex CLI, default settings">
+              <rect class="backdrop" x="54" y="204" width="232.4" height="26"/>
+              <rect class="backdrop" x="54" y="238" width="232.4" height="14"/>
+              <rect class="hit" x="24" y="200" width="294" height="56" rx="6"/>
+              <circle class="ring" cx="40" cy="231" r="13"/>
+              <circle class="g-pass" cx="40" cy="231" r="8"/>
+              <text class="h-word" x="58" y="214">ACCEPTED · cx-00</text>
+              <text class="h-hyp" x="58" y="228">Codex CLI, default settings</text>
+              <text class="h-num" x="58" y="249">baseline · 14/40 tasks when re-run</text>
+            </a><a class="h-node s-accepted" href="#s-cx-01" aria-label="ACCEPTED cx-01. read the whole call path first">
+              <rect class="backdrop" x="474" y="204" width="245.6" height="26"/>
+              <rect class="backdrop" x="474" y="238" width="245.6" height="14"/>
+              <rect class="hit" x="444" y="200" width="294" height="56" rx="6"/>
+              <circle class="ring" cx="460" cy="231" r="13"/>
+              <circle class="g-pass" cx="460" cy="231" r="8"/>
+              <text class="h-word" x="478" y="214">ACCEPTED · cx-01</text>
+              <text class="h-hyp" x="478" y="228">read the whole call path first</text>
+              <text class="h-num" x="478" y="249">19/40 tasks · +1250bp · 2 keys agree</text>
+            </a><a class="h-node s-accepted" href="#s-cx-02" aria-label="ACCEPTED cx-02. scan only the changed files">
+              <rect class="backdrop" x="474" y="389" width="245.6" height="26"/>
+              <rect class="backdrop" x="474" y="423" width="245.6" height="14"/>
+              <rect class="hit" x="444" y="385" width="294" height="56" rx="6"/>
+              <circle class="ring" cx="460" cy="416" r="13"/>
+              <circle class="g-pass" cx="460" cy="416" r="8"/>
+              <text class="h-word" x="478" y="399">ACCEPTED · cx-02</text>
+              <text class="h-hyp" x="478" y="413">scan only the changed files</text>
+              <text class="h-num" x="478" y="434">18/40 tasks · +1000bp · 2 keys agree</text>
+            </a><a class="h-node s-pending" href="#s-cx-03" aria-label="PENDING cx-03. run the exploit to confirm it">
+              <rect class="backdrop" x="474" y="19" width="219.2" height="26"/>
+              <rect class="backdrop" x="474" y="53" width="219.2" height="14"/>
+              <rect class="hit" x="444" y="15" width="294" height="56" rx="6"/>
+              <circle class="ring" cx="460" cy="46" r="13"/>
+              <g><circle class="g-hollow g-wait" cx="460" cy="46" r="8"/><circle class="g-dot" cx="460" cy="46" r="2.2"/></g>
+              <text class="h-word" x="478" y="29">PENDING · cx-03</text>
+              <text class="h-hyp" x="478" y="43">run the exploit to confirm it</text>
+              <text class="h-num" x="478" y="64">claims 18/40 tasks · 0 of 2 keys</text>
+            </a><a class="h-node s-accepted" href="#s-cx-04" aria-label="ACCEPTED cx-04. check every input for taint">
+              <rect class="backdrop" x="894" y="204" width="245.6" height="26"/>
+              <rect class="backdrop" x="894" y="238" width="245.6" height="14"/>
+              <rect class="hit" x="864" y="200" width="294" height="56" rx="6"/>
+              <circle class="ring" cx="880" cy="231" r="13"/>
+              <circle class="g-pass" cx="880" cy="231" r="8"/>
+              <text class="h-word" x="898" y="214">ACCEPTED · cx-04</text>
+              <text class="h-hyp" x="898" y="228">check every input for taint</text>
+              <text class="h-num" x="898" y="249">24/40 tasks · +1250bp · 2 keys agree</text>
+            </a><a class="h-node s-rejected" href="#s-cx-05" aria-label="REJECTED cx-05. report every warning as a bug">
+              <rect class="backdrop" x="894" y="315" width="245.6" height="26"/>
+              <rect class="backdrop" x="894" y="349" width="245.6" height="14"/>
+              <rect class="hit" x="864" y="311" width="294" height="56" rx="6"/>
+              <circle class="ring" cx="880" cy="342" r="13"/>
+              <g><circle class="g-hollow g-fail" cx="880" cy="342" r="8"/><path class="g-x" d="M875.8 337.8L884.2 346.2M884.2 337.8L875.8 346.2"/></g>
+              <text class="h-word" x="898" y="325">REJECTED · cx-05</text>
+              <text class="h-hyp" x="898" y="339">report every warning as a bug</text>
+              <text class="h-num" x="898" y="360">15/40 tasks · −1000bp · 2 keys agree</text>
+            </a><a class="h-node s-pending" href="#s-cx-06" aria-label="PENDING cx-06. rank findings by severity">
+              <rect class="backdrop" x="894" y="93" width="219.2" height="26"/>
+              <rect class="backdrop" x="894" y="127" width="219.2" height="14"/>
+              <rect class="hit" x="864" y="89" width="294" height="56" rx="6"/>
+              <circle class="ring" cx="880" cy="120" r="13"/>
+              <g><circle class="g-hollow g-wait" cx="880" cy="120" r="8"/><circle class="g-dot" cx="880" cy="120" r="2.2"/></g>
+              <text class="h-word" x="898" y="103">PENDING · cx-06</text>
+              <text class="h-hyp" x="898" y="117">rank findings by severity</text>
+              <text class="h-num" x="898" y="138">claims 23/40 tasks · 0 of 2 keys</text>
+            </a><a class="h-node s-accepted" href="#s-cx-10" aria-label="ACCEPTED cx-10. diff against the last release">
+              <rect class="backdrop" x="894" y="389" width="245.6" height="26"/>
+              <rect class="backdrop" x="894" y="423" width="245.6" height="14"/>
+              <rect class="hit" x="864" y="385" width="294" height="56" rx="6"/>
+              <circle class="ring" cx="880" cy="416" r="13"/>
+              <circle class="g-pass" cx="880" cy="416" r="8"/>
+              <text class="h-word" x="898" y="399">ACCEPTED · cx-10</text>
+              <text class="h-hyp" x="898" y="413">diff against the last release</text>
+              <text class="h-num" x="898" y="434">22/40 tasks · +1000bp · 2 keys agree</text>
+            </a><a class="h-node s-accepted" href="#s-cx-07" aria-label="ACCEPTED cx-07. trace data across files">
+              <rect class="backdrop" x="1314" y="241" width="245.6" height="26"/>
+              <rect class="backdrop" x="1314" y="275" width="245.6" height="14"/>
+              <rect class="hit" x="1284" y="237" width="294" height="56" rx="6"/>
+              <circle class="ring" cx="1300" cy="268" r="13"/>
+              <circle class="g-pass" cx="1300" cy="268" r="8"/>
+              <text class="h-word" x="1318" y="251">ACCEPTED · cx-07</text>
+              <text class="h-hyp" x="1318" y="265">trace data across files</text>
+              <text class="h-num" x="1318" y="286">28/40 tasks · +1000bp · 2 keys agree</text>
+            </a><a class="h-node s-rejected" href="#s-cx-08" aria-label="REJECTED cx-08. stop after the first finding">
+              <rect class="backdrop" x="1314" y="167" width="239" height="26"/>
+              <rect class="backdrop" x="1314" y="201" width="239" height="14"/>
+              <rect class="hit" x="1284" y="163" width="294" height="56" rx="6"/>
+              <circle class="ring" cx="1300" cy="194" r="13"/>
+              <g><circle class="g-hollow g-fail" cx="1300" cy="194" r="8"/><path class="g-x" d="M1295.8 189.8L1304.2 198.2M1304.2 189.8L1295.8 198.2"/></g>
+              <text class="h-word" x="1318" y="177">REJECTED · cx-08</text>
+              <text class="h-hyp" x="1318" y="191">stop after the first finding</text>
+              <text class="h-num" x="1318" y="212">22/40 tasks · −500bp · 2 keys agree</text>
+            </a><a class="h-node s-pending" href="#s-cx-09" aria-label="PENDING cx-09. never print the secrets it finds">
+              <rect class="backdrop" x="1734" y="241" width="232.4" height="26"/>
+              <rect class="backdrop" x="1734" y="275" width="232.4" height="14"/>
+              <rect class="hit" x="1704" y="237" width="294" height="56" rx="6"/>
+              <circle class="ring" cx="1720" cy="268" r="13"/>
+              <g><circle class="g-hollow g-wait" cx="1720" cy="268" r="8"/><circle class="g-dot" cx="1720" cy="268" r="2.2"/></g>
+              <text class="h-word" x="1738" y="251">PENDING · cx-09</text>
+              <text class="h-hyp" x="1738" y="265">never print the secrets it finds</text>
+              <text class="h-num" x="1738" y="286">31/40 tasks · +750bp · 1 of 2 keys</text>
+            </a>
+          </svg>
+        </div>
+            <ul class="tree list-view" aria-label="Lineage of 11 harness versions">
+          <li class="t-node s-accepted">
+            <a class="t-row" href="#s-cx-00">
+              <svg class="t-glyph" width="16" height="16" aria-hidden="true"><circle class="g-pass" cx="8" cy="8" r="5.5"/></svg>
+              <span class="t-text">
+                <span class="t-word">ACCEPTED · cx-00</span>
+                <span class="t-hyp">Codex CLI, default settings</span>
+                <span class="t-num">baseline · 14/40 tasks when re-run</span>
+              </span>
+            </a>
+            <ul><li class="t-node s-accepted">
+            <a class="t-row" href="#s-cx-01">
+              <svg class="t-glyph" width="16" height="16" aria-hidden="true"><circle class="g-pass" cx="8" cy="8" r="5.5"/></svg>
+              <span class="t-text">
+                <span class="t-word">ACCEPTED · cx-01</span>
+                <span class="t-hyp">read the whole call path first</span>
+                <span class="t-num">19/40 tasks · +1250bp · 2 keys agree</span>
+              </span>
+            </a>
+            <ul><li class="t-node s-accepted">
+            <a class="t-row" href="#s-cx-04">
+              <svg class="t-glyph" width="16" height="16" aria-hidden="true"><circle class="g-pass" cx="8" cy="8" r="5.5"/></svg>
+              <span class="t-text">
+                <span class="t-word">ACCEPTED · cx-04</span>
+                <span class="t-hyp">check every input for taint</span>
+                <span class="t-num">24/40 tasks · +1250bp · 2 keys agree</span>
+              </span>
+            </a>
+            <ul><li class="t-node s-accepted">
+            <a class="t-row" href="#s-cx-07">
+              <svg class="t-glyph" width="16" height="16" aria-hidden="true"><circle class="g-pass" cx="8" cy="8" r="5.5"/></svg>
+              <span class="t-text">
+                <span class="t-word">ACCEPTED · cx-07</span>
+                <span class="t-hyp">trace data across files</span>
+                <span class="t-num">28/40 tasks · +1000bp · 2 keys agree</span>
+              </span>
+            </a>
+            <ul><li class="t-node s-pending">
+            <a class="t-row" href="#s-cx-09">
+              <svg class="t-glyph" width="16" height="16" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="8" cy="8" r="5.5"/><circle class="g-dot" cx="8" cy="8" r="1.5"/></g></svg>
+              <span class="t-text">
+                <span class="t-word">PENDING · cx-09</span>
+                <span class="t-hyp">never print the secrets it finds</span>
+                <span class="t-num">31/40 tasks · +750bp · 1 of 2 keys</span>
+              </span>
+            </a>
+            
+          </li></ul>
+          </li><li class="t-node s-rejected dead">
+            <a class="t-row" href="#s-cx-08">
+              <svg class="t-glyph" width="16" height="16" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="8" cy="8" r="5.5"/><path class="g-x" d="M5.1 5.1L10.9 10.9M10.9 5.1L5.1 10.9"/></g></svg>
+              <span class="t-text">
+                <span class="t-word">REJECTED · cx-08</span>
+                <span class="t-hyp">stop after the first finding</span>
+                <span class="t-num">22/40 tasks · −500bp · 2 keys agree</span>
+              </span>
+            </a>
+            
+          </li></ul>
+          </li><li class="t-node s-pending">
+            <a class="t-row" href="#s-cx-06">
+              <svg class="t-glyph" width="16" height="16" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="8" cy="8" r="5.5"/><circle class="g-dot" cx="8" cy="8" r="1.5"/></g></svg>
+              <span class="t-text">
+                <span class="t-word">PENDING · cx-06</span>
+                <span class="t-hyp">rank findings by severity</span>
+                <span class="t-num">claims 23/40 tasks · 0 of 2 keys</span>
+              </span>
+            </a>
+            
+          </li><li class="t-node s-rejected dead">
+            <a class="t-row" href="#s-cx-05">
+              <svg class="t-glyph" width="16" height="16" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="8" cy="8" r="5.5"/><path class="g-x" d="M5.1 5.1L10.9 10.9M10.9 5.1L5.1 10.9"/></g></svg>
+              <span class="t-text">
+                <span class="t-word">REJECTED · cx-05</span>
+                <span class="t-hyp">report every warning as a bug</span>
+                <span class="t-num">15/40 tasks · −1000bp · 2 keys agree</span>
+              </span>
+            </a>
+            
+          </li></ul>
+          </li><li class="t-node s-accepted">
+            <a class="t-row" href="#s-cx-02">
+              <svg class="t-glyph" width="16" height="16" aria-hidden="true"><circle class="g-pass" cx="8" cy="8" r="5.5"/></svg>
+              <span class="t-text">
+                <span class="t-word">ACCEPTED · cx-02</span>
+                <span class="t-hyp">scan only the changed files</span>
+                <span class="t-num">18/40 tasks · +1000bp · 2 keys agree</span>
+              </span>
+            </a>
+            <ul><li class="t-node s-accepted">
+            <a class="t-row" href="#s-cx-10">
+              <svg class="t-glyph" width="16" height="16" aria-hidden="true"><circle class="g-pass" cx="8" cy="8" r="5.5"/></svg>
+              <span class="t-text">
+                <span class="t-word">ACCEPTED · cx-10</span>
+                <span class="t-hyp">diff against the last release</span>
+                <span class="t-num">22/40 tasks · +1000bp · 2 keys agree</span>
+              </span>
+            </a>
+            
+          </li></ul>
+          </li><li class="t-node s-pending">
+            <a class="t-row" href="#s-cx-03">
+              <svg class="t-glyph" width="16" height="16" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="8" cy="8" r="5.5"/><circle class="g-dot" cx="8" cy="8" r="1.5"/></g></svg>
+              <span class="t-text">
+                <span class="t-word">PENDING · cx-03</span>
+                <span class="t-hyp">run the exploit to confirm it</span>
+                <span class="t-num">claims 18/40 tasks · 0 of 2 keys</span>
+              </span>
+            </a>
+            
+          </li></ul>
+          </li>
+        </ul>
+          </div>
+          <div class="selected-strip s-accepted" data-for="cx-00">
+            <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
+            <span class="sel-word">ACCEPTED · cx-00</span>
+            <span class="sel-hyp">Codex CLI, default settings</span>
+            <span class="sel-num">baseline · 14/40 tasks when re-run</span>
+            <a href="#s-cx-00">Full record ↓</a>
+          </div>
+          <div class="selected-strip s-accepted" data-for="cx-01">
+            <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
+            <span class="sel-word">ACCEPTED · cx-01</span>
+            <span class="sel-hyp">read the whole call path first</span>
+            <span class="sel-num">19/40 tasks · +1250bp · 2 keys agree</span>
+            <a href="#s-cx-01">Full record ↓</a>
+          </div>
+          <div class="selected-strip s-accepted" data-for="cx-02">
+            <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
+            <span class="sel-word">ACCEPTED · cx-02</span>
+            <span class="sel-hyp">scan only the changed files</span>
+            <span class="sel-num">18/40 tasks · +1000bp · 2 keys agree</span>
+            <a href="#s-cx-02">Full record ↓</a>
+          </div>
+          <div class="selected-strip s-pending" data-for="cx-03">
+            <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
+            <span class="sel-word">PENDING · cx-03</span>
+            <span class="sel-hyp">run the exploit to confirm it</span>
+            <span class="sel-num">claims 18/40 tasks · 0 of 2 keys</span>
+            <a href="#s-cx-03">Full record ↓</a>
+          </div>
+          <div class="selected-strip s-accepted" data-for="cx-04">
+            <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
+            <span class="sel-word">ACCEPTED · cx-04</span>
+            <span class="sel-hyp">check every input for taint</span>
+            <span class="sel-num">24/40 tasks · +1250bp · 2 keys agree</span>
+            <a href="#s-cx-04">Full record ↓</a>
+          </div>
+          <div class="selected-strip s-rejected" data-for="cx-05">
+            <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="7" cy="7" r="5"/><path class="g-x" d="M4.3 4.3L9.7 9.7M9.7 4.3L4.3 9.7"/></g></svg>
+            <span class="sel-word">REJECTED · cx-05</span>
+            <span class="sel-hyp">report every warning as a bug</span>
+            <span class="sel-num">15/40 tasks · −1000bp · 2 keys agree</span>
+            <a href="#s-cx-05">Full record ↓</a>
+          </div>
+          <div class="selected-strip s-pending" data-for="cx-06">
+            <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
+            <span class="sel-word">PENDING · cx-06</span>
+            <span class="sel-hyp">rank findings by severity</span>
+            <span class="sel-num">claims 23/40 tasks · 0 of 2 keys</span>
+            <a href="#s-cx-06">Full record ↓</a>
+          </div>
+          <div class="selected-strip s-accepted" data-for="cx-10">
+            <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
+            <span class="sel-word">ACCEPTED · cx-10</span>
+            <span class="sel-hyp">diff against the last release</span>
+            <span class="sel-num">22/40 tasks · +1000bp · 2 keys agree</span>
+            <a href="#s-cx-10">Full record ↓</a>
+          </div>
+          <div class="selected-strip s-accepted" data-for="cx-07" data-default>
+            <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
+            <span class="sel-word">ACCEPTED · cx-07</span>
+            <span class="sel-hyp">trace data across files</span>
+            <span class="sel-num">28/40 tasks · +1000bp · 2 keys agree</span>
+            <a href="#s-cx-07">Full record ↓</a>
+          </div>
+          <div class="selected-strip s-rejected" data-for="cx-08">
+            <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="7" cy="7" r="5"/><path class="g-x" d="M4.3 4.3L9.7 9.7M9.7 4.3L4.3 9.7"/></g></svg>
+            <span class="sel-word">REJECTED · cx-08</span>
+            <span class="sel-hyp">stop after the first finding</span>
+            <span class="sel-num">22/40 tasks · −500bp · 2 keys agree</span>
+            <a href="#s-cx-08">Full record ↓</a>
+          </div>
+          <div class="selected-strip s-pending" data-for="cx-09">
+            <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
+            <span class="sel-word">PENDING · cx-09</span>
+            <span class="sel-hyp">never print the secrets it finds</span>
+            <span class="sel-num">31/40 tasks · +750bp · 1 of 2 keys</span>
+            <a href="#s-cx-09">Full record ↓</a>
+          </div>
+        </figure>
+
+        <section class="record" id="record">
+          <article class="rec" id="s-cx-00" data-for="cx-00"><aside class="node-panel" aria-live="polite">
+            <div class="np-head">
+              <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
+              <p class="eyebrow">ACCEPTED · cx-00</p>
+              
+            </div>
+
+            <h2 class="np-hyp">Codex CLI, default settings</h2>
+
+            <div class="verdict v-accepted">
+              <span class="code">ROOT_BASELINE</span>
+              <p>The starting point. Every other version is measured against its parent, back to this one.</p>
+            </div>
+
+            
+
+            <dl class="facts">
+              <div>
+                <dt>Score</dt>
+                <dd>14 of 40 tasks
+                  <small>3500bp · re-run by the keys that checked its child</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Checked change</dt>
+                <dd>baseline<small>the first version has no parent</small></dd>
+              </div>
+              <div><dt>Keys</dt><dd>0 of 2<small>distinct keys, counted</small></dd></div>
+              <div><dt>Cost</dt><dd>4,800<small>tokens per task, median</small></dd></div>
+            </dl>
+
+            <div class="np-block">
+              <h3>How it could be proven wrong</h3>
+              <p class="muted"><b>Wrong if:</b> The score does not rise by at least 1000bp.</p>
+              <p class="tags">
+                
+                <span>area other</span>
+                <span>idea codex-cli-default-settings</span>
+                
+              </p>
+            </div>
+
+            
+
+            <div class="np-block">
+              <h3>Checks by other keys (0)</h3>
+              <p class="muted">The first version is never checked directly. Keys re-run it when they check its children.</p>
+            </div>
+
+            <div class="np-block fork">
+            <h3>Fork this version</h3>
+            <p class="muted">Copy it, change one idea toward your own goal, and submit it. Your fork becomes a new branch.</p>
+            <label class="fork-row needs-js" for="fork-cx-00">
+              <span>Direction</span>
+              <select id="fork-cx-00" data-fork="cx-00" data-template="pnpm petri propose --parent cx-00 --area other --motif {{motif}} \
+  --hypothesis &quot;This change improves {{direction}}, because ...&quot;"><option value="accuracy" selected>accuracy</option><option value="speed">speed</option><option value="token savings">token savings</option><option value="security">security</option><option value="ethics">ethics</option><option value="code quality">code quality</option><option value="trust">trust</option></select>
+            </label>
+            <div class="cmd">
+              <pre data-fork-out="cx-00">pnpm petri propose --parent cx-00 --area other --motif accuracy \
+  --hypothesis &quot;This change improves accuracy, because ...&quot;</pre>
+              <button type="button" class="icon-btn copy needs-js" data-copy-out="cx-00" aria-label="Copy the fork command" title="Copy the fork command">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+            </div>
+          </div>
+            <div class="np-block checkit">
+            <h3>Check it yourself</h3>
+            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <ol class="checkit-steps"><li>
+              <p class="checkit-what">How it works</p>
+              <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri digest</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri digest" aria-label="Copy the command: pnpm petri digest" title="Copy the command: pnpm petri digest">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Run it</p>
+              <p class="muted">The harness reads a task, the model writes the code, the tests run in the sandbox. 3 tasks by default, and nothing is signed.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri run cx-00</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri run cx-00" aria-label="Copy the command: pnpm petri run cx-00" title="Copy the command: pnpm petri run cx-00">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Evals</p>
+              <p class="muted">The whole benchmark, 5 times: every task passed or failed, and the median score.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri evals cx-00</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri evals cx-00" aria-label="Copy the command: pnpm petri evals cx-00" title="Copy the command: pnpm petri evals cx-00">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Verify it</p>
+              <p class="muted">Your key re-runs this version and its parent, then signs the result. The author's own key is refused.</p>
+              <div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri id create --label me</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri id create --label me" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div><div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri verify cx-00 --show</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri verify cx-00 --show" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-00 --show" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-00 --show">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Check the record</p>
+              <p class="muted">Every signature and the hash chain of the log.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri fsck</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri fsck" aria-label="Copy the command: pnpm petri fsck" title="Copy the command: pnpm petri fsck">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li></ol>
+          </div>
+            
+          </aside></article>
+          <article class="rec" id="s-cx-01" data-for="cx-01"><aside class="node-panel" aria-live="polite">
+            <div class="np-head">
+              <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
+              <p class="eyebrow">ACCEPTED · cx-01</p>
+              
+            </div>
+
+            <h2 class="np-hyp">read the whole call path first</h2>
+
+            <div class="verdict v-accepted">
+              <span class="code">WIN</span>
+              <p>2 verifications from distinct keys, each at or above +1000bp. Worst delta +1250bp.</p>
+            </div>
+
+            
+
+            <dl class="facts">
+              <div>
+                <dt>Score</dt>
+                <dd>19 of 40 tasks
+                  <small>4750bp · author claim</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Checked change</dt>
+                <dd>+1250bp<small>measured by other keys, never the author</small></dd>
+              </div>
+              <div><dt>Keys</dt><dd>2 of 2<small>distinct keys, counted</small></dd></div>
+              <div><dt>Cost</dt><dd>6,200<small>tokens per task, median</small></dd></div>
+            </dl>
+
+            <div class="np-block">
+              <h3>How it could be proven wrong</h3>
+              <p class="muted"><b>Wrong if:</b> The score does not rise by at least 1000bp.</p>
+              <p class="tags">
+                <span>aims at accuracy</span>
+                <span>area retrieval</span>
+                <span>idea read-the-whole-call-path-first</span>
+                
+              </p>
+            </div>
+
+            <p class="parent-link">Copied from <a href="#s-cx-00">cx-00</a>, then changed one idea.</p>
+
+            <div class="np-block">
+              <h3>Checks by other keys (2)</h3>
+              <ul class="checks"><li class="check counted">
+              <div class="check-top">
+                <span class="check-state">COUNTED</span>
+                <code>key A</code>
+                
+              </div>
+              <p>Parent 14 of 40 tasks → this 19 of 40 tasks · <b>+1250bp</b> · 5 runs each</p>
+              
+            </li><li class="check counted">
+              <div class="check-top">
+                <span class="check-state">COUNTED</span>
+                <code>key B</code>
+                
+              </div>
+              <p>Parent 14 of 40 tasks → this 19 of 40 tasks · <b>+1250bp</b> · 5 runs each</p>
+              
+            </li></ul>
+            </div>
+
+            <div class="np-block fork">
+            <h3>Fork this version</h3>
+            <p class="muted">Copy it, change one idea toward your own goal, and submit it. Your fork becomes a new branch.</p>
+            <label class="fork-row needs-js" for="fork-cx-01">
+              <span>Direction</span>
+              <select id="fork-cx-01" data-fork="cx-01" data-template="pnpm petri propose --parent cx-01 --area retrieval --motif {{motif}} \
+  --hypothesis &quot;This change improves {{direction}}, because ...&quot;"><option value="accuracy" selected>accuracy</option><option value="speed">speed</option><option value="token savings">token savings</option><option value="security">security</option><option value="ethics">ethics</option><option value="code quality">code quality</option><option value="trust">trust</option></select>
+            </label>
+            <div class="cmd">
+              <pre data-fork-out="cx-01">pnpm petri propose --parent cx-01 --area retrieval --motif accuracy \
+  --hypothesis &quot;This change improves accuracy, because ...&quot;</pre>
+              <button type="button" class="icon-btn copy needs-js" data-copy-out="cx-01" aria-label="Copy the fork command" title="Copy the fork command">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+            </div>
+          </div>
+            <div class="np-block checkit">
+            <h3>Check it yourself</h3>
+            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <ol class="checkit-steps"><li>
+              <p class="checkit-what">How it works</p>
+              <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri digest</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri digest" aria-label="Copy the command: pnpm petri digest" title="Copy the command: pnpm petri digest">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Run it</p>
+              <p class="muted">The harness reads a task, the model writes the code, the tests run in the sandbox. 3 tasks by default, and nothing is signed.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri run cx-01</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri run cx-01" aria-label="Copy the command: pnpm petri run cx-01" title="Copy the command: pnpm petri run cx-01">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Evals</p>
+              <p class="muted">The whole benchmark, 5 times: every task passed or failed, and the median score.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri evals cx-01</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri evals cx-01" aria-label="Copy the command: pnpm petri evals cx-01" title="Copy the command: pnpm petri evals cx-01">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Verify it</p>
+              <p class="muted">Your key re-runs this version and its parent, then signs the result. The author's own key is refused.</p>
+              <div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri id create --label me</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri id create --label me" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div><div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri verify cx-01 --show</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri verify cx-01 --show" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-01 --show" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-01 --show">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Check the record</p>
+              <p class="muted">Every signature and the hash chain of the log.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri fsck</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri fsck" aria-label="Copy the command: pnpm petri fsck" title="Copy the command: pnpm petri fsck">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li></ol>
+          </div>
+            
+          </aside></article>
+          <article class="rec" id="s-cx-02" data-for="cx-02"><aside class="node-panel" aria-live="polite">
+            <div class="np-head">
+              <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
+              <p class="eyebrow">ACCEPTED · cx-02</p>
+              
+            </div>
+
+            <h2 class="np-hyp">scan only the changed files</h2>
+
+            <div class="verdict v-accepted">
+              <span class="code">WIN</span>
+              <p>2 verifications from distinct keys, each at or above +1000bp. Worst delta +1000bp.</p>
+            </div>
+
+            
+
+            <dl class="facts">
+              <div>
+                <dt>Score</dt>
+                <dd>18 of 40 tasks
+                  <small>4500bp · author claim</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Checked change</dt>
+                <dd>+1000bp<small>measured by other keys, never the author</small></dd>
+              </div>
+              <div><dt>Keys</dt><dd>2 of 2<small>distinct keys, counted</small></dd></div>
+              <div><dt>Cost</dt><dd>2,900<small>tokens per task, median</small></dd></div>
+            </dl>
+
+            <div class="np-block">
+              <h3>How it could be proven wrong</h3>
+              <p class="muted"><b>Wrong if:</b> The score does not rise by at least 1000bp.</p>
+              <p class="tags">
+                <span>aims at speed</span>
+                <span>area retrieval</span>
+                <span>idea scan-only-the-changed-files</span>
+                
+              </p>
+            </div>
+
+            <p class="parent-link">Copied from <a href="#s-cx-00">cx-00</a>, then changed one idea.</p>
+
+            <div class="np-block">
+              <h3>Checks by other keys (2)</h3>
+              <ul class="checks"><li class="check counted">
+              <div class="check-top">
+                <span class="check-state">COUNTED</span>
+                <code>key A</code>
+                
+              </div>
+              <p>Parent 14 of 40 tasks → this 18 of 40 tasks · <b>+1000bp</b> · 5 runs each</p>
+              
+            </li><li class="check counted">
+              <div class="check-top">
+                <span class="check-state">COUNTED</span>
+                <code>key B</code>
+                
+              </div>
+              <p>Parent 14 of 40 tasks → this 18 of 40 tasks · <b>+1000bp</b> · 5 runs each</p>
+              
+            </li></ul>
+            </div>
+
+            <div class="np-block fork">
+            <h3>Fork this version</h3>
+            <p class="muted">Copy it, change one idea toward your own goal, and submit it. Your fork becomes a new branch.</p>
+            <label class="fork-row needs-js" for="fork-cx-02">
+              <span>Direction</span>
+              <select id="fork-cx-02" data-fork="cx-02" data-template="pnpm petri propose --parent cx-02 --area retrieval --motif {{motif}} \
+  --hypothesis &quot;This change improves {{direction}}, because ...&quot;"><option value="accuracy" selected>accuracy</option><option value="speed">speed</option><option value="token savings">token savings</option><option value="security">security</option><option value="ethics">ethics</option><option value="code quality">code quality</option><option value="trust">trust</option></select>
+            </label>
+            <div class="cmd">
+              <pre data-fork-out="cx-02">pnpm petri propose --parent cx-02 --area retrieval --motif accuracy \
+  --hypothesis &quot;This change improves accuracy, because ...&quot;</pre>
+              <button type="button" class="icon-btn copy needs-js" data-copy-out="cx-02" aria-label="Copy the fork command" title="Copy the fork command">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+            </div>
+          </div>
+            <div class="np-block checkit">
+            <h3>Check it yourself</h3>
+            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <ol class="checkit-steps"><li>
+              <p class="checkit-what">How it works</p>
+              <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri digest</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri digest" aria-label="Copy the command: pnpm petri digest" title="Copy the command: pnpm petri digest">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Run it</p>
+              <p class="muted">The harness reads a task, the model writes the code, the tests run in the sandbox. 3 tasks by default, and nothing is signed.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri run cx-02</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri run cx-02" aria-label="Copy the command: pnpm petri run cx-02" title="Copy the command: pnpm petri run cx-02">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Evals</p>
+              <p class="muted">The whole benchmark, 5 times: every task passed or failed, and the median score.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri evals cx-02</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri evals cx-02" aria-label="Copy the command: pnpm petri evals cx-02" title="Copy the command: pnpm petri evals cx-02">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Verify it</p>
+              <p class="muted">Your key re-runs this version and its parent, then signs the result. The author's own key is refused.</p>
+              <div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri id create --label me</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri id create --label me" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div><div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri verify cx-02 --show</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri verify cx-02 --show" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-02 --show" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-02 --show">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Check the record</p>
+              <p class="muted">Every signature and the hash chain of the log.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri fsck</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri fsck" aria-label="Copy the command: pnpm petri fsck" title="Copy the command: pnpm petri fsck">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li></ol>
+          </div>
+            
+          </aside></article>
+          <article class="rec" id="s-cx-03" data-for="cx-03"><aside class="node-panel" aria-live="polite">
+            <div class="np-head">
+              <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
+              <p class="eyebrow">PENDING · cx-03</p>
+              
+            </div>
+
+            <h2 class="np-hyp">run the exploit to confirm it</h2>
+
+            <div class="verdict v-pending">
+              <span class="code">INSUFFICIENT_VERIFICATIONS</span>
+              <p>Stopped before measuring, so no key can verify a score. The attempt is kept as a record.</p>
+            </div>
+
+            <div class="blocked">
+              <span class="code">BLOCKED BEFORE MEASURING · sandbox-violation</span>
+              <p>A guard refused the change, so the benchmark never ran. The attempt is kept as a record.</p>
+              <pre>harness/verify.ts: executes code from the task. The harness may not run untrusted code.</pre>
+            </div>
+
+            <dl class="facts">
+              <div>
+                <dt>Score</dt>
+                <dd>18 of 40 tasks
+                  <small>author claim · not scored yet</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Checked change</dt>
+                <dd>not checked yet<small>measured by other keys, never the author</small></dd>
+              </div>
+              <div><dt>Keys</dt><dd>0 of 2<small>distinct keys, counted</small></dd></div>
+              <div><dt>Cost</dt><dd>0<small>tokens per task, median</small></dd></div>
+            </dl>
+
+            <div class="np-block">
+              <h3>How it could be proven wrong</h3>
+              <p class="muted"><b>Wrong if:</b> The score does not rise by at least 1000bp.</p>
+              <p class="tags">
+                <span>aims at accuracy</span>
+                <span>area verification</span>
+                <span>idea run-the-exploit-to-confirm-it</span>
+                
+              </p>
+            </div>
+
+            <p class="parent-link">Copied from <a href="#s-cx-00">cx-00</a>, then changed one idea.</p>
+
+            <div class="np-block">
+              <h3>Checks by other keys (0)</h3>
+              <p class="muted">No key has checked this version yet. The author cannot check their own work.</p>
+            </div>
+
+            <div class="np-block fork">
+            <h3>Fork this version</h3>
+            <p class="muted">Copy it, change one idea toward your own goal, and submit it. Your fork becomes a new branch.</p>
+            <label class="fork-row needs-js" for="fork-cx-03">
+              <span>Direction</span>
+              <select id="fork-cx-03" data-fork="cx-03" data-template="pnpm petri propose --parent cx-03 --area verification --motif {{motif}} \
+  --hypothesis &quot;This change improves {{direction}}, because ...&quot;"><option value="accuracy" selected>accuracy</option><option value="speed">speed</option><option value="token savings">token savings</option><option value="security">security</option><option value="ethics">ethics</option><option value="code quality">code quality</option><option value="trust">trust</option></select>
+            </label>
+            <div class="cmd">
+              <pre data-fork-out="cx-03">pnpm petri propose --parent cx-03 --area verification --motif accuracy \
+  --hypothesis &quot;This change improves accuracy, because ...&quot;</pre>
+              <button type="button" class="icon-btn copy needs-js" data-copy-out="cx-03" aria-label="Copy the fork command" title="Copy the fork command">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+            </div>
+          </div>
+            <div class="np-block checkit">
+            <h3>Check it yourself</h3>
+            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <ol class="checkit-steps"><li>
+              <p class="checkit-what">How it works</p>
+              <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri digest</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri digest" aria-label="Copy the command: pnpm petri digest" title="Copy the command: pnpm petri digest">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Run it</p>
+              <p class="muted">This version has no recorded answers, so it runs only against a real model. It needs ANTHROPIC_API_KEY.</p>
+              <div class="cmd checkit-cmd">
+                <code>ANTHROPIC_API_KEY=... pnpm petri run cx-03 --mode live</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="ANTHROPIC_API_KEY=... pnpm petri run cx-03 --mode live" aria-label="Copy the command: ANTHROPIC_API_KEY=... pnpm petri run cx-03 --mode live" title="Copy the command: ANTHROPIC_API_KEY=... pnpm petri run cx-03 --mode live">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Evals</p>
+              <p class="muted">The whole benchmark, 5 times, against a real model. Replay cannot score this version.</p>
+              <div class="cmd checkit-cmd">
+                <code>ANTHROPIC_API_KEY=... pnpm petri evals cx-03 --mode live</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="ANTHROPIC_API_KEY=... pnpm petri evals cx-03 --mode live" aria-label="Copy the command: ANTHROPIC_API_KEY=... pnpm petri evals cx-03 --mode live" title="Copy the command: ANTHROPIC_API_KEY=... pnpm petri evals cx-03 --mode live">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Verify it</p>
+              <p class="muted">A version with no score cannot be verified. Score it live first, then another key signs it.</p>
+              <div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri id create --label me</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri id create --label me" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div><div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri verify cx-03 --show</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri verify cx-03 --show" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-03 --show" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-03 --show">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Check the record</p>
+              <p class="muted">Every signature and the hash chain of the log.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri fsck</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri fsck" aria-label="Copy the command: pnpm petri fsck" title="Copy the command: pnpm petri fsck">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li></ol>
+          </div>
+            
+          </aside></article>
+          <article class="rec" id="s-cx-04" data-for="cx-04"><aside class="node-panel" aria-live="polite">
+            <div class="np-head">
+              <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
+              <p class="eyebrow">ACCEPTED · cx-04</p>
+              
+            </div>
+
+            <h2 class="np-hyp">check every input for taint</h2>
+
+            <div class="verdict v-accepted">
+              <span class="code">WIN</span>
+              <p>2 verifications from distinct keys, each at or above +1000bp. Worst delta +1250bp.</p>
+            </div>
+
+            
+
+            <dl class="facts">
+              <div>
+                <dt>Score</dt>
+                <dd>24 of 40 tasks
+                  <small>6000bp · author claim</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Checked change</dt>
+                <dd>+1250bp<small>measured by other keys, never the author</small></dd>
+              </div>
+              <div><dt>Keys</dt><dd>2 of 2<small>distinct keys, counted</small></dd></div>
+              <div><dt>Cost</dt><dd>6,800<small>tokens per task, median</small></dd></div>
+            </dl>
+
+            <div class="np-block">
+              <h3>How it could be proven wrong</h3>
+              <p class="muted"><b>Wrong if:</b> The score does not rise by at least 1000bp.</p>
+              <p class="tags">
+                <span>aims at security</span>
+                <span>area verification</span>
+                <span>idea check-every-input-for-taint</span>
+                
+              </p>
+            </div>
+
+            <p class="parent-link">Copied from <a href="#s-cx-01">cx-01</a>, then changed one idea.</p>
+
+            <div class="np-block">
+              <h3>Checks by other keys (2)</h3>
+              <ul class="checks"><li class="check counted">
+              <div class="check-top">
+                <span class="check-state">COUNTED</span>
+                <code>key A</code>
+                
+              </div>
+              <p>Parent 19 of 40 tasks → this 24 of 40 tasks · <b>+1250bp</b> · 5 runs each</p>
+              
+            </li><li class="check counted">
+              <div class="check-top">
+                <span class="check-state">COUNTED</span>
+                <code>key B</code>
+                
+              </div>
+              <p>Parent 19 of 40 tasks → this 24 of 40 tasks · <b>+1250bp</b> · 5 runs each</p>
+              
+            </li></ul>
+            </div>
+
+            <div class="np-block fork">
+            <h3>Fork this version</h3>
+            <p class="muted">Copy it, change one idea toward your own goal, and submit it. Your fork becomes a new branch.</p>
+            <label class="fork-row needs-js" for="fork-cx-04">
+              <span>Direction</span>
+              <select id="fork-cx-04" data-fork="cx-04" data-template="pnpm petri propose --parent cx-04 --area verification --motif {{motif}} \
+  --hypothesis &quot;This change improves {{direction}}, because ...&quot;"><option value="accuracy" selected>accuracy</option><option value="speed">speed</option><option value="token savings">token savings</option><option value="security">security</option><option value="ethics">ethics</option><option value="code quality">code quality</option><option value="trust">trust</option></select>
+            </label>
+            <div class="cmd">
+              <pre data-fork-out="cx-04">pnpm petri propose --parent cx-04 --area verification --motif accuracy \
+  --hypothesis &quot;This change improves accuracy, because ...&quot;</pre>
+              <button type="button" class="icon-btn copy needs-js" data-copy-out="cx-04" aria-label="Copy the fork command" title="Copy the fork command">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+            </div>
+          </div>
+            <div class="np-block checkit">
+            <h3>Check it yourself</h3>
+            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <ol class="checkit-steps"><li>
+              <p class="checkit-what">How it works</p>
+              <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri digest</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri digest" aria-label="Copy the command: pnpm petri digest" title="Copy the command: pnpm petri digest">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Run it</p>
+              <p class="muted">The harness reads a task, the model writes the code, the tests run in the sandbox. 3 tasks by default, and nothing is signed.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri run cx-04</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri run cx-04" aria-label="Copy the command: pnpm petri run cx-04" title="Copy the command: pnpm petri run cx-04">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Evals</p>
+              <p class="muted">The whole benchmark, 5 times: every task passed or failed, and the median score.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri evals cx-04</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri evals cx-04" aria-label="Copy the command: pnpm petri evals cx-04" title="Copy the command: pnpm petri evals cx-04">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Verify it</p>
+              <p class="muted">Your key re-runs this version and its parent, then signs the result. The author's own key is refused.</p>
+              <div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri id create --label me</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri id create --label me" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div><div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri verify cx-04 --show</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri verify cx-04 --show" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-04 --show" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-04 --show">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Check the record</p>
+              <p class="muted">Every signature and the hash chain of the log.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri fsck</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri fsck" aria-label="Copy the command: pnpm petri fsck" title="Copy the command: pnpm petri fsck">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li></ol>
+          </div>
+            
+          </aside></article>
+          <article class="rec" id="s-cx-05" data-for="cx-05"><aside class="node-panel" aria-live="polite">
+            <div class="np-head">
+              <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="7" cy="7" r="5"/><path class="g-x" d="M4.3 4.3L9.7 9.7M9.7 4.3L4.3 9.7"/></g></svg>
+              <p class="eyebrow">REJECTED · cx-05</p>
+              
+            </div>
+
+            <h2 class="np-hyp">report every warning as a bug</h2>
+
+            <div class="verdict v-rejected">
+              <span class="code">REGRESSION</span>
+              <p>2 verifications at or below -1000bp. The change made the harness worse. Kept.</p>
+            </div>
+
+            
+
+            <dl class="facts">
+              <div>
+                <dt>Score</dt>
+                <dd>15 of 40 tasks
+                  <small>3750bp · author claim</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Checked change</dt>
+                <dd>−1000bp<small>measured by other keys, never the author</small></dd>
+              </div>
+              <div><dt>Keys</dt><dd>2 of 2<small>distinct keys, counted</small></dd></div>
+              <div><dt>Cost</dt><dd>6,300<small>tokens per task, median</small></dd></div>
+            </dl>
+
+            <div class="np-block">
+              <h3>How it could be proven wrong</h3>
+              <p class="muted"><b>Wrong if:</b> The score does not rise by at least 1000bp.</p>
+              <p class="tags">
+                <span>aims at accuracy</span>
+                <span>area prompt</span>
+                <span>idea report-every-warning-as-a-bug</span>
+                
+              </p>
+            </div>
+
+            <p class="parent-link">Copied from <a href="#s-cx-01">cx-01</a>, then changed one idea.</p>
+
+            <div class="np-block">
+              <h3>Checks by other keys (2)</h3>
+              <ul class="checks"><li class="check counted">
+              <div class="check-top">
+                <span class="check-state">COUNTED</span>
+                <code>key A</code>
+                
+              </div>
+              <p>Parent 19 of 40 tasks → this 15 of 40 tasks · <b>−1000bp</b> · 5 runs each</p>
+              
+            </li><li class="check counted">
+              <div class="check-top">
+                <span class="check-state">COUNTED</span>
+                <code>key B</code>
+                
+              </div>
+              <p>Parent 19 of 40 tasks → this 15 of 40 tasks · <b>−1000bp</b> · 5 runs each</p>
+              
+            </li></ul>
+            </div>
+
+            <div class="np-block fork">
+            <h3>Fork this version</h3>
+            <p class="muted">Copy it, change one idea toward your own goal, and submit it. Your fork becomes a new branch.</p>
+            <label class="fork-row needs-js" for="fork-cx-05">
+              <span>Direction</span>
+              <select id="fork-cx-05" data-fork="cx-05" data-template="pnpm petri propose --parent cx-05 --area prompt --motif {{motif}} \
+  --hypothesis &quot;This change improves {{direction}}, because ...&quot;"><option value="accuracy" selected>accuracy</option><option value="speed">speed</option><option value="token savings">token savings</option><option value="security">security</option><option value="ethics">ethics</option><option value="code quality">code quality</option><option value="trust">trust</option></select>
+            </label>
+            <div class="cmd">
+              <pre data-fork-out="cx-05">pnpm petri propose --parent cx-05 --area prompt --motif accuracy \
+  --hypothesis &quot;This change improves accuracy, because ...&quot;</pre>
+              <button type="button" class="icon-btn copy needs-js" data-copy-out="cx-05" aria-label="Copy the fork command" title="Copy the fork command">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+            </div>
+          </div>
+            <div class="np-block checkit">
+            <h3>Check it yourself</h3>
+            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <ol class="checkit-steps"><li>
+              <p class="checkit-what">How it works</p>
+              <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri digest</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri digest" aria-label="Copy the command: pnpm petri digest" title="Copy the command: pnpm petri digest">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Run it</p>
+              <p class="muted">The harness reads a task, the model writes the code, the tests run in the sandbox. 3 tasks by default, and nothing is signed.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri run cx-05</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri run cx-05" aria-label="Copy the command: pnpm petri run cx-05" title="Copy the command: pnpm petri run cx-05">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Evals</p>
+              <p class="muted">The whole benchmark, 5 times: every task passed or failed, and the median score.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri evals cx-05</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri evals cx-05" aria-label="Copy the command: pnpm petri evals cx-05" title="Copy the command: pnpm petri evals cx-05">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Verify it</p>
+              <p class="muted">Your key re-runs this version and its parent, then signs the result. The author's own key is refused.</p>
+              <div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri id create --label me</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri id create --label me" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div><div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri verify cx-05 --show</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri verify cx-05 --show" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-05 --show" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-05 --show">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Check the record</p>
+              <p class="muted">Every signature and the hash chain of the log.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri fsck</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri fsck" aria-label="Copy the command: pnpm petri fsck" title="Copy the command: pnpm petri fsck">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li></ol>
+          </div>
+            
+          </aside></article>
+          <article class="rec" id="s-cx-06" data-for="cx-06"><aside class="node-panel" aria-live="polite">
+            <div class="np-head">
+              <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
+              <p class="eyebrow">PENDING · cx-06</p>
+              
+            </div>
+
+            <h2 class="np-hyp">rank findings by severity</h2>
+
+            <div class="verdict v-pending">
+              <span class="code">INSUFFICIENT_VERIFICATIONS</span>
+              <p>Stopped before measuring, so no key can verify a score. The attempt is kept as a record.</p>
+            </div>
+
+            <div class="blocked">
+              <span class="code">BLOCKED BEFORE MEASURING · typecheck-failed</span>
+              <p>The change did not compile, so the benchmark never ran. The attempt is kept as a record.</p>
+              <pre>harness/loop.ts(52,14): error TS2345: Argument of type 'string' is not assignable to parameter of type 'Severity'.</pre>
+            </div>
+
+            <dl class="facts">
+              <div>
+                <dt>Score</dt>
+                <dd>23 of 40 tasks
+                  <small>author claim · not scored yet</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Checked change</dt>
+                <dd>not checked yet<small>measured by other keys, never the author</small></dd>
+              </div>
+              <div><dt>Keys</dt><dd>0 of 2<small>distinct keys, counted</small></dd></div>
+              <div><dt>Cost</dt><dd>0<small>tokens per task, median</small></dd></div>
+            </dl>
+
+            <div class="np-block">
+              <h3>How it could be proven wrong</h3>
+              <p class="muted"><b>Wrong if:</b> The score does not rise by at least 1000bp.</p>
+              <p class="tags">
+                <span>aims at code quality</span>
+                <span>area loop</span>
+                <span>idea rank-findings-by-severity</span>
+                
+              </p>
+            </div>
+
+            <p class="parent-link">Copied from <a href="#s-cx-01">cx-01</a>, then changed one idea.</p>
+
+            <div class="np-block">
+              <h3>Checks by other keys (0)</h3>
+              <p class="muted">No key has checked this version yet. The author cannot check their own work.</p>
+            </div>
+
+            <div class="np-block fork">
+            <h3>Fork this version</h3>
+            <p class="muted">Copy it, change one idea toward your own goal, and submit it. Your fork becomes a new branch.</p>
+            <label class="fork-row needs-js" for="fork-cx-06">
+              <span>Direction</span>
+              <select id="fork-cx-06" data-fork="cx-06" data-template="pnpm petri propose --parent cx-06 --area loop --motif {{motif}} \
+  --hypothesis &quot;This change improves {{direction}}, because ...&quot;"><option value="accuracy" selected>accuracy</option><option value="speed">speed</option><option value="token savings">token savings</option><option value="security">security</option><option value="ethics">ethics</option><option value="code quality">code quality</option><option value="trust">trust</option></select>
+            </label>
+            <div class="cmd">
+              <pre data-fork-out="cx-06">pnpm petri propose --parent cx-06 --area loop --motif accuracy \
+  --hypothesis &quot;This change improves accuracy, because ...&quot;</pre>
+              <button type="button" class="icon-btn copy needs-js" data-copy-out="cx-06" aria-label="Copy the fork command" title="Copy the fork command">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+            </div>
+          </div>
+            <div class="np-block checkit">
+            <h3>Check it yourself</h3>
+            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <ol class="checkit-steps"><li>
+              <p class="checkit-what">How it works</p>
+              <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri digest</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri digest" aria-label="Copy the command: pnpm petri digest" title="Copy the command: pnpm petri digest">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Run it</p>
+              <p class="muted">This version has no recorded answers, so it runs only against a real model. It needs ANTHROPIC_API_KEY.</p>
+              <div class="cmd checkit-cmd">
+                <code>ANTHROPIC_API_KEY=... pnpm petri run cx-06 --mode live</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="ANTHROPIC_API_KEY=... pnpm petri run cx-06 --mode live" aria-label="Copy the command: ANTHROPIC_API_KEY=... pnpm petri run cx-06 --mode live" title="Copy the command: ANTHROPIC_API_KEY=... pnpm petri run cx-06 --mode live">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Evals</p>
+              <p class="muted">The whole benchmark, 5 times, against a real model. Replay cannot score this version.</p>
+              <div class="cmd checkit-cmd">
+                <code>ANTHROPIC_API_KEY=... pnpm petri evals cx-06 --mode live</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="ANTHROPIC_API_KEY=... pnpm petri evals cx-06 --mode live" aria-label="Copy the command: ANTHROPIC_API_KEY=... pnpm petri evals cx-06 --mode live" title="Copy the command: ANTHROPIC_API_KEY=... pnpm petri evals cx-06 --mode live">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Verify it</p>
+              <p class="muted">A version with no score cannot be verified. Score it live first, then another key signs it.</p>
+              <div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri id create --label me</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri id create --label me" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div><div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri verify cx-06 --show</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri verify cx-06 --show" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-06 --show" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-06 --show">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Check the record</p>
+              <p class="muted">Every signature and the hash chain of the log.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri fsck</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri fsck" aria-label="Copy the command: pnpm petri fsck" title="Copy the command: pnpm petri fsck">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li></ol>
+          </div>
+            
+          </aside></article>
+          <article class="rec" id="s-cx-10" data-for="cx-10"><aside class="node-panel" aria-live="polite">
+            <div class="np-head">
+              <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
+              <p class="eyebrow">ACCEPTED · cx-10</p>
+              
+            </div>
+
+            <h2 class="np-hyp">diff against the last release</h2>
+
+            <div class="verdict v-accepted">
+              <span class="code">WIN</span>
+              <p>2 verifications from distinct keys, each at or above +1000bp. Worst delta +1000bp.</p>
+            </div>
+
+            
+
+            <dl class="facts">
+              <div>
+                <dt>Score</dt>
+                <dd>22 of 40 tasks
+                  <small>5500bp · author claim</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Checked change</dt>
+                <dd>+1000bp<small>measured by other keys, never the author</small></dd>
+              </div>
+              <div><dt>Keys</dt><dd>2 of 2<small>distinct keys, counted</small></dd></div>
+              <div><dt>Cost</dt><dd>2,700<small>tokens per task, median</small></dd></div>
+            </dl>
+
+            <div class="np-block">
+              <h3>How it could be proven wrong</h3>
+              <p class="muted"><b>Wrong if:</b> The score does not rise by at least 1000bp.</p>
+              <p class="tags">
+                <span>aims at speed</span>
+                <span>area retrieval</span>
+                <span>idea diff-against-the-last-release</span>
+                
+              </p>
+            </div>
+
+            <p class="parent-link">Copied from <a href="#s-cx-02">cx-02</a>, then changed one idea.</p>
+
+            <div class="np-block">
+              <h3>Checks by other keys (2)</h3>
+              <ul class="checks"><li class="check counted">
+              <div class="check-top">
+                <span class="check-state">COUNTED</span>
+                <code>key A</code>
+                
+              </div>
+              <p>Parent 18 of 40 tasks → this 22 of 40 tasks · <b>+1000bp</b> · 5 runs each</p>
+              
+            </li><li class="check counted">
+              <div class="check-top">
+                <span class="check-state">COUNTED</span>
+                <code>key B</code>
+                
+              </div>
+              <p>Parent 18 of 40 tasks → this 22 of 40 tasks · <b>+1000bp</b> · 5 runs each</p>
+              
+            </li></ul>
+            </div>
+
+            <div class="np-block fork">
+            <h3>Fork this version</h3>
+            <p class="muted">Copy it, change one idea toward your own goal, and submit it. Your fork becomes a new branch.</p>
+            <label class="fork-row needs-js" for="fork-cx-10">
+              <span>Direction</span>
+              <select id="fork-cx-10" data-fork="cx-10" data-template="pnpm petri propose --parent cx-10 --area retrieval --motif {{motif}} \
+  --hypothesis &quot;This change improves {{direction}}, because ...&quot;"><option value="accuracy" selected>accuracy</option><option value="speed">speed</option><option value="token savings">token savings</option><option value="security">security</option><option value="ethics">ethics</option><option value="code quality">code quality</option><option value="trust">trust</option></select>
+            </label>
+            <div class="cmd">
+              <pre data-fork-out="cx-10">pnpm petri propose --parent cx-10 --area retrieval --motif accuracy \
+  --hypothesis &quot;This change improves accuracy, because ...&quot;</pre>
+              <button type="button" class="icon-btn copy needs-js" data-copy-out="cx-10" aria-label="Copy the fork command" title="Copy the fork command">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+            </div>
+          </div>
+            <div class="np-block checkit">
+            <h3>Check it yourself</h3>
+            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <ol class="checkit-steps"><li>
+              <p class="checkit-what">How it works</p>
+              <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri digest</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri digest" aria-label="Copy the command: pnpm petri digest" title="Copy the command: pnpm petri digest">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Run it</p>
+              <p class="muted">The harness reads a task, the model writes the code, the tests run in the sandbox. 3 tasks by default, and nothing is signed.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri run cx-10</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri run cx-10" aria-label="Copy the command: pnpm petri run cx-10" title="Copy the command: pnpm petri run cx-10">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Evals</p>
+              <p class="muted">The whole benchmark, 5 times: every task passed or failed, and the median score.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri evals cx-10</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri evals cx-10" aria-label="Copy the command: pnpm petri evals cx-10" title="Copy the command: pnpm petri evals cx-10">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Verify it</p>
+              <p class="muted">Your key re-runs this version and its parent, then signs the result. The author's own key is refused.</p>
+              <div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri id create --label me</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri id create --label me" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div><div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri verify cx-10 --show</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri verify cx-10 --show" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-10 --show" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-10 --show">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Check the record</p>
+              <p class="muted">Every signature and the hash chain of the log.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri fsck</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri fsck" aria-label="Copy the command: pnpm petri fsck" title="Copy the command: pnpm petri fsck">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li></ol>
+          </div>
+            
+          </aside></article>
+          <article class="rec" id="s-cx-07" data-for="cx-07" data-default><aside class="node-panel" aria-live="polite">
+            <div class="np-head">
+              <svg width="14" height="14" aria-hidden="true"><circle class="g-pass" cx="7" cy="7" r="5"/></svg>
+              <p class="eyebrow">ACCEPTED · cx-07</p>
+              
+            </div>
+
+            <h2 class="np-hyp">trace data across files</h2>
+
+            <div class="verdict v-accepted">
+              <span class="code">WIN</span>
+              <p>2 verifications from distinct keys, each at or above +1000bp. Worst delta +1000bp.</p>
+            </div>
+
+            
+
+            <dl class="facts">
+              <div>
+                <dt>Score</dt>
+                <dd>28 of 40 tasks
+                  <small>7000bp · author claim</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Checked change</dt>
+                <dd>+1000bp<small>measured by other keys, never the author</small></dd>
+              </div>
+              <div><dt>Keys</dt><dd>2 of 2<small>distinct keys, counted</small></dd></div>
+              <div><dt>Cost</dt><dd>7,400<small>tokens per task, median</small></dd></div>
+            </dl>
+
+            <div class="np-block">
+              <h3>How it could be proven wrong</h3>
+              <p class="muted"><b>Wrong if:</b> The score does not rise by at least 1000bp.</p>
+              <p class="tags">
+                <span>aims at accuracy</span>
+                <span>area decomposition</span>
+                <span>idea trace-data-across-files</span>
+                
+              </p>
+            </div>
+
+            <p class="parent-link">Copied from <a href="#s-cx-04">cx-04</a>, then changed one idea.</p>
+
+            <div class="np-block">
+              <h3>Checks by other keys (2)</h3>
+              <ul class="checks"><li class="check counted">
+              <div class="check-top">
+                <span class="check-state">COUNTED</span>
+                <code>key A</code>
+                
+              </div>
+              <p>Parent 24 of 40 tasks → this 28 of 40 tasks · <b>+1000bp</b> · 5 runs each</p>
+              
+            </li><li class="check counted">
+              <div class="check-top">
+                <span class="check-state">COUNTED</span>
+                <code>key B</code>
+                
+              </div>
+              <p>Parent 24 of 40 tasks → this 28 of 40 tasks · <b>+1000bp</b> · 5 runs each</p>
+              
+            </li></ul>
+            </div>
+
+            <div class="np-block fork">
+            <h3>Fork this version</h3>
+            <p class="muted">Copy it, change one idea toward your own goal, and submit it. Your fork becomes a new branch.</p>
+            <label class="fork-row needs-js" for="fork-cx-07">
+              <span>Direction</span>
+              <select id="fork-cx-07" data-fork="cx-07" data-template="pnpm petri propose --parent cx-07 --area decomposition --motif {{motif}} \
+  --hypothesis &quot;This change improves {{direction}}, because ...&quot;"><option value="accuracy" selected>accuracy</option><option value="speed">speed</option><option value="token savings">token savings</option><option value="security">security</option><option value="ethics">ethics</option><option value="code quality">code quality</option><option value="trust">trust</option></select>
+            </label>
+            <div class="cmd">
+              <pre data-fork-out="cx-07">pnpm petri propose --parent cx-07 --area decomposition --motif accuracy \
+  --hypothesis &quot;This change improves accuracy, because ...&quot;</pre>
+              <button type="button" class="icon-btn copy needs-js" data-copy-out="cx-07" aria-label="Copy the fork command" title="Copy the fork command">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+            </div>
+          </div>
+            <div class="np-block checkit">
+            <h3>Check it yourself</h3>
+            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <ol class="checkit-steps"><li>
+              <p class="checkit-what">How it works</p>
+              <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri digest</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri digest" aria-label="Copy the command: pnpm petri digest" title="Copy the command: pnpm petri digest">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Run it</p>
+              <p class="muted">The harness reads a task, the model writes the code, the tests run in the sandbox. 3 tasks by default, and nothing is signed.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri run cx-07</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri run cx-07" aria-label="Copy the command: pnpm petri run cx-07" title="Copy the command: pnpm petri run cx-07">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Evals</p>
+              <p class="muted">The whole benchmark, 5 times: every task passed or failed, and the median score.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri evals cx-07</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri evals cx-07" aria-label="Copy the command: pnpm petri evals cx-07" title="Copy the command: pnpm petri evals cx-07">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Verify it</p>
+              <p class="muted">Your key re-runs this version and its parent, then signs the result. The author's own key is refused.</p>
+              <div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri id create --label me</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri id create --label me" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div><div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri verify cx-07 --show</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri verify cx-07 --show" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-07 --show" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-07 --show">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Check the record</p>
+              <p class="muted">Every signature and the hash chain of the log.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri fsck</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri fsck" aria-label="Copy the command: pnpm petri fsck" title="Copy the command: pnpm petri fsck">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li></ol>
+          </div>
+            
+          </aside></article>
+          <article class="rec" id="s-cx-08" data-for="cx-08"><aside class="node-panel" aria-live="polite">
+            <div class="np-head">
+              <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-fail" cx="7" cy="7" r="5"/><path class="g-x" d="M4.3 4.3L9.7 9.7M9.7 4.3L4.3 9.7"/></g></svg>
+              <p class="eyebrow">REJECTED · cx-08</p>
+              
+            </div>
+
+            <h2 class="np-hyp">stop after the first finding</h2>
+
+            <div class="verdict v-rejected">
+              <span class="code">WITHIN_NOISE</span>
+              <p>The change was inside the 1000bp margin, so it is rejected as a tie. Kept.</p>
+            </div>
+
+            
+
+            <dl class="facts">
+              <div>
+                <dt>Score</dt>
+                <dd>22 of 40 tasks
+                  <small>5500bp · author claim</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Checked change</dt>
+                <dd>−500bp<small>measured by other keys, never the author</small></dd>
+              </div>
+              <div><dt>Keys</dt><dd>2 of 2<small>distinct keys, counted</small></dd></div>
+              <div><dt>Cost</dt><dd>3,100<small>tokens per task, median</small></dd></div>
+            </dl>
+
+            <div class="np-block">
+              <h3>How it could be proven wrong</h3>
+              <p class="muted"><b>Wrong if:</b> The score does not rise by at least 1000bp.</p>
+              <p class="tags">
+                <span>aims at speed</span>
+                <span>area budget</span>
+                <span>idea stop-after-the-first-finding</span>
+                
+              </p>
+            </div>
+
+            <p class="parent-link">Copied from <a href="#s-cx-04">cx-04</a>, then changed one idea.</p>
+
+            <div class="np-block">
+              <h3>Checks by other keys (2)</h3>
+              <ul class="checks"><li class="check counted">
+              <div class="check-top">
+                <span class="check-state">COUNTED</span>
+                <code>key A</code>
+                
+              </div>
+              <p>Parent 24 of 40 tasks → this 22 of 40 tasks · <b>−500bp</b> · 5 runs each</p>
+              
+            </li><li class="check counted">
+              <div class="check-top">
+                <span class="check-state">COUNTED</span>
+                <code>key B</code>
+                
+              </div>
+              <p>Parent 24 of 40 tasks → this 22 of 40 tasks · <b>−500bp</b> · 5 runs each</p>
+              
+            </li></ul>
+            </div>
+
+            <div class="np-block fork">
+            <h3>Fork this version</h3>
+            <p class="muted">Copy it, change one idea toward your own goal, and submit it. Your fork becomes a new branch.</p>
+            <label class="fork-row needs-js" for="fork-cx-08">
+              <span>Direction</span>
+              <select id="fork-cx-08" data-fork="cx-08" data-template="pnpm petri propose --parent cx-08 --area budget --motif {{motif}} \
+  --hypothesis &quot;This change improves {{direction}}, because ...&quot;"><option value="accuracy" selected>accuracy</option><option value="speed">speed</option><option value="token savings">token savings</option><option value="security">security</option><option value="ethics">ethics</option><option value="code quality">code quality</option><option value="trust">trust</option></select>
+            </label>
+            <div class="cmd">
+              <pre data-fork-out="cx-08">pnpm petri propose --parent cx-08 --area budget --motif accuracy \
+  --hypothesis &quot;This change improves accuracy, because ...&quot;</pre>
+              <button type="button" class="icon-btn copy needs-js" data-copy-out="cx-08" aria-label="Copy the fork command" title="Copy the fork command">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+            </div>
+          </div>
+            <div class="np-block checkit">
+            <h3>Check it yourself</h3>
+            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <ol class="checkit-steps"><li>
+              <p class="checkit-what">How it works</p>
+              <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri digest</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri digest" aria-label="Copy the command: pnpm petri digest" title="Copy the command: pnpm petri digest">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Run it</p>
+              <p class="muted">The harness reads a task, the model writes the code, the tests run in the sandbox. 3 tasks by default, and nothing is signed.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri run cx-08</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri run cx-08" aria-label="Copy the command: pnpm petri run cx-08" title="Copy the command: pnpm petri run cx-08">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Evals</p>
+              <p class="muted">The whole benchmark, 5 times: every task passed or failed, and the median score.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri evals cx-08</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri evals cx-08" aria-label="Copy the command: pnpm petri evals cx-08" title="Copy the command: pnpm petri evals cx-08">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Verify it</p>
+              <p class="muted">Your key re-runs this version and its parent, then signs the result. The author's own key is refused.</p>
+              <div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri id create --label me</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri id create --label me" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div><div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri verify cx-08 --show</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri verify cx-08 --show" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-08 --show" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-08 --show">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Check the record</p>
+              <p class="muted">Every signature and the hash chain of the log.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri fsck</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri fsck" aria-label="Copy the command: pnpm petri fsck" title="Copy the command: pnpm petri fsck">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li></ol>
+          </div>
+            
+          </aside></article>
+          <article class="rec" id="s-cx-09" data-for="cx-09"><aside class="node-panel" aria-live="polite">
+            <div class="np-head">
+              <svg width="14" height="14" aria-hidden="true"><g><circle class="g-hollow g-wait" cx="7" cy="7" r="5"/><circle class="g-dot" cx="7" cy="7" r="1.4"/></g></svg>
+              <p class="eyebrow">PENDING · cx-09</p>
+              
+            </div>
+
+            <h2 class="np-hyp">never print the secrets it finds</h2>
+
+            <div class="verdict v-pending">
+              <span class="code">INSUFFICIENT_VERIFICATIONS</span>
+              <p>1 of 2 verifications. It claims 31/40 tasks and waits for a second key.</p>
+            </div>
+
+            
+
+            <dl class="facts">
+              <div>
+                <dt>Score</dt>
+                <dd>31 of 40 tasks
+                  <small>7750bp · author claim</small>
+                </dd>
+              </div>
+              <div>
+                <dt>Checked change</dt>
+                <dd>not checked yet<small>measured by other keys, never the author</small></dd>
+              </div>
+              <div><dt>Keys</dt><dd>1 of 2<small>distinct keys, counted</small></dd></div>
+              <div><dt>Cost</dt><dd>7,500<small>tokens per task, median</small></dd></div>
+            </dl>
+
+            <div class="np-block">
+              <h3>How it could be proven wrong</h3>
+              <p class="muted"><b>Wrong if:</b> The score does not rise by at least 1000bp.</p>
+              <p class="tags">
+                <span>aims at ethics</span>
+                <span>area other</span>
+                <span>idea never-print-the-secrets-it-finds</span>
+                
+              </p>
+            </div>
+
+            <p class="parent-link">Copied from <a href="#s-cx-07">cx-07</a>, then changed one idea.</p>
+
+            <div class="np-block">
+              <h3>Checks by other keys (1)</h3>
+              <ul class="checks"><li class="check counted">
+              <div class="check-top">
+                <span class="check-state">COUNTED</span>
+                <code>key A</code>
+                
+              </div>
+              <p>Parent 28 of 40 tasks → this 31 of 40 tasks · <b>+750bp</b> · 5 runs each</p>
+              
+            </li></ul>
+            </div>
+
+            <div class="np-block fork">
+            <h3>Fork this version</h3>
+            <p class="muted">Copy it, change one idea toward your own goal, and submit it. Your fork becomes a new branch.</p>
+            <label class="fork-row needs-js" for="fork-cx-09">
+              <span>Direction</span>
+              <select id="fork-cx-09" data-fork="cx-09" data-template="pnpm petri propose --parent cx-09 --area other --motif {{motif}} \
+  --hypothesis &quot;This change improves {{direction}}, because ...&quot;"><option value="accuracy" selected>accuracy</option><option value="speed">speed</option><option value="token savings">token savings</option><option value="security">security</option><option value="ethics">ethics</option><option value="code quality">code quality</option><option value="trust">trust</option></select>
+            </label>
+            <div class="cmd">
+              <pre data-fork-out="cx-09">pnpm petri propose --parent cx-09 --area other --motif accuracy \
+  --hypothesis &quot;This change improves accuracy, because ...&quot;</pre>
+              <button type="button" class="icon-btn copy needs-js" data-copy-out="cx-09" aria-label="Copy the fork command" title="Copy the fork command">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+            </div>
+          </div>
+            <div class="np-block checkit">
+            <h3>Check it yourself</h3>
+            <p class="muted">Clone the repo, then run these from the repository root. Nothing here needs an API key.</p>
+            <ol class="checkit-steps"><li>
+              <p class="checkit-what">How it works</p>
+              <p class="muted">The record every agent reads before it proposes a change: what won, what failed, and why.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri digest</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri digest" aria-label="Copy the command: pnpm petri digest" title="Copy the command: pnpm petri digest">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Run it</p>
+              <p class="muted">The harness reads a task, the model writes the code, the tests run in the sandbox. 3 tasks by default, and nothing is signed.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri run cx-09</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri run cx-09" aria-label="Copy the command: pnpm petri run cx-09" title="Copy the command: pnpm petri run cx-09">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Evals</p>
+              <p class="muted">The whole benchmark, 5 times: every task passed or failed, and the median score.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri evals cx-09</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri evals cx-09" aria-label="Copy the command: pnpm petri evals cx-09" title="Copy the command: pnpm petri evals cx-09">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Verify it</p>
+              <p class="muted">Your key re-runs this version and its parent, then signs the result. The author's own key is refused.</p>
+              <div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri id create --label me</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri id create --label me" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri id create --label me">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div><div class="cmd checkit-cmd">
+                <code>PETRI_HOME=~/my-verifier pnpm petri verify cx-09 --show</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="PETRI_HOME=~/my-verifier pnpm petri verify cx-09 --show" aria-label="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-09 --show" title="Copy the command: PETRI_HOME=~/my-verifier pnpm petri verify cx-09 --show">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li><li>
+              <p class="checkit-what">Check the record</p>
+              <p class="muted">Every signature and the hash chain of the log.</p>
+              <div class="cmd checkit-cmd">
+                <code>pnpm petri fsck</code>
+                <button type="button" class="icon-btn copy needs-js" data-copy="pnpm petri fsck" aria-label="Copy the command: pnpm petri fsck" title="Copy the command: pnpm petri fsck">
+                <svg class="icon-copy" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M9 2h6a1.5 1.5 0 0 1 0 3H9a1.5 1.5 0 0 1 0-3Z" />
+                <path d="M6.5 3.6A2.5 2.5 0 0 0 4 6.1v12.4A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V6.1a2.5 2.5 0 0 0-2.5-2.5h-.4" />
+                <path d="M8 11.5h8" />
+                <path d="M8 15.5h5" />
+              </svg>
+                <svg class="icon-copied" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
+                <path d="M5 12.8 9.8 17.5 19 7" />
+              </svg>
+              </button>
+              </div>
+            </li></ol>
+          </div>
+            
+          </aside></article>
+
+          <div class="record-info"><div class="panels"><div class="chips" role="radiogroup" aria-label="Tree information">
+            <input type="radio" name="panel" id="chip-goal" class="chip-input" checked>
+            <label class="chip" for="chip-goal"><span class="chip-label">Goal</span><span class="chip-hint">the score to beat</span></label><input type="radio" name="panel" id="chip-rules" class="chip-input">
+            <label class="chip" for="chip-rules"><span class="chip-label">Rules</span><span class="chip-hint">six the code enforces</span></label><input type="radio" name="panel" id="chip-how" class="chip-input">
+            <label class="chip" for="chip-how"><span class="chip-label">How it works</span><span class="chip-hint">problem, Darwin, loop</span></label><input type="radio" name="panel" id="chip-limits" class="chip-input">
+            <label class="chip" for="chip-limits"><span class="chip-label">Limits</span><span class="chip-hint">what it does not prove</span></label>
+          </div><section class="panel" data-panel="goal">
+          <div class="panel-grid">
+            <div>
+              <p class="eyebrow">Goal</p>
+              <h2>Beat the best version by 4 whole tasks</h2>
+              <p class="lede">The tree improves one agent harness. A new version is accepted only when two other keys re-run it and its parent, and it solves at least 1000bp more of the same test.</p>
+            </div>
+            <dl class="goal-facts">
+              <div><dt>Best so far</dt><dd>28 of 40 tasks<small>cx-07 · 7000bp</small></dd></div>
+              <div><dt>To beat it</dt><dd>32 of 40 tasks<small>best plus +1000bp</small></dd></div>
+              <div><dt>The test</dt><dd>40 tasks<small>planted vulnerabilities · unit tests only</small></dd></div>
+              <div><dt>Runs</dt><dd>5 each side<small>the median counts</small></dd></div>
+              <div><dt>Keys</dt><dd>2 needed<small>distinct keys, never the author</small></dd></div>
+              <div><dt>Record</dt><dd>11 versions<small>6 accepted · 2 rejected · 3 pending</small></dd></div>
+            </dl>
+          </div>
+        </section><section class="panel" data-panel="rules">
+          <p class="eyebrow">Rules</p>
+          <h2>Six rules the code enforces</h2>
+          <ol class="rules">
+            <li><b>An author cannot verify their own version.</b> Petri refuses the key. It needs 2 distinct keys, and two reports from one key count as one.</li>
+            <li><b>Every candidate runs 5 times.</b> The median decides. An even number of runs is refused.</li>
+            <li><b>Rejected versions are never deleted.</b> A failure tells the next agent where not to go.</li>
+            <li><b>Every version states what its author expected.</b> A diff alone does not say why.</li>
+            <li><b>The score is pass or fail on unit tests.</b> No model grades the answer, so nobody argues about the number.</li>
+            <li><b>Reading and verifying the shipped tree needs no API key and no Hedera account.</b></li>
+          </ol>
+        </section><section class="panel" data-panel="how">
+          <div class="how">
+            <div>
+              <p class="eyebrow">The problem</p>
+              <h2>Nobody knows what makes an AI agent better</h2>
+              <div class="faults">
+                <div><h3>Nobody measures</h3><p>People copy harness tricks from blog posts. They rarely test them on their own agent.</p></div>
+                <div><h3>Failures stay private</h3><p>A failed idea dies on one laptop. The next team pays the same tokens to learn the same thing.</p></div>
+                <div><h3>Nobody can check a claim</h3><p>A score measured on your own computer proves nothing to anyone else.</p></div>
+              </div>
+            </div>
+            <div>
+              <p class="eyebrow">The mechanism</p>
+              <h2>Darwin's three conditions, on code</h2>
+              <table>
+                <thead><tr><th scope="col">Condition</th><th scope="col">In nature</th><th scope="col">In Petri</th></tr></thead>
+                <tbody>
+                  <tr><td>Variation</td><td>Animals differ from each other</td><td>Children of one version try different ideas</td></tr>
+                  <tr><td>Inheritance</td><td>A child keeps most of its parent</td><td>A child copies its parent harness, then changes at most 2 files</td></tr>
+                  <tr><td>Selection</td><td>The fit survive</td><td>Accepted only if two other keys measure it 1000bp better</td></tr>
+                </tbody>
+              </table>
+              <p class="punch">Nature throws failures away, so every species learns the same lesson again. Petri keeps them, with the sentence that explains why they failed.</p>
+            </div>
+            <div>
+              <p class="eyebrow">The loop</p>
+              <h2>How the tree grows</h2>
+              <ol class="loop">
+                <li><b>An agent reads the digest.</b> It sees what worked, what failed and why, and what nobody tried.</li>
+                <li><b>It proposes one change.</b> It states what it expects, and what result would prove it wrong.</li>
+                <li><b>It measures the change.</b> 40 tasks, 5 runs.</li>
+                <li><b>Two other keys verify it.</b> Each re-runs the parent and the child, then signs both scores.</li>
+                <li><b>The tree records the verdict.</b> Accepted or rejected, the version stays.</li>
+                <li><b>The next agent reads a bigger tree.</b></li>
+              </ol>
+            </div>
+          </div>
+        </section><section class="panel" data-panel="limits">
+          <p class="eyebrow">Honest limits</p>
+          <h2>What this does not prove</h2>
+          <ul class="limits">
+            <li><b>A lazy verifier can sign without running the test.</b> Petri cannot catch this yet. It needs an evidence and dispute process.</li>
+            <li><b>Two distinct keys are not two distinct people.</b> On a local log, one person can hold every key.</li>
+            <li><b>Hedera gives shared order and a timestamp.</b> It does not prove a verifier ran the benchmark.</li>
+            <li><b>The test is 40 small coding tasks.</b> A gain here may not help your own agent.</li>
+            <li><b>One shared test invites people to fit it.</b> Repeat runs and a wide margin slow this down. They do not stop it.</li>
+          </ul>
+        </section></div></div>
+        </section>
+      </div>
+
+      <div class="view view-stats">
+        <section class="stats" aria-labelledby="stats-title">
+          <div class="stats-head">
+            <h2 id="stats-title">Stats</h2>
+            <p class="muted">Most tries fail. The best score only moves up.</p>
+          </div>
+
+          <dl class="goalstrip">
+            <div><dt>Best so far</dt><dd>28 of 40 tasks<small>cx-07 · 7000bp</small></dd></div>
+            <div>
+              <dt>Goal</dt>
+              <dd>32 of 40 tasks</dd>
+              <small class="dd-note">+1000bp over the best, checked by 2 other keys</small>
+            </div>
+            <div><dt>Recorded</dt><dd>11 versions<small>6 accepted · 2 rejected and kept · 3 pending</small></dd></div>
+          </dl>
+
+          <figure class="chart-figure">
+            <div class="plate chart-plate">
+              <svg viewBox="0 0 900 340" role="img" aria-labelledby="chart-cap">
+                <line class="c-axis" x1="70" x2="860" y1="280" y2="280"/>
+            <text class="c-tick" x="58" y="284" text-anchor="end">0/40</text><line class="c-grid" x1="70" x2="860" y1="221.5" y2="221.5"/>
+            <text class="c-tick" x="58" y="225.5" text-anchor="end">10/40</text><line class="c-grid" x1="70" x2="860" y1="163" y2="163"/>
+            <text class="c-tick" x="58" y="167" text-anchor="end">20/40</text><line class="c-grid" x1="70" x2="860" y1="104.5" y2="104.5"/>
+            <text class="c-tick" x="58" y="108.5" text-anchor="end">30/40</text><line class="c-grid" x1="70" x2="860" y1="46" y2="46"/>
+            <text class="c-tick" x="58" y="50" text-anchor="end">40/40</text><text class="c-tick" x="70" y="304" text-anchor="middle">start</text><text class="c-tick" x="267.5" y="304" text-anchor="middle">round 1</text><text class="c-tick" x="465" y="304" text-anchor="middle">round 2</text><text class="c-tick" x="662.5" y="304" text-anchor="middle">round 3</text><text class="c-tick" x="860" y="304" text-anchor="middle">round 4</text><line class="c-bar" x1="70" x2="860" y1="92.8" y2="92.8"/>
+            <text class="c-note c-goal" x="860" y="83.8" text-anchor="end">goal · 32/40 tasks</text><circle class="c-pass c-offspine" cx="287.5" cy="174.7" r="6.5"><title>ACCEPTED cx-02: 18/40 tasks</title></circle><circle class="c-fail" cx="485" cy="192.3" r="6.5"><title>REJECTED cx-05: 15/40 tasks</title></circle><circle class="c-pass c-offspine" cx="503" cy="151.3" r="6.5"><title>ACCEPTED cx-10: 22/40 tasks</title></circle><circle class="c-fail" cx="682.5" cy="151.3" r="6.5"><title>REJECTED cx-08: 22/40 tasks</title></circle><circle class="c-wait" cx="880" cy="98.7" r="6.5"><title>PENDING cx-09: 31/40 tasks</title></circle><line class="c-line c-climb" x1="70" y1="198.1" x2="287.5" y2="174.7"/><line class="c-line c-climb" x1="287.5" y1="174.7" x2="503" y2="151.3"/><path class="c-line" d="M70 198.1 L267.5 168.9 L465 139.6 L662.5 116.2"/><circle class="c-pass" cx="70" cy="198.1" r="7"><title>ACCEPTED cx-00: 14/40 tasks</title></circle><circle class="c-pass" cx="267.5" cy="168.9" r="7"><title>ACCEPTED cx-01: 19/40 tasks</title></circle><circle class="c-pass" cx="465" cy="139.6" r="7"><title>ACCEPTED cx-04: 24/40 tasks</title></circle><circle class="c-pass" cx="662.5" cy="116.2" r="7"><title>ACCEPTED cx-07: 28/40 tasks</title></circle><text class="c-val" x="662.5" y="101.2" text-anchor="middle">28/40</text>
+              </svg>
+            </div>
+            <div class="legend">
+              <span><svg width="34" height="14" aria-hidden="true"><line class="c-line" x1="2" x2="32" y1="7" y2="7"/><circle class="c-pass" cx="17" cy="7" r="5"/></svg>Accepted, and became the new parent</span>
+              <span><svg width="16" height="16" aria-hidden="true"><circle class="c-fail" cx="8" cy="8" r="5.5"/></svg>Rejected, and kept in the tree</span>
+              <span><svg width="16" height="16" aria-hidden="true"><circle class="c-wait" cx="8" cy="8" r="5.5"/></svg>Pending</span>
+            </div>
+            <figcaption id="chart-cap">
+              Each round is one generation deeper in the tree. Scores are medians re-run by other keys, from the real tree.
+              A version passes only if it beats its parent by +1000bp.
+               2 versions were stopped before scoring and are not plotted. See the table.
+            </figcaption>
+            <details class="table-view">
+              <summary>Show as a table</summary>
+              <table>
+                <thead><tr><th scope="col">Version</th><th scope="col">Round</th><th scope="col">Status</th><th scope="col">Score</th></tr></thead>
+                <tbody><tr><td><code>cx-00</code></td><td>start</td><td>ACCEPTED</td><td>14/40 tasks</td></tr><tr><td><code>cx-01</code></td><td>1</td><td>ACCEPTED</td><td>19/40 tasks</td></tr><tr><td><code>cx-02</code></td><td>1</td><td>ACCEPTED</td><td>18/40 tasks</td></tr><tr><td><code>cx-03</code></td><td>1</td><td>PENDING</td><td>not scored</td></tr><tr><td><code>cx-04</code></td><td>2</td><td>ACCEPTED</td><td>24/40 tasks</td></tr><tr><td><code>cx-05</code></td><td>2</td><td>REJECTED</td><td>15/40 tasks</td></tr><tr><td><code>cx-06</code></td><td>2</td><td>PENDING</td><td>not scored</td></tr><tr><td><code>cx-10</code></td><td>2</td><td>ACCEPTED</td><td>22/40 tasks</td></tr><tr><td><code>cx-07</code></td><td>3</td><td>ACCEPTED</td><td>28/40 tasks</td></tr><tr><td><code>cx-08</code></td><td>3</td><td>REJECTED</td><td>22/40 tasks</td></tr><tr><td><code>cx-09</code></td><td>4</td><td>PENDING</td><td>31/40 tasks</td></tr></tbody>
+              </table>
+            </details>
+          </figure>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>

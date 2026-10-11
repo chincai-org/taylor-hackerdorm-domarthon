@@ -185,6 +185,11 @@ def launch_dsh_web(request: LaunchRequest) -> dict[str, Any]:
         env.setdefault("DEEPSEEK_API_KEY", llm_api_key())
     env.setdefault("DEEPSEEK_BASE_URL", settings.GRAFFILAB_BASE_URL)
     try:
+        patch_flags: list[str] = []
+        if node_patch.strip():
+            # Empty overlays crash dsh boot ("must be a top-level YAML array"),
+            # so persona-less nodes skip the flag; provider overlay stays.
+            patch_flags += ["--patch", node_patch_path]
         proc = subprocess.Popen(
             [
                 _npx(),
@@ -192,8 +197,7 @@ def launch_dsh_web(request: LaunchRequest) -> dict[str, Any]:
                 "@deepseek-ai/dsh",
                 "--profile",
                 "web",
-                "--patch",
-                node_patch_path,
+                *patch_flags,
                 "--patch",
                 patch_path,
                 "--no-open",

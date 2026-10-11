@@ -762,10 +762,18 @@
           throw new Error(body.detail || `Launch returned ${response.status}`);
         window.open(body.url, "_blank", "noopener");
       } catch (error) {
-        tryButton.textContent = "Launch failed — retry";
+        const localOnly =
+          error instanceof Error && /disabled|403/.test(error.message);
+        tryButton.textContent = localOnly
+          ? "Local server only"
+          : "Launch failed — retry";
+        tryButton.title = localOnly
+          ? "dsh spawn needs the stack on your machine (ALLOW_DSH_SPAWN=1); this hosted copy cannot spawn processes."
+          : "";
         setTimeout(() => {
           tryButton.textContent = label;
-        }, 2500);
+          tryButton.title = "";
+        }, 3500);
         return;
       } finally {
         if (tryButton.isConnected) tryButton.disabled = false;

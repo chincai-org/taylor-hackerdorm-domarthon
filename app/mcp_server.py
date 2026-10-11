@@ -71,7 +71,10 @@ create_child_node is parent-relative. Do not send a full harness, raw YAML, or
 fields such as version, kind, profile, or dsh_plugins. Send only a JSON object
 with the changes to apply: existing plugin config updates go in `plugins`, new
 rows in `add_plugins`, removals in `remove_plugins`, and top-level prompt/model
-updates in `system_prompt` / `model`. The server preserves every unmentioned
+updates in `system_prompt` / `model`. When shaping plugin rows, use
+https://deepseekdocs.com/en/docs/user-guide/configuration as the reference
+for cordis.patch.yml structure — the harness persisted here is that file's
+format. The server preserves every unmentioned
 parent field, rejects suggestions longer than 120 lines, then evaluates the
 child in one shot: the tree's benchmark dataset is loaded from the database,
 all scenario questions are combined into ONE candidate prompt POSTed once with

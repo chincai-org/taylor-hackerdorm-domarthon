@@ -190,25 +190,29 @@ def launch_dsh_web(request: LaunchRequest) -> dict[str, Any]:
             # Empty overlays crash dsh boot ("must be a top-level YAML array"),
             # so persona-less nodes skip the flag; provider overlay stays.
             patch_flags += ["--patch", node_patch_path]
+        args = [
+            _npx(),
+            "-y",
+            "@deepseek-ai/dsh",
+            "--profile",
+            "web",
+            *patch_flags,
+            "--patch",
+            patch_path,
+            "--no-open",
+            "--port",
+            str(request.port),
+        ]
+        # Windows resolves npx as npx.cmd, which needs a shell to execute.
+        use_shell = os.name == "nt"
         proc = subprocess.Popen(
-            [
-                _npx(),
-                "-y",
-                "@deepseek-ai/dsh",
-                "--profile",
-                "web",
-                *patch_flags,
-                "--patch",
-                patch_path,
-                "--no-open",
-                "--port",
-                str(request.port),
-            ],
+            " ".join(args) if use_shell else args,
             cwd=workspace,
             env=env,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
+            shell=use_shell,
         )
     except OSError as exc:
         raise HTTPException(status_code=500, detail=f"Could not start dsh: {exc}") from exc
